@@ -10,6 +10,7 @@ import fs from 'fs';
 
 /** HARDHAT NETWORK CONFIGURATION */
 const MNEMONIC = process.env.MNEMONIC || '';
+const PRIVATE_KEY = process.env.PRIVATE_KEY || '';
 const MNEMONIC_PATH = "m/44'/60'/0'/0";
 
 export const NETWORKS_RPC_URL: Record<string, string> = {
@@ -20,6 +21,7 @@ export const NETWORKS_RPC_URL: Record<string, string> = {
   [eEthereumNetwork.goerli]: `https://eth-goerli.alchemyapi.io/v2/${getAlchemyKey(
     eEthereumNetwork.goerli
   )}`,
+  [eEthereumNetwork.last_testnet]: 'https://rpc-devnet-a62hx4f2t5.t.conduit.xyz',
   sepolia: 'https://rpc.sepolia.ethpandaops.io',
 };
 
@@ -69,13 +71,8 @@ export const getCommonNetworkConfig = (networkName: string, chainId?: number) =>
   blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
   chainId,
   gasPrice: GAS_PRICE_PER_NET[networkName] || undefined,
-  ...(!!MNEMONIC && {
-    accounts: {
-      mnemonic: MNEMONIC,
-      path: MNEMONIC_PATH,
-      initialIndex: 0,
-      count: 10,
-    },
+  ...(!!PRIVATE_KEY && {
+    accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
   }),
   live: !!LIVE_NETWORKS[networkName],
 });
