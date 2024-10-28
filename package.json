@@ -42,6 +42,8 @@
     "deploy-testnet:goerli:fork": "FORK=goerli npm run deploy-testnet",
     "deploy-testnet:sepolia": "HARDHAT_NETWORK=sepolia npm run deploy-testnet",
     "deploy-testnet:sepolia:fork": "FORK=sepolia npm run deploy-testnet",
+    "deploy-testnet:lastSepolia": "HARDHAT_NETWORK=lastSepolia npm run deploy-testnet",
+    "deploy-testnet:lastSepolia:fork": "FORK=lastSepolia npm run deploy-testnet",
     "ci:clean": "rm -rf ./artifacts ./cache ./types ./cache_forge",
     "ci:test": "npm run test"
   },

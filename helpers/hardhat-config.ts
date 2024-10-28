@@ -21,7 +21,7 @@ export const NETWORKS_RPC_URL: Record<string, string> = {
   [eEthereumNetwork.goerli]: `https://eth-goerli.alchemyapi.io/v2/${getAlchemyKey(
     eEthereumNetwork.goerli
   )}`,
-  [eEthereumNetwork.last_testnet]: 'https://rpc-devnet-a62hx4f2t5.t.conduit.xyz',
+  [eEthereumNetwork.lastSepolia]: 'https://rpc-devnet-a62hx4f2t5.t.conduit.xyz',
   sepolia: 'https://rpc.sepolia.ethpandaops.io',
 };
 
