@@ -1,0 +1,512 @@
+{
+  "address": "0x8fef81070617cBbA11c730157e951145fB9526C2",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "reward",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "oldAdmin",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newAdmin",
+          "type": "address"
+        }
+      ],
+      "name": "EmissionAdminUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint88",
+              "name": "emissionPerSecond",
+              "type": "uint88"
+            },
+            {
+              "internalType": "uint256",
+              "name": "totalSupply",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint32",
+              "name": "distributionEnd",
+              "type": "uint32"
+            },
+            {
+              "internalType": "address",
+              "name": "asset",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "reward",
+              "type": "address"
+            },
+            {
+              "internalType": "contract ITransferStrategyBase",
+              "name": "transferStrategy",
+              "type": "address"
+            },
+            {
+              "internalType": "contract IEACAggregatorProxy",
+              "name": "rewardOracle",
+              "type": "address"
+            }
+          ],
+          "internalType": "struct RewardsDataTypes.RewardsConfigInput[]",
+          "name": "config",
+          "type": "tuple[]"
+        }
+      ],
+      "name": "configureAssets",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "reward",
+          "type": "address"
+        }
+      ],
+      "name": "getEmissionAdmin",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getRewardsController",
+      "outputs": [
+        {
+          "internalType": "contract IRewardsController",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "claimer",
+          "type": "address"
+        }
+      ],
+      "name": "setClaimer",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "asset",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "reward",
+          "type": "address"
+        },
+        {
+          "internalType": "uint32",
+          "name": "newDistributionEnd",
+          "type": "uint32"
+        }
+      ],
+      "name": "setDistributionEnd",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "reward",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "admin",
+          "type": "address"
+        }
+      ],
+      "name": "setEmissionAdmin",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "asset",
+          "type": "address"
+        },
+        {
+          "internalType": "address[]",
+          "name": "rewards",
+          "type": "address[]"
+        },
+        {
+          "internalType": "uint88[]",
+          "name": "newEmissionsPerSecond",
+          "type": "uint88[]"
+        }
+      ],
+      "name": "setEmissionPerSecond",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "reward",
+          "type": "address"
+        },
+        {
+          "internalType": "contract IEACAggregatorProxy",
+          "name": "rewardOracle",
+          "type": "address"
+        }
+      ],
+      "name": "setRewardOracle",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "controller",
+          "type": "address"
+        }
+      ],
+      "name": "setRewardsController",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "reward",
+          "type": "address"
+        },
+        {
+          "internalType": "contract ITransferStrategyBase",
+          "name": "transferStrategy",
+          "type": "address"
+        }
+      ],
+      "name": "setTransferStrategy",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0xc43835f07b5be6426d8fab5f4ae48f34cefacf0d1c1b13c480b9e9f01b457783",
+  "receipt": {
+    "to": null,
+    "from": "0xE0157B2E81506f7710e62b331eb113B232e89efA",
+    "contractAddress": "0x8fef81070617cBbA11c730157e951145fB9526C2",
+    "transactionIndex": 1,
+    "gasUsed": "1171030",
+    "logsBloom": "0x00000000000200000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000400000000001000000000000000000000000000000000000020000000008000000000800000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000100000000",
+    "blockHash": "0x9201e0208fb3b3fc429aed650dde69349544d8332319fba67a2f3028777e2aa2",
+    "transactionHash": "0xc43835f07b5be6426d8fab5f4ae48f34cefacf0d1c1b13c480b9e9f01b457783",
+    "logs": [
+      {
+        "transactionIndex": 1,
+        "blockNumber": 281630,
+        "transactionHash": "0xc43835f07b5be6426d8fab5f4ae48f34cefacf0d1c1b13c480b9e9f01b457783",
+        "address": "0x8fef81070617cBbA11c730157e951145fB9526C2",
+        "topics": [
+          "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0",
+          "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "0x000000000000000000000000e0157b2e81506f7710e62b331eb113b232e89efa"
+        ],
+        "data": "0x",
+        "logIndex": 0,
+        "blockHash": "0x9201e0208fb3b3fc429aed650dde69349544d8332319fba67a2f3028777e2aa2"
+      },
+      {
+        "transactionIndex": 1,
+        "blockNumber": 281630,
+        "transactionHash": "0xc43835f07b5be6426d8fab5f4ae48f34cefacf0d1c1b13c480b9e9f01b457783",
+        "address": "0x8fef81070617cBbA11c730157e951145fB9526C2",
+        "topics": [
+          "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0",
+          "0x000000000000000000000000e0157b2e81506f7710e62b331eb113b232e89efa",
+          "0x000000000000000000000000e0157b2e81506f7710e62b331eb113b232e89efa"
+        ],
+        "data": "0x",
+        "logIndex": 1,
+        "blockHash": "0x9201e0208fb3b3fc429aed650dde69349544d8332319fba67a2f3028777e2aa2"
+      }
+    ],
+    "blockNumber": 281630,
+    "cumulativeGasUsed": "1214920",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [
+    "0xE0157B2E81506f7710e62b331eb113B232e89efA"
+  ],
+  "numDeployments": 1,
+  "solcInputHash": "e93df4dc87f8a0451aeb83b71d57f5ae",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.10+commit.fc410830\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"reward\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"oldAdmin\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newAdmin\",\"type\":\"address\"}],\"name\":\"EmissionAdminUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"inputs\":[{\"components\":[{\"internalType\":\"uint88\",\"name\":\"emissionPerSecond\",\"type\":\"uint88\"},{\"internalType\":\"uint256\",\"name\":\"totalSupply\",\"type\":\"uint256\"},{\"internalType\":\"uint32\",\"name\":\"distributionEnd\",\"type\":\"uint32\"},{\"internalType\":\"address\",\"name\":\"asset\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"reward\",\"type\":\"address\"},{\"internalType\":\"contract ITransferStrategyBase\",\"name\":\"transferStrategy\",\"type\":\"address\"},{\"internalType\":\"contract IEACAggregatorProxy\",\"name\":\"rewardOracle\",\"type\":\"address\"}],\"internalType\":\"struct RewardsDataTypes.RewardsConfigInput[]\",\"name\":\"config\",\"type\":\"tuple[]\"}],\"name\":\"configureAssets\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"reward\",\"type\":\"address\"}],\"name\":\"getEmissionAdmin\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getRewardsController\",\"outputs\":[{\"internalType\":\"contract IRewardsController\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"claimer\",\"type\":\"address\"}],\"name\":\"setClaimer\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"asset\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"reward\",\"type\":\"address\"},{\"internalType\":\"uint32\",\"name\":\"newDistributionEnd\",\"type\":\"uint32\"}],\"name\":\"setDistributionEnd\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"reward\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"admin\",\"type\":\"address\"}],\"name\":\"setEmissionAdmin\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"asset\",\"type\":\"address\"},{\"internalType\":\"address[]\",\"name\":\"rewards\",\"type\":\"address[]\"},{\"internalType\":\"uint88[]\",\"name\":\"newEmissionsPerSecond\",\"type\":\"uint88[]\"}],\"name\":\"setEmissionPerSecond\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"reward\",\"type\":\"address\"},{\"internalType\":\"contract IEACAggregatorProxy\",\"name\":\"rewardOracle\",\"type\":\"address\"}],\"name\":\"setRewardOracle\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"controller\",\"type\":\"address\"}],\"name\":\"setRewardsController\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"reward\",\"type\":\"address\"},{\"internalType\":\"contract ITransferStrategyBase\",\"name\":\"transferStrategy\",\"type\":\"address\"}],\"name\":\"setTransferStrategy\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"author\":\"Aave\",\"kind\":\"dev\",\"methods\":{\"configureAssets((uint88,uint256,uint32,address,address,address,address)[])\":{\"details\":\"Configure assets to incentivize with an emission of rewards per second until the end of distribution.Only callable by the emission admin of the given rewards\",\"params\":{\"config\":\"The assets configuration input, the list of structs contains the following fields:   uint104 emissionPerSecond: The emission per second following rewards unit decimals.   uint256 totalSupply: The total supply of the asset to incentivize   uint40 distributionEnd: The end of the distribution of the incentives for an asset   address asset: The asset address to incentivize   address reward: The reward token address   ITransferStrategy transferStrategy: The TransferStrategy address with the install hook and claim logic.   IEACAggregatorProxy rewardOracle: The Price Oracle of a reward to visualize the incentives at the UI Frontend.                                     Must follow Chainlink Aggregator IEACAggregatorProxy interface to be compatible.\"}},\"constructor\":{\"params\":{\"owner\":\"The address of the owner\"}},\"getEmissionAdmin(address)\":{\"details\":\"Returns the admin of the given reward emission\",\"params\":{\"reward\":\"The address of the reward token\"},\"returns\":{\"_0\":\"The address of the emission admin\"}},\"getRewardsController()\":{\"details\":\"Returns the rewards controller address\",\"returns\":{\"_0\":\"The address of the RewardsController contract\"}},\"owner()\":{\"details\":\"Returns the address of the current owner.\"},\"renounceOwnership()\":{\"details\":\"Leaves the contract without owner. It will not be possible to call `onlyOwner` functions anymore. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby removing any functionality that is only available to the owner.\"},\"setClaimer(address,address)\":{\"details\":\"Whitelists an address to claim the rewards on behalf of another addressOnly callable by the owner of the EmissionManager\",\"params\":{\"claimer\":\"The address of the claimer\",\"user\":\"The address of the user\"}},\"setDistributionEnd(address,address,uint32)\":{\"details\":\"Sets the end date for the distributionOnly callable by the emission admin of the given reward\",\"params\":{\"asset\":\"The asset to incentivize\",\"newDistributionEnd\":\"The end date of the incentivization, in unix time format*\",\"reward\":\"The reward token that incentives the asset\"}},\"setEmissionAdmin(address,address)\":{\"details\":\"Updates the admin of the reward emissionOnly callable by the owner of the EmissionManager\",\"params\":{\"admin\":\"The address of the new admin of the emission\",\"reward\":\"The address of the reward token\"}},\"setEmissionPerSecond(address,address[],uint88[])\":{\"details\":\"Sets the emission per second of a set of reward distributions\",\"params\":{\"asset\":\"The asset is being incentivized\",\"newEmissionsPerSecond\":\"List of new reward emissions per second\",\"rewards\":\"List of reward addresses are being distributed\"}},\"setRewardOracle(address,address)\":{\"details\":\"Sets an Aave Oracle contract to enforce rewards with a source of value.Only callable by the emission admin of the given reward\",\"params\":{\"reward\":\"The address of the reward to set the price aggregator\",\"rewardOracle\":\"The address of price aggregator that follows IEACAggregatorProxy interface\"}},\"setRewardsController(address)\":{\"details\":\"Updates the address of the rewards controllerOnly callable by the owner of the EmissionManager\",\"params\":{\"controller\":\"the address of the RewardsController contract\"}},\"setTransferStrategy(address,address)\":{\"details\":\"Sets a TransferStrategy logic contract that determines the logic of the rewards transferOnly callable by the emission admin of the given reward\",\"params\":{\"reward\":\"The address of the reward token\",\"transferStrategy\":\"The address of the TransferStrategy logic contract\"}},\"transferOwnership(address)\":{\"details\":\"Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner.\"}},\"title\":\"EmissionManager\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"constructor\":{\"notice\":\"Constructor.\"},\"setRewardOracle(address,address)\":{\"notice\":\"At the moment of reward configuration, the Incentives Controller performs a check to see if the reward asset oracle is compatible with IEACAggregator proxy. This check is enforced for integrators to be able to show incentives at the current Aave UI without the need to setup an external price registry\"}},\"notice\":\"It manages the list of admins of reward emissions and provides functions to control reward emissions.\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"@aave/periphery-v3/contracts/rewards/EmissionManager.sol\":\"EmissionManager\"},\"evmVersion\":\"berlin\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":100000},\"remappings\":[]},\"sources\":{\"@aave/core-v3/contracts/dependencies/openzeppelin/contracts/Context.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.10;\\n\\n/*\\n * @dev Provides information about the current execution context, including the\\n * sender of the transaction and its data. While these are generally available\\n * via msg.sender and msg.data, they should not be accessed in such a direct\\n * manner, since when dealing with GSN meta-transactions the account sending and\\n * paying for execution may not be the actual sender (as far as an application\\n * is concerned).\\n *\\n * This contract is only required for intermediate, library-like contracts.\\n */\\nabstract contract Context {\\n  function _msgSender() internal view virtual returns (address payable) {\\n    return payable(msg.sender);\\n  }\\n\\n  function _msgData() internal view virtual returns (bytes memory) {\\n    this; // silence state mutability warning without generating bytecode - see https://github.com/ethereum/solidity/issues/2691\\n    return msg.data;\\n  }\\n}\\n\",\"keccak256\":\"0x0d984665e4f3dd200c605a83b7caae057dd96136c038fcdd271fd85757dc3d8f\",\"license\":\"MIT\"},\"@aave/core-v3/contracts/dependencies/openzeppelin/contracts/Ownable.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n\\npragma solidity 0.8.10;\\n\\nimport './Context.sol';\\n\\n/**\\n * @dev Contract module which provides a basic access control mechanism, where\\n * there is an account (an owner) that can be granted exclusive access to\\n * specific functions.\\n *\\n * By default, the owner account will be the one that deploys the contract. This\\n * can later be changed with {transferOwnership}.\\n *\\n * This module is used through inheritance. It will make available the modifier\\n * `onlyOwner`, which can be applied to your functions to restrict their use to\\n * the owner.\\n */\\ncontract Ownable is Context {\\n  address private _owner;\\n\\n  event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);\\n\\n  /**\\n   * @dev Initializes the contract setting the deployer as the initial owner.\\n   */\\n  constructor() {\\n    address msgSender = _msgSender();\\n    _owner = msgSender;\\n    emit OwnershipTransferred(address(0), msgSender);\\n  }\\n\\n  /**\\n   * @dev Returns the address of the current owner.\\n   */\\n  function owner() public view returns (address) {\\n    return _owner;\\n  }\\n\\n  /**\\n   * @dev Throws if called by any account other than the owner.\\n   */\\n  modifier onlyOwner() {\\n    require(_owner == _msgSender(), 'Ownable: caller is not the owner');\\n    _;\\n  }\\n\\n  /**\\n   * @dev Leaves the contract without owner. It will not be possible to call\\n   * `onlyOwner` functions anymore. Can only be called by the current owner.\\n   *\\n   * NOTE: Renouncing ownership will leave the contract without an owner,\\n   * thereby removing any functionality that is only available to the owner.\\n   */\\n  function renounceOwnership() public virtual onlyOwner {\\n    emit OwnershipTransferred(_owner, address(0));\\n    _owner = address(0);\\n  }\\n\\n  /**\\n   * @dev Transfers ownership of the contract to a new account (`newOwner`).\\n   * Can only be called by the current owner.\\n   */\\n  function transferOwnership(address newOwner) public virtual onlyOwner {\\n    require(newOwner != address(0), 'Ownable: new owner is the zero address');\\n    emit OwnershipTransferred(_owner, newOwner);\\n    _owner = newOwner;\\n  }\\n}\\n\",\"keccak256\":\"0x3aeb1a66f9f7718c3850cc4929cf42c431782e9178fa592e76e80d5d6dcb1c16\",\"license\":\"MIT\"},\"@aave/periphery-v3/contracts/misc/interfaces/IEACAggregatorProxy.sol\":{\"content\":\"// SPDX-License-Identifier: AGPL-3.0\\npragma solidity ^0.8.10;\\n\\ninterface IEACAggregatorProxy {\\n  function decimals() external view returns (uint8);\\n\\n  function latestAnswer() external view returns (int256);\\n\\n  function latestTimestamp() external view returns (uint256);\\n\\n  function latestRound() external view returns (uint256);\\n\\n  function getAnswer(uint256 roundId) external view returns (int256);\\n\\n  function getTimestamp(uint256 roundId) external view returns (uint256);\\n\\n  event AnswerUpdated(int256 indexed current, uint256 indexed roundId, uint256 timestamp);\\n  event NewRound(uint256 indexed roundId, address indexed startedBy);\\n}\\n\",\"keccak256\":\"0x75bb34641419925730f87eeb122521b34cfd953b800212c362770ed1c7c5d719\",\"license\":\"AGPL-3.0\"},\"@aave/periphery-v3/contracts/rewards/EmissionManager.sol\":{\"content\":\"// SPDX-License-Identifier: AGPL-3.0\\npragma solidity ^0.8.10;\\n\\nimport {Ownable} from '@aave/core-v3/contracts/dependencies/openzeppelin/contracts/Ownable.sol';\\nimport {IEACAggregatorProxy} from '../misc/interfaces/IEACAggregatorProxy.sol';\\nimport {IEmissionManager} from './interfaces/IEmissionManager.sol';\\nimport {ITransferStrategyBase} from './interfaces/ITransferStrategyBase.sol';\\nimport {IRewardsController} from './interfaces/IRewardsController.sol';\\nimport {RewardsDataTypes} from './libraries/RewardsDataTypes.sol';\\n\\n/**\\n * @title EmissionManager\\n * @author Aave\\n * @notice It manages the list of admins of reward emissions and provides functions to control reward emissions.\\n */\\ncontract EmissionManager is Ownable, IEmissionManager {\\n  // reward => emissionAdmin\\n  mapping(address => address) internal _emissionAdmins;\\n\\n  IRewardsController internal _rewardsController;\\n\\n  /**\\n   * @dev Only emission admin of the given reward can call functions marked by this modifier.\\n   **/\\n  modifier onlyEmissionAdmin(address reward) {\\n    require(msg.sender == _emissionAdmins[reward], 'ONLY_EMISSION_ADMIN');\\n    _;\\n  }\\n\\n  /**\\n   * Constructor.\\n   * @param owner The address of the owner\\n   */\\n  constructor(address owner) {\\n    transferOwnership(owner);\\n  }\\n\\n  /// @inheritdoc IEmissionManager\\n  function configureAssets(RewardsDataTypes.RewardsConfigInput[] memory config) external override {\\n    for (uint256 i = 0; i < config.length; i++) {\\n      require(_emissionAdmins[config[i].reward] == msg.sender, 'ONLY_EMISSION_ADMIN');\\n    }\\n    _rewardsController.configureAssets(config);\\n  }\\n\\n  /// @inheritdoc IEmissionManager\\n  function setTransferStrategy(address reward, ITransferStrategyBase transferStrategy)\\n    external\\n    override\\n    onlyEmissionAdmin(reward)\\n  {\\n    _rewardsController.setTransferStrategy(reward, transferStrategy);\\n  }\\n\\n  /// @inheritdoc IEmissionManager\\n  function setRewardOracle(address reward, IEACAggregatorProxy rewardOracle)\\n    external\\n    override\\n    onlyEmissionAdmin(reward)\\n  {\\n    _rewardsController.setRewardOracle(reward, rewardOracle);\\n  }\\n\\n  /// @inheritdoc IEmissionManager\\n  function setDistributionEnd(\\n    address asset,\\n    address reward,\\n    uint32 newDistributionEnd\\n  ) external override onlyEmissionAdmin(reward) {\\n    _rewardsController.setDistributionEnd(asset, reward, newDistributionEnd);\\n  }\\n\\n  /// @inheritdoc IEmissionManager\\n  function setEmissionPerSecond(\\n    address asset,\\n    address[] calldata rewards,\\n    uint88[] calldata newEmissionsPerSecond\\n  ) external override {\\n    for (uint256 i = 0; i < rewards.length; i++) {\\n      require(_emissionAdmins[rewards[i]] == msg.sender, 'ONLY_EMISSION_ADMIN');\\n    }\\n    _rewardsController.setEmissionPerSecond(asset, rewards, newEmissionsPerSecond);\\n  }\\n\\n  /// @inheritdoc IEmissionManager\\n  function setClaimer(address user, address claimer) external override onlyOwner {\\n    _rewardsController.setClaimer(user, claimer);\\n  }\\n\\n  /// @inheritdoc IEmissionManager\\n  function setEmissionAdmin(address reward, address admin) external override onlyOwner {\\n    address oldAdmin = _emissionAdmins[reward];\\n    _emissionAdmins[reward] = admin;\\n    emit EmissionAdminUpdated(reward, oldAdmin, admin);\\n  }\\n\\n  /// @inheritdoc IEmissionManager\\n  function setRewardsController(address controller) external override onlyOwner {\\n    _rewardsController = IRewardsController(controller);\\n  }\\n\\n  /// @inheritdoc IEmissionManager\\n  function getRewardsController() external view override returns (IRewardsController) {\\n    return _rewardsController;\\n  }\\n\\n  /// @inheritdoc IEmissionManager\\n  function getEmissionAdmin(address reward) external view override returns (address) {\\n    return _emissionAdmins[reward];\\n  }\\n}\\n\",\"keccak256\":\"0x859fd76e2d880fac7ef0829c81ffd7a074bbe14a17bd15489924179062c22020\",\"license\":\"AGPL-3.0\"},\"@aave/periphery-v3/contracts/rewards/interfaces/IEmissionManager.sol\":{\"content\":\"// SPDX-License-Identifier: AGPL-3.0\\npragma solidity ^0.8.10;\\n\\nimport {IEACAggregatorProxy} from '../../misc/interfaces/IEACAggregatorProxy.sol';\\nimport {RewardsDataTypes} from '../libraries/RewardsDataTypes.sol';\\nimport {ITransferStrategyBase} from './ITransferStrategyBase.sol';\\nimport {IRewardsController} from './IRewardsController.sol';\\n\\n/**\\n * @title IEmissionManager\\n * @author Aave\\n * @notice Defines the basic interface for the Emission Manager\\n */\\ninterface IEmissionManager {\\n  /**\\n   * @dev Emitted when the admin of a reward emission is updated.\\n   * @param reward The address of the rewarding token\\n   * @param oldAdmin The address of the old emission admin\\n   * @param newAdmin The address of the new emission admin\\n   */\\n  event EmissionAdminUpdated(\\n    address indexed reward,\\n    address indexed oldAdmin,\\n    address indexed newAdmin\\n  );\\n\\n  /**\\n   * @dev Configure assets to incentivize with an emission of rewards per second until the end of distribution.\\n   * @dev Only callable by the emission admin of the given rewards\\n   * @param config The assets configuration input, the list of structs contains the following fields:\\n   *   uint104 emissionPerSecond: The emission per second following rewards unit decimals.\\n   *   uint256 totalSupply: The total supply of the asset to incentivize\\n   *   uint40 distributionEnd: The end of the distribution of the incentives for an asset\\n   *   address asset: The asset address to incentivize\\n   *   address reward: The reward token address\\n   *   ITransferStrategy transferStrategy: The TransferStrategy address with the install hook and claim logic.\\n   *   IEACAggregatorProxy rewardOracle: The Price Oracle of a reward to visualize the incentives at the UI Frontend.\\n   *                                     Must follow Chainlink Aggregator IEACAggregatorProxy interface to be compatible.\\n   */\\n  function configureAssets(RewardsDataTypes.RewardsConfigInput[] memory config) external;\\n\\n  /**\\n   * @dev Sets a TransferStrategy logic contract that determines the logic of the rewards transfer\\n   * @dev Only callable by the emission admin of the given reward\\n   * @param reward The address of the reward token\\n   * @param transferStrategy The address of the TransferStrategy logic contract\\n   */\\n  function setTransferStrategy(address reward, ITransferStrategyBase transferStrategy) external;\\n\\n  /**\\n   * @dev Sets an Aave Oracle contract to enforce rewards with a source of value.\\n   * @dev Only callable by the emission admin of the given reward\\n   * @notice At the moment of reward configuration, the Incentives Controller performs\\n   * a check to see if the reward asset oracle is compatible with IEACAggregator proxy.\\n   * This check is enforced for integrators to be able to show incentives at\\n   * the current Aave UI without the need to setup an external price registry\\n   * @param reward The address of the reward to set the price aggregator\\n   * @param rewardOracle The address of price aggregator that follows IEACAggregatorProxy interface\\n   */\\n  function setRewardOracle(address reward, IEACAggregatorProxy rewardOracle) external;\\n\\n  /**\\n   * @dev Sets the end date for the distribution\\n   * @dev Only callable by the emission admin of the given reward\\n   * @param asset The asset to incentivize\\n   * @param reward The reward token that incentives the asset\\n   * @param newDistributionEnd The end date of the incentivization, in unix time format\\n   **/\\n  function setDistributionEnd(\\n    address asset,\\n    address reward,\\n    uint32 newDistributionEnd\\n  ) external;\\n\\n  /**\\n   * @dev Sets the emission per second of a set of reward distributions\\n   * @param asset The asset is being incentivized\\n   * @param rewards List of reward addresses are being distributed\\n   * @param newEmissionsPerSecond List of new reward emissions per second\\n   */\\n  function setEmissionPerSecond(\\n    address asset,\\n    address[] calldata rewards,\\n    uint88[] calldata newEmissionsPerSecond\\n  ) external;\\n\\n  /**\\n   * @dev Whitelists an address to claim the rewards on behalf of another address\\n   * @dev Only callable by the owner of the EmissionManager\\n   * @param user The address of the user\\n   * @param claimer The address of the claimer\\n   */\\n  function setClaimer(address user, address claimer) external;\\n\\n  /**\\n   * @dev Updates the admin of the reward emission\\n   * @dev Only callable by the owner of the EmissionManager\\n   * @param reward The address of the reward token\\n   * @param admin The address of the new admin of the emission\\n   */\\n  function setEmissionAdmin(address reward, address admin) external;\\n\\n  /**\\n   * @dev Updates the address of the rewards controller\\n   * @dev Only callable by the owner of the EmissionManager\\n   * @param controller the address of the RewardsController contract\\n   */\\n  function setRewardsController(address controller) external;\\n\\n  /**\\n   * @dev Returns the rewards controller address\\n   * @return The address of the RewardsController contract\\n   */\\n  function getRewardsController() external view returns (IRewardsController);\\n\\n  /**\\n   * @dev Returns the admin of the given reward emission\\n   * @param reward The address of the reward token\\n   * @return The address of the emission admin\\n   */\\n  function getEmissionAdmin(address reward) external view returns (address);\\n}\\n\",\"keccak256\":\"0x02d618991d5ee0f04bf663a13e269954fc1d90275ff3d8db581b37b14f681ee5\",\"license\":\"AGPL-3.0\"},\"@aave/periphery-v3/contracts/rewards/interfaces/IRewardsController.sol\":{\"content\":\"// SPDX-License-Identifier: AGPL-3.0\\npragma solidity ^0.8.10;\\n\\nimport {IRewardsDistributor} from './IRewardsDistributor.sol';\\nimport {ITransferStrategyBase} from './ITransferStrategyBase.sol';\\nimport {IEACAggregatorProxy} from '../../misc/interfaces/IEACAggregatorProxy.sol';\\nimport {RewardsDataTypes} from '../libraries/RewardsDataTypes.sol';\\n\\n/**\\n * @title IRewardsController\\n * @author Aave\\n * @notice Defines the basic interface for a Rewards Controller.\\n */\\ninterface IRewardsController is IRewardsDistributor {\\n  /**\\n   * @dev Emitted when a new address is whitelisted as claimer of rewards on behalf of a user\\n   * @param user The address of the user\\n   * @param claimer The address of the claimer\\n   */\\n  event ClaimerSet(address indexed user, address indexed claimer);\\n\\n  /**\\n   * @dev Emitted when rewards are claimed\\n   * @param user The address of the user rewards has been claimed on behalf of\\n   * @param reward The address of the token reward is claimed\\n   * @param to The address of the receiver of the rewards\\n   * @param claimer The address of the claimer\\n   * @param amount The amount of rewards claimed\\n   */\\n  event RewardsClaimed(\\n    address indexed user,\\n    address indexed reward,\\n    address indexed to,\\n    address claimer,\\n    uint256 amount\\n  );\\n\\n  /**\\n   * @dev Emitted when a transfer strategy is installed for the reward distribution\\n   * @param reward The address of the token reward\\n   * @param transferStrategy The address of TransferStrategy contract\\n   */\\n  event TransferStrategyInstalled(address indexed reward, address indexed transferStrategy);\\n\\n  /**\\n   * @dev Emitted when the reward oracle is updated\\n   * @param reward The address of the token reward\\n   * @param rewardOracle The address of oracle\\n   */\\n  event RewardOracleUpdated(address indexed reward, address indexed rewardOracle);\\n\\n  /**\\n   * @dev Whitelists an address to claim the rewards on behalf of another address\\n   * @param user The address of the user\\n   * @param claimer The address of the claimer\\n   */\\n  function setClaimer(address user, address claimer) external;\\n\\n  /**\\n   * @dev Sets a TransferStrategy logic contract that determines the logic of the rewards transfer\\n   * @param reward The address of the reward token\\n   * @param transferStrategy The address of the TransferStrategy logic contract\\n   */\\n  function setTransferStrategy(address reward, ITransferStrategyBase transferStrategy) external;\\n\\n  /**\\n   * @dev Sets an Aave Oracle contract to enforce rewards with a source of value.\\n   * @notice At the moment of reward configuration, the Incentives Controller performs\\n   * a check to see if the reward asset oracle is compatible with IEACAggregator proxy.\\n   * This check is enforced for integrators to be able to show incentives at\\n   * the current Aave UI without the need to setup an external price registry\\n   * @param reward The address of the reward to set the price aggregator\\n   * @param rewardOracle The address of price aggregator that follows IEACAggregatorProxy interface\\n   */\\n  function setRewardOracle(address reward, IEACAggregatorProxy rewardOracle) external;\\n\\n  /**\\n   * @dev Get the price aggregator oracle address\\n   * @param reward The address of the reward\\n   * @return The price oracle of the reward\\n   */\\n  function getRewardOracle(address reward) external view returns (address);\\n\\n  /**\\n   * @dev Returns the whitelisted claimer for a certain address (0x0 if not set)\\n   * @param user The address of the user\\n   * @return The claimer address\\n   */\\n  function getClaimer(address user) external view returns (address);\\n\\n  /**\\n   * @dev Returns the Transfer Strategy implementation contract address being used for a reward address\\n   * @param reward The address of the reward\\n   * @return The address of the TransferStrategy contract\\n   */\\n  function getTransferStrategy(address reward) external view returns (address);\\n\\n  /**\\n   * @dev Configure assets to incentivize with an emission of rewards per second until the end of distribution.\\n   * @param config The assets configuration input, the list of structs contains the following fields:\\n   *   uint104 emissionPerSecond: The emission per second following rewards unit decimals.\\n   *   uint256 totalSupply: The total supply of the asset to incentivize\\n   *   uint40 distributionEnd: The end of the distribution of the incentives for an asset\\n   *   address asset: The asset address to incentivize\\n   *   address reward: The reward token address\\n   *   ITransferStrategy transferStrategy: The TransferStrategy address with the install hook and claim logic.\\n   *   IEACAggregatorProxy rewardOracle: The Price Oracle of a reward to visualize the incentives at the UI Frontend.\\n   *                                     Must follow Chainlink Aggregator IEACAggregatorProxy interface to be compatible.\\n   */\\n  function configureAssets(RewardsDataTypes.RewardsConfigInput[] memory config) external;\\n\\n  /**\\n   * @dev Called by the corresponding asset on transfer hook in order to update the rewards distribution.\\n   * @dev The units of `totalSupply` and `userBalance` should be the same.\\n   * @param user The address of the user whose asset balance has changed\\n   * @param totalSupply The total supply of the asset prior to user balance change\\n   * @param userBalance The previous user balance prior to balance change\\n   **/\\n  function handleAction(\\n    address user,\\n    uint256 totalSupply,\\n    uint256 userBalance\\n  ) external;\\n\\n  /**\\n   * @dev Claims reward for a user to the desired address, on all the assets of the pool, accumulating the pending rewards\\n   * @param assets List of assets to check eligible distributions before claiming rewards\\n   * @param amount The amount of rewards to claim\\n   * @param to The address that will be receiving the rewards\\n   * @param reward The address of the reward token\\n   * @return The amount of rewards claimed\\n   **/\\n  function claimRewards(\\n    address[] calldata assets,\\n    uint256 amount,\\n    address to,\\n    address reward\\n  ) external returns (uint256);\\n\\n  /**\\n   * @dev Claims reward for a user on behalf, on all the assets of the pool, accumulating the pending rewards. The\\n   * caller must be whitelisted via \\\"allowClaimOnBehalf\\\" function by the RewardsAdmin role manager\\n   * @param assets The list of assets to check eligible distributions before claiming rewards\\n   * @param amount The amount of rewards to claim\\n   * @param user The address to check and claim rewards\\n   * @param to The address that will be receiving the rewards\\n   * @param reward The address of the reward token\\n   * @return The amount of rewards claimed\\n   **/\\n  function claimRewardsOnBehalf(\\n    address[] calldata assets,\\n    uint256 amount,\\n    address user,\\n    address to,\\n    address reward\\n  ) external returns (uint256);\\n\\n  /**\\n   * @dev Claims reward for msg.sender, on all the assets of the pool, accumulating the pending rewards\\n   * @param assets The list of assets to check eligible distributions before claiming rewards\\n   * @param amount The amount of rewards to claim\\n   * @param reward The address of the reward token\\n   * @return The amount of rewards claimed\\n   **/\\n  function claimRewardsToSelf(\\n    address[] calldata assets,\\n    uint256 amount,\\n    address reward\\n  ) external returns (uint256);\\n\\n  /**\\n   * @dev Claims all rewards for a user to the desired address, on all the assets of the pool, accumulating the pending rewards\\n   * @param assets The list of assets to check eligible distributions before claiming rewards\\n   * @param to The address that will be receiving the rewards\\n   * @return rewardsList List of addresses of the reward tokens\\n   * @return claimedAmounts List that contains the claimed amount per reward, following same order as \\\"rewardList\\\"\\n   **/\\n  function claimAllRewards(address[] calldata assets, address to)\\n    external\\n    returns (address[] memory rewardsList, uint256[] memory claimedAmounts);\\n\\n  /**\\n   * @dev Claims all rewards for a user on behalf, on all the assets of the pool, accumulating the pending rewards. The caller must\\n   * be whitelisted via \\\"allowClaimOnBehalf\\\" function by the RewardsAdmin role manager\\n   * @param assets The list of assets to check eligible distributions before claiming rewards\\n   * @param user The address to check and claim rewards\\n   * @param to The address that will be receiving the rewards\\n   * @return rewardsList List of addresses of the reward tokens\\n   * @return claimedAmounts List that contains the claimed amount per reward, following same order as \\\"rewardsList\\\"\\n   **/\\n  function claimAllRewardsOnBehalf(\\n    address[] calldata assets,\\n    address user,\\n    address to\\n  ) external returns (address[] memory rewardsList, uint256[] memory claimedAmounts);\\n\\n  /**\\n   * @dev Claims all reward for msg.sender, on all the assets of the pool, accumulating the pending rewards\\n   * @param assets The list of assets to check eligible distributions before claiming rewards\\n   * @return rewardsList List of addresses of the reward tokens\\n   * @return claimedAmounts List that contains the claimed amount per reward, following same order as \\\"rewardsList\\\"\\n   **/\\n  function claimAllRewardsToSelf(address[] calldata assets)\\n    external\\n    returns (address[] memory rewardsList, uint256[] memory claimedAmounts);\\n}\\n\",\"keccak256\":\"0xde33da85f12a90ed0b15613d9f635555c0a26042b6fa41b010f73758ca9cd01b\",\"license\":\"AGPL-3.0\"},\"@aave/periphery-v3/contracts/rewards/interfaces/IRewardsDistributor.sol\":{\"content\":\"// SPDX-License-Identifier: AGPL-3.0\\npragma solidity ^0.8.10;\\n\\n/**\\n * @title IRewardsDistributor\\n * @author Aave\\n * @notice Defines the basic interface for a Rewards Distributor.\\n */\\ninterface IRewardsDistributor {\\n  /**\\n   * @dev Emitted when the configuration of the rewards of an asset is updated.\\n   * @param asset The address of the incentivized asset\\n   * @param reward The address of the reward token\\n   * @param oldEmission The old emissions per second value of the reward distribution\\n   * @param newEmission The new emissions per second value of the reward distribution\\n   * @param oldDistributionEnd The old end timestamp of the reward distribution\\n   * @param newDistributionEnd The new end timestamp of the reward distribution\\n   * @param assetIndex The index of the asset distribution\\n   */\\n  event AssetConfigUpdated(\\n    address indexed asset,\\n    address indexed reward,\\n    uint256 oldEmission,\\n    uint256 newEmission,\\n    uint256 oldDistributionEnd,\\n    uint256 newDistributionEnd,\\n    uint256 assetIndex\\n  );\\n\\n  /**\\n   * @dev Emitted when rewards of an asset are accrued on behalf of a user.\\n   * @param asset The address of the incentivized asset\\n   * @param reward The address of the reward token\\n   * @param user The address of the user that rewards are accrued on behalf of\\n   * @param assetIndex The index of the asset distribution\\n   * @param userIndex The index of the asset distribution on behalf of the user\\n   * @param rewardsAccrued The amount of rewards accrued\\n   */\\n  event Accrued(\\n    address indexed asset,\\n    address indexed reward,\\n    address indexed user,\\n    uint256 assetIndex,\\n    uint256 userIndex,\\n    uint256 rewardsAccrued\\n  );\\n\\n  /**\\n   * @dev Sets the end date for the distribution\\n   * @param asset The asset to incentivize\\n   * @param reward The reward token that incentives the asset\\n   * @param newDistributionEnd The end date of the incentivization, in unix time format\\n   **/\\n  function setDistributionEnd(\\n    address asset,\\n    address reward,\\n    uint32 newDistributionEnd\\n  ) external;\\n\\n  /**\\n   * @dev Sets the emission per second of a set of reward distributions\\n   * @param asset The asset is being incentivized\\n   * @param rewards List of reward addresses are being distributed\\n   * @param newEmissionsPerSecond List of new reward emissions per second\\n   */\\n  function setEmissionPerSecond(\\n    address asset,\\n    address[] calldata rewards,\\n    uint88[] calldata newEmissionsPerSecond\\n  ) external;\\n\\n  /**\\n   * @dev Gets the end date for the distribution\\n   * @param asset The incentivized asset\\n   * @param reward The reward token of the incentivized asset\\n   * @return The timestamp with the end of the distribution, in unix time format\\n   **/\\n  function getDistributionEnd(address asset, address reward) external view returns (uint256);\\n\\n  /**\\n   * @dev Returns the index of a user on a reward distribution\\n   * @param user Address of the user\\n   * @param asset The incentivized asset\\n   * @param reward The reward token of the incentivized asset\\n   * @return The current user asset index, not including new distributions\\n   **/\\n  function getUserAssetIndex(\\n    address user,\\n    address asset,\\n    address reward\\n  ) external view returns (uint256);\\n\\n  /**\\n   * @dev Returns the configuration of the distribution reward for a certain asset\\n   * @param asset The incentivized asset\\n   * @param reward The reward token of the incentivized asset\\n   * @return The index of the asset distribution\\n   * @return The emission per second of the reward distribution\\n   * @return The timestamp of the last update of the index\\n   * @return The timestamp of the distribution end\\n   **/\\n  function getRewardsData(address asset, address reward)\\n    external\\n    view\\n    returns (\\n      uint256,\\n      uint256,\\n      uint256,\\n      uint256\\n    );\\n\\n  /**\\n   * @dev Calculates the next value of an specific distribution index, with validations.\\n   * @param asset The incentivized asset\\n   * @param reward The reward token of the incentivized asset\\n   * @return The old index of the asset distribution\\n   * @return The new index of the asset distribution\\n   **/\\n  function getAssetIndex(address asset, address reward) external view returns (uint256, uint256);\\n\\n  /**\\n   * @dev Returns the list of available reward token addresses of an incentivized asset\\n   * @param asset The incentivized asset\\n   * @return List of rewards addresses of the input asset\\n   **/\\n  function getRewardsByAsset(address asset) external view returns (address[] memory);\\n\\n  /**\\n   * @dev Returns the list of available reward addresses\\n   * @return List of rewards supported in this contract\\n   **/\\n  function getRewardsList() external view returns (address[] memory);\\n\\n  /**\\n   * @dev Returns the accrued rewards balance of a user, not including virtually accrued rewards since last distribution.\\n   * @param user The address of the user\\n   * @param reward The address of the reward token\\n   * @return Unclaimed rewards, not including new distributions\\n   **/\\n  function getUserAccruedRewards(address user, address reward) external view returns (uint256);\\n\\n  /**\\n   * @dev Returns a single rewards balance of a user, including virtually accrued and unrealized claimable rewards.\\n   * @param assets List of incentivized assets to check eligible distributions\\n   * @param user The address of the user\\n   * @param reward The address of the reward token\\n   * @return The rewards amount\\n   **/\\n  function getUserRewards(\\n    address[] calldata assets,\\n    address user,\\n    address reward\\n  ) external view returns (uint256);\\n\\n  /**\\n   * @dev Returns a list all rewards of a user, including already accrued and unrealized claimable rewards\\n   * @param assets List of incentivized assets to check eligible distributions\\n   * @param user The address of the user\\n   * @return The list of reward addresses\\n   * @return The list of unclaimed amount of rewards\\n   **/\\n  function getAllUserRewards(address[] calldata assets, address user)\\n    external\\n    view\\n    returns (address[] memory, uint256[] memory);\\n\\n  /**\\n   * @dev Returns the decimals of an asset to calculate the distribution delta\\n   * @param asset The address to retrieve decimals\\n   * @return The decimals of an underlying asset\\n   */\\n  function getAssetDecimals(address asset) external view returns (uint8);\\n\\n  /**\\n   * @dev Returns the address of the emission manager\\n   * @return The address of the EmissionManager\\n   */\\n  function EMISSION_MANAGER() external view returns (address);\\n\\n  /**\\n   * @dev Returns the address of the emission manager.\\n   * Deprecated: This getter is maintained for compatibility purposes. Use the `EMISSION_MANAGER()` function instead.\\n   * @return The address of the EmissionManager\\n   */\\n  function getEmissionManager() external view returns (address);\\n}\\n\",\"keccak256\":\"0x74425ba9583556a8b9f03afca587d4d1059a61e4bedfba031b7b372641acb2c1\",\"license\":\"AGPL-3.0\"},\"@aave/periphery-v3/contracts/rewards/interfaces/ITransferStrategyBase.sol\":{\"content\":\"// SPDX-License-Identifier: AGPL-3.0\\npragma solidity ^0.8.10;\\n\\ninterface ITransferStrategyBase {\\n  event EmergencyWithdrawal(\\n    address indexed caller,\\n    address indexed token,\\n    address indexed to,\\n    uint256 amount\\n  );\\n\\n  /**\\n   * @dev Perform custom transfer logic via delegate call from source contract to a TransferStrategy implementation\\n   * @param to Account to transfer rewards\\n   * @param reward Address of the reward token\\n   * @param amount Amount to transfer to the \\\"to\\\" address parameter\\n   * @return Returns true bool if transfer logic succeeds\\n   */\\n  function performTransfer(\\n    address to,\\n    address reward,\\n    uint256 amount\\n  ) external returns (bool);\\n\\n  /**\\n   * @return Returns the address of the Incentives Controller\\n   */\\n  function getIncentivesController() external view returns (address);\\n\\n  /**\\n   * @return Returns the address of the Rewards admin\\n   */\\n  function getRewardsAdmin() external view returns (address);\\n\\n  /**\\n   * @dev Perform an emergency token withdrawal only callable by the Rewards admin\\n   * @param token Address of the token to withdraw funds from this contract\\n   * @param to Address of the recipient of the withdrawal\\n   * @param amount Amount of the withdrawal\\n   */\\n  function emergencyWithdrawal(\\n    address token,\\n    address to,\\n    uint256 amount\\n  ) external;\\n}\\n\",\"keccak256\":\"0x9b3726be4350d926d094bdfe0510b468190383c91da4b5531059c6fe31b92221\",\"license\":\"AGPL-3.0\"},\"@aave/periphery-v3/contracts/rewards/libraries/RewardsDataTypes.sol\":{\"content\":\"// SPDX-License-Identifier: AGPL-3.0\\npragma solidity ^0.8.10;\\n\\nimport {ITransferStrategyBase} from '../interfaces/ITransferStrategyBase.sol';\\nimport {IEACAggregatorProxy} from '../../misc/interfaces/IEACAggregatorProxy.sol';\\n\\nlibrary RewardsDataTypes {\\n  struct RewardsConfigInput {\\n    uint88 emissionPerSecond;\\n    uint256 totalSupply;\\n    uint32 distributionEnd;\\n    address asset;\\n    address reward;\\n    ITransferStrategyBase transferStrategy;\\n    IEACAggregatorProxy rewardOracle;\\n  }\\n\\n  struct UserAssetBalance {\\n    address asset;\\n    uint256 userBalance;\\n    uint256 totalSupply;\\n  }\\n\\n  struct UserData {\\n    // Liquidity index of the reward distribution for the user\\n    uint104 index;\\n    // Amount of accrued rewards for the user since last user index update\\n    uint128 accrued;\\n  }\\n\\n  struct RewardData {\\n    // Liquidity index of the reward distribution\\n    uint104 index;\\n    // Amount of reward tokens distributed per second\\n    uint88 emissionPerSecond;\\n    // Timestamp of the last reward index update\\n    uint32 lastUpdateTimestamp;\\n    // The end of the distribution of rewards (in seconds)\\n    uint32 distributionEnd;\\n    // Map of user addresses and their rewards data (userAddress => userData)\\n    mapping(address => UserData) usersData;\\n  }\\n\\n  struct AssetData {\\n    // Map of reward token addresses and their data (rewardTokenAddress => rewardData)\\n    mapping(address => RewardData) rewards;\\n    // List of reward token addresses for the asset\\n    mapping(uint128 => address) availableRewards;\\n    // Count of reward tokens for the asset\\n    uint128 availableRewardsCount;\\n    // Number of decimals of the asset\\n    uint8 decimals;\\n  }\\n}\\n\",\"keccak256\":\"0xaaa314b4e9f40878f4fd20e99075fe60309c9e223a5b8c244aaaeb7229d8c318\",\"license\":\"AGPL-3.0\"}},\"version\":1}",
+  "bytecode": "0x60806040523480156200001157600080fd5b50604051620015ac380380620015ac833981016040819052620000349162000187565b600080546001600160a01b031916339081178255604051909182916000805160206200158c833981519152908290a3506200006f8162000076565b50620001b9565b6000546001600160a01b03163314620000d65760405162461bcd60e51b815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657260448201526064015b60405180910390fd5b6001600160a01b0381166200013d5760405162461bcd60e51b815260206004820152602660248201527f4f776e61626c653a206e6577206f776e657220697320746865207a65726f206160448201526564647265737360d01b6064820152608401620000cd565b600080546040516001600160a01b03808516939216916000805160206200158c83398151915291a3600080546001600160a01b0319166001600160a01b0392909216919091179055565b6000602082840312156200019a57600080fd5b81516001600160a01b0381168114620001b257600080fd5b9392505050565b6113c380620001c96000396000f3fe608060405234801561001057600080fd5b50600436106100df5760003560e01c8063bee36bb31161008c578063e15ac62311610066578063e15ac623146101eb578063f2fde38b146101fe578063f5cf673b14610211578063f996868b1461022457600080fd5b8063bee36bb3146101a7578063c5a7b538146101ba578063de262738146101cd57600080fd5b80638da5cb5b116100bd5780638da5cb5b14610163578063955c2ad714610181578063a286c6b41461019457600080fd5b8063529b1e87146100e45780635453ba1014610146578063715018a61461015b575b600080fd5b61011d6100f2366004610e27565b73ffffffffffffffffffffffffffffffffffffffff9081166000908152600160205260409020541690565b60405173ffffffffffffffffffffffffffffffffffffffff909116815260200160405180910390f35b610159610154366004610e4b565b610237565b005b610159610361565b60005473ffffffffffffffffffffffffffffffffffffffff1661011d565b61015961018f366004610f5a565b610451565b6101596101a2366004610e4b565b6105c8565b6101596101b5366004610e27565b6106d2565b6101596101c8366004611082565b61079a565b60025473ffffffffffffffffffffffffffffffffffffffff1661011d565b6101596101f9366004610e4b565b6108cb565b61015961020c366004610e27565b6109bd565b61015961021f366004610e4b565b610b6e565b610159610232366004611115565b610c80565b73ffffffffffffffffffffffffffffffffffffffff82811660009081526001602052604090205483911633146102ce576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601360248201527f4f4e4c595f454d495353494f4e5f41444d494e0000000000000000000000000060448201526064015b60405180910390fd5b6002546040517f5453ba1000000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff8581166004830152848116602483015290911690635453ba10906044015b600060405180830381600087803b15801561034457600080fd5b505af1158015610358573d6000803e3d6000fd5b50505050505050565b60005473ffffffffffffffffffffffffffffffffffffffff1633146103e2576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657260448201526064016102c5565b6000805460405173ffffffffffffffffffffffffffffffffffffffff909116907f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0908390a3600080547fffffffffffffffffffffffff0000000000000000000000000000000000000000169055565b60005b815181101561053c573373ffffffffffffffffffffffffffffffffffffffff166001600084848151811061048a5761048a611198565b6020908102919091018101516080015173ffffffffffffffffffffffffffffffffffffffff90811683529082019290925260400160002054161461052a576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601360248201527f4f4e4c595f454d495353494f4e5f41444d494e0000000000000000000000000060448201526064016102c5565b80610534816111c7565b915050610454565b506002546040517f955c2ad700000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff9091169063955c2ad790610593908490600401611227565b600060405180830381600087803b1580156105ad57600080fd5b505af11580156105c1573d6000803e3d6000fd5b5050505050565b60005473ffffffffffffffffffffffffffffffffffffffff163314610649576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657260448201526064016102c5565b73ffffffffffffffffffffffffffffffffffffffff80831660008181526001602052604080822080548686167fffffffffffffffffffffffff0000000000000000000000000000000000000000821681179092559151919094169392849290917fda40ea421dd7e42cf8be71255facac4fdc12a3f70f4d5fd373cb16cec4cb53849190a4505050565b60005473ffffffffffffffffffffffffffffffffffffffff163314610753576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657260448201526064016102c5565b600280547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff92909216919091179055565b73ffffffffffffffffffffffffffffffffffffffff828116600090815260016020526040902054839116331461082c576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601360248201527f4f4e4c595f454d495353494f4e5f41444d494e0000000000000000000000000060448201526064016102c5565b6002546040517fc5a7b53800000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff8681166004830152858116602483015263ffffffff851660448301529091169063c5a7b53890606401600060405180830381600087803b1580156108ad57600080fd5b505af11580156108c1573d6000803e3d6000fd5b5050505050505050565b73ffffffffffffffffffffffffffffffffffffffff828116600090815260016020526040902054839116331461095d576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601360248201527f4f4e4c595f454d495353494f4e5f41444d494e0000000000000000000000000060448201526064016102c5565b6002546040517fe15ac62300000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff858116600483015284811660248301529091169063e15ac6239060440161032a565b60005473ffffffffffffffffffffffffffffffffffffffff163314610a3e576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657260448201526064016102c5565b73ffffffffffffffffffffffffffffffffffffffff8116610ae1576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152602660248201527f4f776e61626c653a206e6577206f776e657220697320746865207a65726f206160448201527f646472657373000000000000000000000000000000000000000000000000000060648201526084016102c5565b6000805460405173ffffffffffffffffffffffffffffffffffffffff808516939216917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e091a3600080547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff92909216919091179055565b60005473ffffffffffffffffffffffffffffffffffffffff163314610bef576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657260448201526064016102c5565b6002546040517ff5cf673b00000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff848116600483015283811660248301529091169063f5cf673b90604401600060405180830381600087803b158015610c6457600080fd5b505af1158015610c78573d6000803e3d6000fd5b505050505050565b60005b83811015610d5a573360016000878785818110610ca257610ca2611198565b9050602002016020810190610cb79190610e27565b73ffffffffffffffffffffffffffffffffffffffff90811682526020820192909252604001600020541614610d48576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601360248201527f4f4e4c595f454d495353494f4e5f41444d494e0000000000000000000000000060448201526064016102c5565b80610d52816111c7565b915050610c83565b506002546040517ff996868b00000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff9091169063f996868b90610db990889088908890889088906004016112dc565b600060405180830381600087803b158015610dd357600080fd5b505af1158015610de7573d6000803e3d6000fd5b505050505050505050565b73ffffffffffffffffffffffffffffffffffffffff81168114610e1457600080fd5b50565b8035610e2281610df2565b919050565b600060208284031215610e3957600080fd5b8135610e4481610df2565b9392505050565b60008060408385031215610e5e57600080fd5b8235610e6981610df2565b91506020830135610e7981610df2565b809150509250929050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b60405160e0810167ffffffffffffffff81118282101715610ed657610ed6610e84565b60405290565b604051601f82017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe016810167ffffffffffffffff81118282101715610f2357610f23610e84565b604052919050565b80356affffffffffffffffffffff81168114610e2257600080fd5b803563ffffffff81168114610e2257600080fd5b60006020808385031215610f6d57600080fd5b823567ffffffffffffffff80821115610f8557600080fd5b818501915085601f830112610f9957600080fd5b813581811115610fab57610fab610e84565b610fb9848260051b01610edc565b818152848101925060e0918202840185019188831115610fd857600080fd5b938501935b828510156110765780858a031215610ff55760008081fd5b610ffd610eb3565b61100686610f2b565b81528686013587820152604061101d818801610f46565b9082015260608681013561103081610df2565b908201526080611041878201610e17565b9082015260a0611052878201610e17565b9082015260c0611063878201610e17565b9082015284529384019392850192610fdd565b50979650505050505050565b60008060006060848603121561109757600080fd5b83356110a281610df2565b925060208401356110b281610df2565b91506110c060408501610f46565b90509250925092565b60008083601f8401126110db57600080fd5b50813567ffffffffffffffff8111156110f357600080fd5b6020830191508360208260051b850101111561110e57600080fd5b9250929050565b60008060008060006060868803121561112d57600080fd5b853561113881610df2565b9450602086013567ffffffffffffffff8082111561115557600080fd5b61116189838a016110c9565b9096509450604088013591508082111561117a57600080fd5b50611187888289016110c9565b969995985093965092949392505050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052603260045260246000fd5b60007fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff821415611220577f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b5060010190565b602080825282518282018190526000919060409081850190868401855b828110156112cf57815180516affffffffffffffffffffff16855286810151878601528581015163ffffffff168686015260608082015173ffffffffffffffffffffffffffffffffffffffff9081169187019190915260808083015182169087015260a08083015182169087015260c091820151169085015260e09093019290850190600101611244565b5091979650505050505050565b73ffffffffffffffffffffffffffffffffffffffff868116825260606020808401829052908301869052600091879160808501845b8981101561133857843561132481610df2565b841682529382019390820190600101611311565b5085810360408701528681528101925086915060005b8681101561137e576affffffffffffffffffffff61136b84610f2b565b168452928101929181019160010161134e565b5091999850505050505050505056fea2646970667358221220c8cc05892df57ab0af101064047dbaa124aeefd4ad27d3c4df90e15111cb641964736f6c634300080a00338be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100df5760003560e01c8063bee36bb31161008c578063e15ac62311610066578063e15ac623146101eb578063f2fde38b146101fe578063f5cf673b14610211578063f996868b1461022457600080fd5b8063bee36bb3146101a7578063c5a7b538146101ba578063de262738146101cd57600080fd5b80638da5cb5b116100bd5780638da5cb5b14610163578063955c2ad714610181578063a286c6b41461019457600080fd5b8063529b1e87146100e45780635453ba1014610146578063715018a61461015b575b600080fd5b61011d6100f2366004610e27565b73ffffffffffffffffffffffffffffffffffffffff9081166000908152600160205260409020541690565b60405173ffffffffffffffffffffffffffffffffffffffff909116815260200160405180910390f35b610159610154366004610e4b565b610237565b005b610159610361565b60005473ffffffffffffffffffffffffffffffffffffffff1661011d565b61015961018f366004610f5a565b610451565b6101596101a2366004610e4b565b6105c8565b6101596101b5366004610e27565b6106d2565b6101596101c8366004611082565b61079a565b60025473ffffffffffffffffffffffffffffffffffffffff1661011d565b6101596101f9366004610e4b565b6108cb565b61015961020c366004610e27565b6109bd565b61015961021f366004610e4b565b610b6e565b610159610232366004611115565b610c80565b73ffffffffffffffffffffffffffffffffffffffff82811660009081526001602052604090205483911633146102ce576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601360248201527f4f4e4c595f454d495353494f4e5f41444d494e0000000000000000000000000060448201526064015b60405180910390fd5b6002546040517f5453ba1000000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff8581166004830152848116602483015290911690635453ba10906044015b600060405180830381600087803b15801561034457600080fd5b505af1158015610358573d6000803e3d6000fd5b50505050505050565b60005473ffffffffffffffffffffffffffffffffffffffff1633146103e2576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657260448201526064016102c5565b6000805460405173ffffffffffffffffffffffffffffffffffffffff909116907f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0908390a3600080547fffffffffffffffffffffffff0000000000000000000000000000000000000000169055565b60005b815181101561053c573373ffffffffffffffffffffffffffffffffffffffff166001600084848151811061048a5761048a611198565b6020908102919091018101516080015173ffffffffffffffffffffffffffffffffffffffff90811683529082019290925260400160002054161461052a576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601360248201527f4f4e4c595f454d495353494f4e5f41444d494e0000000000000000000000000060448201526064016102c5565b80610534816111c7565b915050610454565b506002546040517f955c2ad700000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff9091169063955c2ad790610593908490600401611227565b600060405180830381600087803b1580156105ad57600080fd5b505af11580156105c1573d6000803e3d6000fd5b5050505050565b60005473ffffffffffffffffffffffffffffffffffffffff163314610649576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657260448201526064016102c5565b73ffffffffffffffffffffffffffffffffffffffff80831660008181526001602052604080822080548686167fffffffffffffffffffffffff0000000000000000000000000000000000000000821681179092559151919094169392849290917fda40ea421dd7e42cf8be71255facac4fdc12a3f70f4d5fd373cb16cec4cb53849190a4505050565b60005473ffffffffffffffffffffffffffffffffffffffff163314610753576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657260448201526064016102c5565b600280547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff92909216919091179055565b73ffffffffffffffffffffffffffffffffffffffff828116600090815260016020526040902054839116331461082c576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601360248201527f4f4e4c595f454d495353494f4e5f41444d494e0000000000000000000000000060448201526064016102c5565b6002546040517fc5a7b53800000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff8681166004830152858116602483015263ffffffff851660448301529091169063c5a7b53890606401600060405180830381600087803b1580156108ad57600080fd5b505af11580156108c1573d6000803e3d6000fd5b5050505050505050565b73ffffffffffffffffffffffffffffffffffffffff828116600090815260016020526040902054839116331461095d576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601360248201527f4f4e4c595f454d495353494f4e5f41444d494e0000000000000000000000000060448201526064016102c5565b6002546040517fe15ac62300000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff858116600483015284811660248301529091169063e15ac6239060440161032a565b60005473ffffffffffffffffffffffffffffffffffffffff163314610a3e576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657260448201526064016102c5565b73ffffffffffffffffffffffffffffffffffffffff8116610ae1576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152602660248201527f4f776e61626c653a206e6577206f776e657220697320746865207a65726f206160448201527f646472657373000000000000000000000000000000000000000000000000000060648201526084016102c5565b6000805460405173ffffffffffffffffffffffffffffffffffffffff808516939216917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e091a3600080547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff92909216919091179055565b60005473ffffffffffffffffffffffffffffffffffffffff163314610bef576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657260448201526064016102c5565b6002546040517ff5cf673b00000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff848116600483015283811660248301529091169063f5cf673b90604401600060405180830381600087803b158015610c6457600080fd5b505af1158015610c78573d6000803e3d6000fd5b505050505050565b60005b83811015610d5a573360016000878785818110610ca257610ca2611198565b9050602002016020810190610cb79190610e27565b73ffffffffffffffffffffffffffffffffffffffff90811682526020820192909252604001600020541614610d48576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601360248201527f4f4e4c595f454d495353494f4e5f41444d494e0000000000000000000000000060448201526064016102c5565b80610d52816111c7565b915050610c83565b506002546040517ff996868b00000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff9091169063f996868b90610db990889088908890889088906004016112dc565b600060405180830381600087803b158015610dd357600080fd5b505af1158015610de7573d6000803e3d6000fd5b505050505050505050565b73ffffffffffffffffffffffffffffffffffffffff81168114610e1457600080fd5b50565b8035610e2281610df2565b919050565b600060208284031215610e3957600080fd5b8135610e4481610df2565b9392505050565b60008060408385031215610e5e57600080fd5b8235610e6981610df2565b91506020830135610e7981610df2565b809150509250929050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b60405160e0810167ffffffffffffffff81118282101715610ed657610ed6610e84565b60405290565b604051601f82017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe016810167ffffffffffffffff81118282101715610f2357610f23610e84565b604052919050565b80356affffffffffffffffffffff81168114610e2257600080fd5b803563ffffffff81168114610e2257600080fd5b60006020808385031215610f6d57600080fd5b823567ffffffffffffffff80821115610f8557600080fd5b818501915085601f830112610f9957600080fd5b813581811115610fab57610fab610e84565b610fb9848260051b01610edc565b818152848101925060e0918202840185019188831115610fd857600080fd5b938501935b828510156110765780858a031215610ff55760008081fd5b610ffd610eb3565b61100686610f2b565b81528686013587820152604061101d818801610f46565b9082015260608681013561103081610df2565b908201526080611041878201610e17565b9082015260a0611052878201610e17565b9082015260c0611063878201610e17565b9082015284529384019392850192610fdd565b50979650505050505050565b60008060006060848603121561109757600080fd5b83356110a281610df2565b925060208401356110b281610df2565b91506110c060408501610f46565b90509250925092565b60008083601f8401126110db57600080fd5b50813567ffffffffffffffff8111156110f357600080fd5b6020830191508360208260051b850101111561110e57600080fd5b9250929050565b60008060008060006060868803121561112d57600080fd5b853561113881610df2565b9450602086013567ffffffffffffffff8082111561115557600080fd5b61116189838a016110c9565b9096509450604088013591508082111561117a57600080fd5b50611187888289016110c9565b969995985093965092949392505050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052603260045260246000fd5b60007fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff821415611220577f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b5060010190565b602080825282518282018190526000919060409081850190868401855b828110156112cf57815180516affffffffffffffffffffff16855286810151878601528581015163ffffffff168686015260608082015173ffffffffffffffffffffffffffffffffffffffff9081169187019190915260808083015182169087015260a08083015182169087015260c091820151169085015260e09093019290850190600101611244565b5091979650505050505050565b73ffffffffffffffffffffffffffffffffffffffff868116825260606020808401829052908301869052600091879160808501845b8981101561133857843561132481610df2565b841682529382019390820190600101611311565b5085810360408701528681528101925086915060005b8681101561137e576affffffffffffffffffffff61136b84610f2b565b168452928101929181019160010161134e565b5091999850505050505050505056fea2646970667358221220c8cc05892df57ab0af101064047dbaa124aeefd4ad27d3c4df90e15111cb641964736f6c634300080a0033",
+  "devdoc": {
+    "author": "Aave",
+    "kind": "dev",
+    "methods": {
+      "configureAssets((uint88,uint256,uint32,address,address,address,address)[])": {
+        "details": "Configure assets to incentivize with an emission of rewards per second until the end of distribution.Only callable by the emission admin of the given rewards",
+        "params": {
+          "config": "The assets configuration input, the list of structs contains the following fields:   uint104 emissionPerSecond: The emission per second following rewards unit decimals.   uint256 totalSupply: The total supply of the asset to incentivize   uint40 distributionEnd: The end of the distribution of the incentives for an asset   address asset: The asset address to incentivize   address reward: The reward token address   ITransferStrategy transferStrategy: The TransferStrategy address with the install hook and claim logic.   IEACAggregatorProxy rewardOracle: The Price Oracle of a reward to visualize the incentives at the UI Frontend.                                     Must follow Chainlink Aggregator IEACAggregatorProxy interface to be compatible."
+        }
+      },
+      "constructor": {
+        "params": {
+          "owner": "The address of the owner"
+        }
+      },
+      "getEmissionAdmin(address)": {
+        "details": "Returns the admin of the given reward emission",
+        "params": {
+          "reward": "The address of the reward token"
+        },
+        "returns": {
+          "_0": "The address of the emission admin"
+        }
+      },
+      "getRewardsController()": {
+        "details": "Returns the rewards controller address",
+        "returns": {
+          "_0": "The address of the RewardsController contract"
+        }
+      },
+      "owner()": {
+        "details": "Returns the address of the current owner."
+      },
+      "renounceOwnership()": {
+        "details": "Leaves the contract without owner. It will not be possible to call `onlyOwner` functions anymore. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby removing any functionality that is only available to the owner."
+      },
+      "setClaimer(address,address)": {
+        "details": "Whitelists an address to claim the rewards on behalf of another addressOnly callable by the owner of the EmissionManager",
+        "params": {
+          "claimer": "The address of the claimer",
+          "user": "The address of the user"
+        }
+      },
+      "setDistributionEnd(address,address,uint32)": {
+        "details": "Sets the end date for the distributionOnly callable by the emission admin of the given reward",
+        "params": {
+          "asset": "The asset to incentivize",
+          "newDistributionEnd": "The end date of the incentivization, in unix time format*",
+          "reward": "The reward token that incentives the asset"
+        }
+      },
+      "setEmissionAdmin(address,address)": {
+        "details": "Updates the admin of the reward emissionOnly callable by the owner of the EmissionManager",
+        "params": {
+          "admin": "The address of the new admin of the emission",
+          "reward": "The address of the reward token"
+        }
+      },
+      "setEmissionPerSecond(address,address[],uint88[])": {
+        "details": "Sets the emission per second of a set of reward distributions",
+        "params": {
+          "asset": "The asset is being incentivized",
+          "newEmissionsPerSecond": "List of new reward emissions per second",
+          "rewards": "List of reward addresses are being distributed"
+        }
+      },
+      "setRewardOracle(address,address)": {
+        "details": "Sets an Aave Oracle contract to enforce rewards with a source of value.Only callable by the emission admin of the given reward",
+        "params": {
+          "reward": "The address of the reward to set the price aggregator",
+          "rewardOracle": "The address of price aggregator that follows IEACAggregatorProxy interface"
+        }
+      },
+      "setRewardsController(address)": {
+        "details": "Updates the address of the rewards controllerOnly callable by the owner of the EmissionManager",
+        "params": {
+          "controller": "the address of the RewardsController contract"
+        }
+      },
+      "setTransferStrategy(address,address)": {
+        "details": "Sets a TransferStrategy logic contract that determines the logic of the rewards transferOnly callable by the emission admin of the given reward",
+        "params": {
+          "reward": "The address of the reward token",
+          "transferStrategy": "The address of the TransferStrategy logic contract"
+        }
+      },
+      "transferOwnership(address)": {
+        "details": "Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner."
+      }
+    },
+    "title": "EmissionManager",
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "constructor": {
+        "notice": "Constructor."
+      },
+      "setRewardOracle(address,address)": {
+        "notice": "At the moment of reward configuration, the Incentives Controller performs a check to see if the reward asset oracle is compatible with IEACAggregator proxy. This check is enforced for integrators to be able to show incentives at the current Aave UI without the need to setup an external price registry"
+      }
+    },
+    "notice": "It manages the list of admins of reward emissions and provides functions to control reward emissions.",
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 1239,
+        "contract": "@aave/periphery-v3/contracts/rewards/EmissionManager.sol:EmissionManager",
+        "label": "_owner",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_address"
+      },
+      {
+        "astId": 35962,
+        "contract": "@aave/periphery-v3/contracts/rewards/EmissionManager.sol:EmissionManager",
+        "label": "_emissionAdmins",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_mapping(t_address,t_address)"
+      },
+      {
+        "astId": 35965,
+        "contract": "@aave/periphery-v3/contracts/rewards/EmissionManager.sol:EmissionManager",
+        "label": "_rewardsController",
+        "offset": 0,
+        "slot": "2",
+        "type": "t_contract(IRewardsController)39041"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_contract(IRewardsController)39041": {
+        "encoding": "inplace",
+        "label": "contract IRewardsController",
+        "numberOfBytes": "20"
+      },
+      "t_mapping(t_address,t_address)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => address)",
+        "numberOfBytes": "32",
+        "value": "t_address"
+      }
+    }
+  }
+}

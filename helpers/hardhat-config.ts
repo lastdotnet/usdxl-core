@@ -72,7 +72,10 @@ export const getCommonNetworkConfig = (networkName: string, chainId?: number) =>
   chainId,
   gasPrice: GAS_PRICE_PER_NET[networkName] || undefined,
   ...(!!PRIVATE_KEY && {
-    accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    accounts:
+      process.env.PRIVATE_KEY !== undefined && process.env.PRIVATE_KEY_2 !== undefined
+        ? [process.env.PRIVATE_KEY, process.env.PRIVATE_KEY_2]
+        : [],
   }),
   live: !!LIVE_NETWORKS[networkName],
 });

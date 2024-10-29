@@ -1,0 +1,148 @@
+{
+  "address": "0x0C694942abAf9bE90f086c081A7fef3Cf1850446",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "DISCOUNT_RATE",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "GHO_DISCOUNTED_PER_DISCOUNT_TOKEN",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "MIN_DEBT_TOKEN_BALANCE",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "MIN_DISCOUNT_TOKEN_BALANCE",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "debtBalance",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "discountTokenBalance",
+          "type": "uint256"
+        }
+      ],
+      "name": "calculateDiscountRate",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0xffb8353796918d5bd1a372312fd539ed902128ecd2600b235977b947da950958",
+  "receipt": {
+    "to": null,
+    "from": "0xE0157B2E81506f7710e62b331eb113B232e89efA",
+    "contractAddress": "0x0C694942abAf9bE90f086c081A7fef3Cf1850446",
+    "transactionIndex": 1,
+    "gasUsed": "165985",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0x75e2471a90197e181af8f0da9f941d650734201d9c087e794b3d5d92df41ee89",
+    "transactionHash": "0xffb8353796918d5bd1a372312fd539ed902128ecd2600b235977b947da950958",
+    "logs": [],
+    "blockNumber": 281768,
+    "cumulativeGasUsed": "209851",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [],
+  "numDeployments": 1,
+  "solcInputHash": "2b6fe4af59ecc015f72062d04df7b7d6",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.10+commit.fc410830\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"name\":\"DISCOUNT_RATE\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"GHO_DISCOUNTED_PER_DISCOUNT_TOKEN\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"MIN_DEBT_TOKEN_BALANCE\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"MIN_DISCOUNT_TOKEN_BALANCE\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"debtBalance\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"discountTokenBalance\",\"type\":\"uint256\"}],\"name\":\"calculateDiscountRate\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"}],\"devdoc\":{\"author\":\"Aave\",\"kind\":\"dev\",\"methods\":{\"calculateDiscountRate(uint256,uint256)\":{\"params\":{\"debtBalance\":\"The debt balance of the user\",\"discountTokenBalance\":\"The discount token balance of the user\"},\"returns\":{\"_0\":\"The discount rate, as a percentage - the maximum can be 10000 = 100.00%\"}}},\"stateVariables\":{\"DISCOUNT_RATE\":{\"details\":\"Percentage of discount to apply to the part of the debt that is entitled to get a discount Expressed in bps, a value of 3000 results in 30.00%\"},\"GHO_DISCOUNTED_PER_DISCOUNT_TOKEN\":{\"details\":\"Amount of debt that is entitled to get a discount per unit of discount token Expressed with the number of decimals of the discounted token\"},\"MIN_DEBT_TOKEN_BALANCE\":{\"details\":\"Minimum balance amount of debt token to be entitled to a discount Expressed with the number of decimals of the debt token\"},\"MIN_DISCOUNT_TOKEN_BALANCE\":{\"details\":\"Minimum balance amount of discount token to be entitled to a discount Expressed with the number of decimals of the discount token\"}},\"title\":\"GhoDiscountRateStrategy contract\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"calculateDiscountRate(uint256,uint256)\":{\"notice\":\"Calculates the discount rate depending on the debt and discount token balances\"}},\"notice\":\"Implements the calculation of the discount rate depending on the current strategy\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"src/contracts/facilitators/aave/interestStrategy/GhoDiscountRateStrategy.sol\":\"GhoDiscountRateStrategy\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"@aave/core-v3/contracts/protocol/libraries/math/WadRayMath.sol\":{\"content\":\"// SPDX-License-Identifier: BUSL-1.1\\npragma solidity ^0.8.0;\\n\\n/**\\n * @title WadRayMath library\\n * @author Aave\\n * @notice Provides functions to perform calculations with Wad and Ray units\\n * @dev Provides mul and div function for wads (decimal numbers with 18 digits of precision) and rays (decimal numbers\\n * with 27 digits of precision)\\n * @dev Operations are rounded. If a value is >=.5, will be rounded up, otherwise rounded down.\\n */\\nlibrary WadRayMath {\\n  // HALF_WAD and HALF_RAY expressed with extended notation as constant with operations are not supported in Yul assembly\\n  uint256 internal constant WAD = 1e18;\\n  uint256 internal constant HALF_WAD = 0.5e18;\\n\\n  uint256 internal constant RAY = 1e27;\\n  uint256 internal constant HALF_RAY = 0.5e27;\\n\\n  uint256 internal constant WAD_RAY_RATIO = 1e9;\\n\\n  /**\\n   * @dev Multiplies two wad, rounding half up to the nearest wad\\n   * @dev assembly optimized for improved gas savings, see https://twitter.com/transmissions11/status/1451131036377571328\\n   * @param a Wad\\n   * @param b Wad\\n   * @return c = a*b, in wad\\n   */\\n  function wadMul(uint256 a, uint256 b) internal pure returns (uint256 c) {\\n    // to avoid overflow, a <= (type(uint256).max - HALF_WAD) / b\\n    assembly {\\n      if iszero(or(iszero(b), iszero(gt(a, div(sub(not(0), HALF_WAD), b))))) {\\n        revert(0, 0)\\n      }\\n\\n      c := div(add(mul(a, b), HALF_WAD), WAD)\\n    }\\n  }\\n\\n  /**\\n   * @dev Divides two wad, rounding half up to the nearest wad\\n   * @dev assembly optimized for improved gas savings, see https://twitter.com/transmissions11/status/1451131036377571328\\n   * @param a Wad\\n   * @param b Wad\\n   * @return c = a/b, in wad\\n   */\\n  function wadDiv(uint256 a, uint256 b) internal pure returns (uint256 c) {\\n    // to avoid overflow, a <= (type(uint256).max - halfB) / WAD\\n    assembly {\\n      if or(iszero(b), iszero(iszero(gt(a, div(sub(not(0), div(b, 2)), WAD))))) {\\n        revert(0, 0)\\n      }\\n\\n      c := div(add(mul(a, WAD), div(b, 2)), b)\\n    }\\n  }\\n\\n  /**\\n   * @notice Multiplies two ray, rounding half up to the nearest ray\\n   * @dev assembly optimized for improved gas savings, see https://twitter.com/transmissions11/status/1451131036377571328\\n   * @param a Ray\\n   * @param b Ray\\n   * @return c = a raymul b\\n   */\\n  function rayMul(uint256 a, uint256 b) internal pure returns (uint256 c) {\\n    // to avoid overflow, a <= (type(uint256).max - HALF_RAY) / b\\n    assembly {\\n      if iszero(or(iszero(b), iszero(gt(a, div(sub(not(0), HALF_RAY), b))))) {\\n        revert(0, 0)\\n      }\\n\\n      c := div(add(mul(a, b), HALF_RAY), RAY)\\n    }\\n  }\\n\\n  /**\\n   * @notice Divides two ray, rounding half up to the nearest ray\\n   * @dev assembly optimized for improved gas savings, see https://twitter.com/transmissions11/status/1451131036377571328\\n   * @param a Ray\\n   * @param b Ray\\n   * @return c = a raydiv b\\n   */\\n  function rayDiv(uint256 a, uint256 b) internal pure returns (uint256 c) {\\n    // to avoid overflow, a <= (type(uint256).max - halfB) / RAY\\n    assembly {\\n      if or(iszero(b), iszero(iszero(gt(a, div(sub(not(0), div(b, 2)), RAY))))) {\\n        revert(0, 0)\\n      }\\n\\n      c := div(add(mul(a, RAY), div(b, 2)), b)\\n    }\\n  }\\n\\n  /**\\n   * @dev Casts ray down to wad\\n   * @dev assembly optimized for improved gas savings, see https://twitter.com/transmissions11/status/1451131036377571328\\n   * @param a Ray\\n   * @return b = a converted to wad, rounded half up to the nearest wad\\n   */\\n  function rayToWad(uint256 a) internal pure returns (uint256 b) {\\n    assembly {\\n      b := div(a, WAD_RAY_RATIO)\\n      let remainder := mod(a, WAD_RAY_RATIO)\\n      if iszero(lt(remainder, div(WAD_RAY_RATIO, 2))) {\\n        b := add(b, 1)\\n      }\\n    }\\n  }\\n\\n  /**\\n   * @dev Converts wad up to ray\\n   * @dev assembly optimized for improved gas savings, see https://twitter.com/transmissions11/status/1451131036377571328\\n   * @param a Wad\\n   * @return b = a converted in ray\\n   */\\n  function wadToRay(uint256 a) internal pure returns (uint256 b) {\\n    // to avoid overflow, b/WAD_RAY_RATIO == a\\n    assembly {\\n      b := mul(a, WAD_RAY_RATIO)\\n\\n      if iszero(eq(div(b, WAD_RAY_RATIO), a)) {\\n        revert(0, 0)\\n      }\\n    }\\n  }\\n}\\n\",\"keccak256\":\"0x618fe1876e322a10269e4a96e61e516bbbec883cb79e20b508f8010027178f07\",\"license\":\"BUSL-1.1\"},\"src/contracts/facilitators/aave/interestStrategy/GhoDiscountRateStrategy.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.10;\\n\\nimport {WadRayMath} from '@aave/core-v3/contracts/protocol/libraries/math/WadRayMath.sol';\\nimport {IGhoDiscountRateStrategy} from './interfaces/IGhoDiscountRateStrategy.sol';\\n\\n/**\\n * @title GhoDiscountRateStrategy contract\\n * @author Aave\\n * @notice Implements the calculation of the discount rate depending on the current strategy\\n */\\ncontract GhoDiscountRateStrategy is IGhoDiscountRateStrategy {\\n  using WadRayMath for uint256;\\n\\n  /**\\n   * @dev Amount of debt that is entitled to get a discount per unit of discount token\\n   * Expressed with the number of decimals of the discounted token\\n   */\\n  uint256 public constant GHO_DISCOUNTED_PER_DISCOUNT_TOKEN = 100e18;\\n\\n  /**\\n   * @dev Percentage of discount to apply to the part of the debt that is entitled to get a discount\\n   * Expressed in bps, a value of 3000 results in 30.00%\\n   */\\n  uint256 public constant DISCOUNT_RATE = 0.3e4;\\n\\n  /**\\n   * @dev Minimum balance amount of discount token to be entitled to a discount\\n   * Expressed with the number of decimals of the discount token\\n   */\\n  uint256 public constant MIN_DISCOUNT_TOKEN_BALANCE = 1e15;\\n\\n  /**\\n   * @dev Minimum balance amount of debt token to be entitled to a discount\\n   * Expressed with the number of decimals of the debt token\\n   */\\n  uint256 public constant MIN_DEBT_TOKEN_BALANCE = 1e18;\\n\\n  /// @inheritdoc IGhoDiscountRateStrategy\\n  function calculateDiscountRate(\\n    uint256 debtBalance,\\n    uint256 discountTokenBalance\\n  ) external pure override returns (uint256) {\\n    if (discountTokenBalance < MIN_DISCOUNT_TOKEN_BALANCE || debtBalance < MIN_DEBT_TOKEN_BALANCE) {\\n      return 0;\\n    } else {\\n      uint256 discountedBalance = discountTokenBalance.wadMul(GHO_DISCOUNTED_PER_DISCOUNT_TOKEN);\\n      if (discountedBalance >= debtBalance) {\\n        return DISCOUNT_RATE;\\n      } else {\\n        return (discountedBalance * DISCOUNT_RATE) / debtBalance;\\n      }\\n    }\\n  }\\n}\\n\",\"keccak256\":\"0xc0b8ee36347c0c6ac640664257d8a2aaee15e07f4b863f99319292b7053ab01d\",\"license\":\"MIT\"},\"src/contracts/facilitators/aave/interestStrategy/interfaces/IGhoDiscountRateStrategy.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.0;\\n\\n/**\\n * @title IGhoDiscountRateStrategy\\n * @author Aave\\n * @notice Defines the basic interface of the GhoDiscountRateStrategy\\n */\\ninterface IGhoDiscountRateStrategy {\\n  /**\\n   * @notice Calculates the discount rate depending on the debt and discount token balances\\n   * @param debtBalance The debt balance of the user\\n   * @param discountTokenBalance The discount token balance of the user\\n   * @return The discount rate, as a percentage - the maximum can be 10000 = 100.00%\\n   */\\n  function calculateDiscountRate(\\n    uint256 debtBalance,\\n    uint256 discountTokenBalance\\n  ) external view returns (uint256);\\n}\\n\",\"keccak256\":\"0xa22740aece637afdfa9b207b3fa0211af04ad8e10e4371872160c07d0166cc6a\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b5061020b806100206000396000f3fe608060405234801561001057600080fd5b50600436106100575760003560e01c80633454274e1461005c578063771a73af1461007c57806393adbec51461008c57806398c4f4381461009f578063b510c589146100ae575b600080fd5b61006a66038d7ea4c6800081565b60405190815260200160405180910390f35b61006a68056bc75e2d6310000081565b61006a61009a366004610164565b6100b7565b61006a670de0b6b3a764000081565b61006a610bb881565b600066038d7ea4c680008210806100d55750670de0b6b3a764000083105b156100e257506000610126565b60006100f78368056bc75e2d6310000061012c565b905083811061010b57610bb8915050610126565b83610118610bb883610186565b61012291906101b3565b9150505b92915050565b600081156706f05b59d3b20000198390048411151761014a57600080fd5b50670de0b6b3a764000091026706f05b59d3b20000010490565b6000806040838503121561017757600080fd5b50508035926020909101359150565b60008160001904831182151516156101ae57634e487b7160e01b600052601160045260246000fd5b500290565b6000826101d057634e487b7160e01b600052601260045260246000fd5b50049056fea2646970667358221220f72aed4316264d065e88727ee3af86032825db5b8552739b5ad4ec51a14f5de464736f6c634300080a0033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100575760003560e01c80633454274e1461005c578063771a73af1461007c57806393adbec51461008c57806398c4f4381461009f578063b510c589146100ae575b600080fd5b61006a66038d7ea4c6800081565b60405190815260200160405180910390f35b61006a68056bc75e2d6310000081565b61006a61009a366004610164565b6100b7565b61006a670de0b6b3a764000081565b61006a610bb881565b600066038d7ea4c680008210806100d55750670de0b6b3a764000083105b156100e257506000610126565b60006100f78368056bc75e2d6310000061012c565b905083811061010b57610bb8915050610126565b83610118610bb883610186565b61012291906101b3565b9150505b92915050565b600081156706f05b59d3b20000198390048411151761014a57600080fd5b50670de0b6b3a764000091026706f05b59d3b20000010490565b6000806040838503121561017757600080fd5b50508035926020909101359150565b60008160001904831182151516156101ae57634e487b7160e01b600052601160045260246000fd5b500290565b6000826101d057634e487b7160e01b600052601260045260246000fd5b50049056fea2646970667358221220f72aed4316264d065e88727ee3af86032825db5b8552739b5ad4ec51a14f5de464736f6c634300080a0033",
+  "devdoc": {
+    "author": "Aave",
+    "kind": "dev",
+    "methods": {
+      "calculateDiscountRate(uint256,uint256)": {
+        "params": {
+          "debtBalance": "The debt balance of the user",
+          "discountTokenBalance": "The discount token balance of the user"
+        },
+        "returns": {
+          "_0": "The discount rate, as a percentage - the maximum can be 10000 = 100.00%"
+        }
+      }
+    },
+    "stateVariables": {
+      "DISCOUNT_RATE": {
+        "details": "Percentage of discount to apply to the part of the debt that is entitled to get a discount Expressed in bps, a value of 3000 results in 30.00%"
+      },
+      "GHO_DISCOUNTED_PER_DISCOUNT_TOKEN": {
+        "details": "Amount of debt that is entitled to get a discount per unit of discount token Expressed with the number of decimals of the discounted token"
+      },
+      "MIN_DEBT_TOKEN_BALANCE": {
+        "details": "Minimum balance amount of debt token to be entitled to a discount Expressed with the number of decimals of the debt token"
+      },
+      "MIN_DISCOUNT_TOKEN_BALANCE": {
+        "details": "Minimum balance amount of discount token to be entitled to a discount Expressed with the number of decimals of the discount token"
+      }
+    },
+    "title": "GhoDiscountRateStrategy contract",
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "calculateDiscountRate(uint256,uint256)": {
+        "notice": "Calculates the discount rate depending on the debt and discount token balances"
+      }
+    },
+    "notice": "Implements the calculation of the discount rate depending on the current strategy",
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [],
+    "types": null
+  }
+}

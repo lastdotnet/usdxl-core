@@ -8,21 +8,6 @@ const func: DeployFunction = async function ({ getNamedAccounts, deployments, ..
 
   const stkAaveProxy = await deployments.get(STAKE_AAVE_PROXY);
   const instance = StakedTokenV2Rev3__factory.connect(stkAaveProxy.address, deployerSigner);
-
-  const stakedAaveImpl = await deploy('StakedAaveV3Impl', {
-    from: deployer,
-    contract: 'StakedAaveV3',
-    args: [
-      await instance.STAKED_TOKEN(),
-      await instance.REWARD_TOKEN(),
-      await instance.UNSTAKE_WINDOW(),
-      await instance.REWARDS_VAULT(),
-      await instance.EMISSION_MANAGER(),
-      '3153600000', // 100 years from the time of deployment
-    ],
-    log: true,
-  });
-  console.log(`stakedAaveImpl Logic:         ${stakedAaveImpl.address}`);
 };
 
 func.id = 'StkAaveUpgrade';

@@ -1,0 +1,533 @@
+{
+  "address": "0xF56300492ac37E75c45673DCA23Fa4935b1ecaa5",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "ghoToken",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "ghoTreasury",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "fee",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "addressesProvider",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "oldFee",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "newFee",
+          "type": "uint256"
+        }
+      ],
+      "name": "FeeUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "ghoTreasury",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "asset",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "FeesDistributedToTreasury",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "receiver",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "initiator",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "asset",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "fee",
+          "type": "uint256"
+        }
+      ],
+      "name": "FlashMint",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "oldGhoTreasury",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newGhoTreasury",
+          "type": "address"
+        }
+      ],
+      "name": "GhoTreasuryUpdated",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "ADDRESSES_PROVIDER",
+      "outputs": [
+        {
+          "internalType": "contract IPoolAddressesProvider",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "CALLBACK_SUCCESS",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "GHO_TOKEN",
+      "outputs": [
+        {
+          "internalType": "contract IGhoToken",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "MAX_FEE",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "distributeFeesToTreasury",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "flashFee",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract IERC3156FlashBorrower",
+          "name": "receiver",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes",
+          "name": "data",
+          "type": "bytes"
+        }
+      ],
+      "name": "flashLoan",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getFee",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getGhoTreasury",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        }
+      ],
+      "name": "maxFlashLoan",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "newFee",
+          "type": "uint256"
+        }
+      ],
+      "name": "updateFee",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newGhoTreasury",
+          "type": "address"
+        }
+      ],
+      "name": "updateGhoTreasury",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x8f049b9a459bc1c6caa7c4604fa1446604c9549670b70c0fbab6d2f5a0b36fde",
+  "receipt": {
+    "to": null,
+    "from": "0xE0157B2E81506f7710e62b331eb113B232e89efA",
+    "contractAddress": "0xF56300492ac37E75c45673DCA23Fa4935b1ecaa5",
+    "transactionIndex": 1,
+    "gasUsed": "940306",
+    "logsBloom": "0x00000000000000000000000004000000000000000000000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000000000000000020040000000000000020000000000000040000800000000000000000000000400000000000000000000000000000000000000000000000000000000000800000000000000000000001000000000000000000000000000000000001000020000000000000000000000000000000000000000000000000000000000000000000000000020000000000000000400000000000000000000000000000000000000000800000000",
+    "blockHash": "0xa15ed79a66a5ee8ca0f920cce52a7f31542e05de326c12f3575e99f3c688a492",
+    "transactionHash": "0x8f049b9a459bc1c6caa7c4604fa1446604c9549670b70c0fbab6d2f5a0b36fde",
+    "logs": [
+      {
+        "transactionIndex": 1,
+        "blockNumber": 282861,
+        "transactionHash": "0x8f049b9a459bc1c6caa7c4604fa1446604c9549670b70c0fbab6d2f5a0b36fde",
+        "address": "0xF56300492ac37E75c45673DCA23Fa4935b1ecaa5",
+        "topics": [
+          "0x13f4413d8d93a259bd6c10f35095371f30ed50f81a73407e52e9f02000d5d16b",
+          "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "0x0000000000000000000000003cc29cbea8dbef7c4e3f2486493154f9251566f6"
+        ],
+        "data": "0x",
+        "logIndex": 0,
+        "blockHash": "0xa15ed79a66a5ee8ca0f920cce52a7f31542e05de326c12f3575e99f3c688a492"
+      },
+      {
+        "transactionIndex": 1,
+        "blockNumber": 282861,
+        "transactionHash": "0x8f049b9a459bc1c6caa7c4604fa1446604c9549670b70c0fbab6d2f5a0b36fde",
+        "address": "0xF56300492ac37E75c45673DCA23Fa4935b1ecaa5",
+        "topics": [
+          "0x528d9479e9f9889a87a3c30c7f7ba537e5e59c4c85a37733b16e57c62df61302"
+        ],
+        "data": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000064",
+        "logIndex": 1,
+        "blockHash": "0xa15ed79a66a5ee8ca0f920cce52a7f31542e05de326c12f3575e99f3c688a492"
+      }
+    ],
+    "blockNumber": 282861,
+    "cumulativeGasUsed": "984184",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [
+    "0xa253E6A7c15E950a02132CD1c60f0386CE821993",
+    "0x3Cc29CBeA8dBef7C4e3F2486493154F9251566F6",
+    100,
+    "0xA8bd7972D4ca4bFB543d05322232279909F5f4fe"
+  ],
+  "numDeployments": 1,
+  "solcInputHash": "2b6fe4af59ecc015f72062d04df7b7d6",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.10+commit.fc410830\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"ghoToken\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"ghoTreasury\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"addressesProvider\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"oldFee\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"newFee\",\"type\":\"uint256\"}],\"name\":\"FeeUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"ghoTreasury\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"asset\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"FeesDistributedToTreasury\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"receiver\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"initiator\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"asset\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\"}],\"name\":\"FlashMint\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"oldGhoTreasury\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newGhoTreasury\",\"type\":\"address\"}],\"name\":\"GhoTreasuryUpdated\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"ADDRESSES_PROVIDER\",\"outputs\":[{\"internalType\":\"contract IPoolAddressesProvider\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"CALLBACK_SUCCESS\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"GHO_TOKEN\",\"outputs\":[{\"internalType\":\"contract IGhoToken\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"MAX_FEE\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"distributeFeesToTreasury\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"flashFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"contract IERC3156FlashBorrower\",\"name\":\"receiver\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"flashLoan\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getGhoTreasury\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"}],\"name\":\"maxFlashLoan\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"newFee\",\"type\":\"uint256\"}],\"name\":\"updateFee\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newGhoTreasury\",\"type\":\"address\"}],\"name\":\"updateGhoTreasury\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"author\":\"Aave\",\"details\":\"Based heavily on the EIP3156 reference implementation\",\"kind\":\"dev\",\"methods\":{\"constructor\":{\"details\":\"Constructor\",\"params\":{\"addressesProvider\":\"The address of the Aave PoolAddressesProvider\",\"fee\":\"The percentage of the flash-mint amount that needs to be repaid, on top of the principal (in bps)\",\"ghoToken\":\"The address of the GHO token contract\",\"ghoTreasury\":\"The address of the GHO treasury\"}},\"flashFee(address,uint256)\":{\"details\":\"The fee to be charged for a given loan.\",\"params\":{\"amount\":\"The amount of tokens lent.\",\"token\":\"The loan currency.\"},\"returns\":{\"_0\":\"The amount of `token` to be charged for the loan, on top of the returned principal.\"}},\"flashLoan(address,address,uint256,bytes)\":{\"details\":\"Initiate a flash loan.\",\"params\":{\"amount\":\"The amount of tokens lent.\",\"data\":\"Arbitrary data structure, intended to contain user-defined parameters.\",\"receiver\":\"The receiver of the tokens in the loan, and the receiver of the callback.\",\"token\":\"The loan currency.\"}},\"getFee()\":{\"returns\":{\"_0\":\"The percentage fee of the flash-minted amount that needs to be repaid, on top of the principal (in bps).\"}},\"getGhoTreasury()\":{\"returns\":{\"_0\":\"The address of the GhoTreasury contract\"}},\"maxFlashLoan(address)\":{\"details\":\"The amount of currency available to be lended.\",\"params\":{\"token\":\"The loan currency.\"},\"returns\":{\"_0\":\"The amount of `token` that can be borrowed.\"}},\"updateFee(uint256)\":{\"details\":\"The fee is expressed in bps. A value of 100, results in 1.00%\",\"params\":{\"newFee\":\"The new percentage fee (in bps)\"}},\"updateGhoTreasury(address)\":{\"details\":\"WARNING: The GhoTreasury is where revenue fees are sent to. Update carefully\",\"params\":{\"newGhoTreasury\":\"The address of the GhoTreasury\"}}},\"stateVariables\":{\"ADDRESSES_PROVIDER\":{\"return\":\"The address of the PoolAddressesProvider\",\"returns\":{\"_0\":\"The address of the PoolAddressesProvider\"}},\"CALLBACK_SUCCESS\":{\"return\":\"The required callback, the keccak256 hash of 'ERC3156FlashBorrower.onFlashLoan'\",\"returns\":{\"_0\":\"The required callback, the keccak256 hash of 'ERC3156FlashBorrower.onFlashLoan'\"}},\"GHO_TOKEN\":{\"return\":\"The address of the GhoToken\",\"returns\":{\"_0\":\"The address of the GhoToken\"}},\"MAX_FEE\":{\"return\":\"The maximum percentage fee of the flash-minted amount that the flashFee can be set to (in bps).\",\"returns\":{\"_0\":\"The maximum percentage fee of the flash-minted amount that the flashFee can be set to (in bps).\"}}},\"title\":\"GhoFlashMinter\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"ADDRESSES_PROVIDER()\":{\"notice\":\"Returns the address of the Aave Pool Addresses Provider contract\"},\"CALLBACK_SUCCESS()\":{\"notice\":\"Returns the required return value for a successful flashmint\"},\"GHO_TOKEN()\":{\"notice\":\"Returns the address of the GHO token contract\"},\"MAX_FEE()\":{\"notice\":\"Returns the maximum value the fee can be set to\"},\"distributeFeesToTreasury()\":{\"notice\":\"Distribute fees to the GhoTreasury\"},\"getFee()\":{\"notice\":\"Returns the percentage of each flash mint taken as a fee\"},\"getGhoTreasury()\":{\"notice\":\"Returns the address of the Gho Treasury\"},\"updateFee(uint256)\":{\"notice\":\"Updates the percentage fee. It is the percentage of the flash-minted amount that needs to be repaid.\"},\"updateGhoTreasury(address)\":{\"notice\":\"Updates the address of the Gho Treasury\"}},\"notice\":\"Contract that enables FlashMinting of GHO.\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"src/contracts/facilitators/flashMinter/GhoFlashMinter.sol\":\"GhoFlashMinter\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"@aave/core-v3/contracts/interfaces/IACLManager.sol\":{\"content\":\"// SPDX-License-Identifier: AGPL-3.0\\npragma solidity ^0.8.0;\\n\\nimport {IPoolAddressesProvider} from './IPoolAddressesProvider.sol';\\n\\n/**\\n * @title IACLManager\\n * @author Aave\\n * @notice Defines the basic interface for the ACL Manager\\n */\\ninterface IACLManager {\\n  /**\\n   * @notice Returns the contract address of the PoolAddressesProvider\\n   * @return The address of the PoolAddressesProvider\\n   */\\n  function ADDRESSES_PROVIDER() external view returns (IPoolAddressesProvider);\\n\\n  /**\\n   * @notice Returns the identifier of the PoolAdmin role\\n   * @return The id of the PoolAdmin role\\n   */\\n  function POOL_ADMIN_ROLE() external view returns (bytes32);\\n\\n  /**\\n   * @notice Returns the identifier of the EmergencyAdmin role\\n   * @return The id of the EmergencyAdmin role\\n   */\\n  function EMERGENCY_ADMIN_ROLE() external view returns (bytes32);\\n\\n  /**\\n   * @notice Returns the identifier of the RiskAdmin role\\n   * @return The id of the RiskAdmin role\\n   */\\n  function RISK_ADMIN_ROLE() external view returns (bytes32);\\n\\n  /**\\n   * @notice Returns the identifier of the FlashBorrower role\\n   * @return The id of the FlashBorrower role\\n   */\\n  function FLASH_BORROWER_ROLE() external view returns (bytes32);\\n\\n  /**\\n   * @notice Returns the identifier of the Bridge role\\n   * @return The id of the Bridge role\\n   */\\n  function BRIDGE_ROLE() external view returns (bytes32);\\n\\n  /**\\n   * @notice Returns the identifier of the AssetListingAdmin role\\n   * @return The id of the AssetListingAdmin role\\n   */\\n  function ASSET_LISTING_ADMIN_ROLE() external view returns (bytes32);\\n\\n  /**\\n   * @notice Set the role as admin of a specific role.\\n   * @dev By default the admin role for all roles is `DEFAULT_ADMIN_ROLE`.\\n   * @param role The role to be managed by the admin role\\n   * @param adminRole The admin role\\n   */\\n  function setRoleAdmin(bytes32 role, bytes32 adminRole) external;\\n\\n  /**\\n   * @notice Adds a new admin as PoolAdmin\\n   * @param admin The address of the new admin\\n   */\\n  function addPoolAdmin(address admin) external;\\n\\n  /**\\n   * @notice Removes an admin as PoolAdmin\\n   * @param admin The address of the admin to remove\\n   */\\n  function removePoolAdmin(address admin) external;\\n\\n  /**\\n   * @notice Returns true if the address is PoolAdmin, false otherwise\\n   * @param admin The address to check\\n   * @return True if the given address is PoolAdmin, false otherwise\\n   */\\n  function isPoolAdmin(address admin) external view returns (bool);\\n\\n  /**\\n   * @notice Adds a new admin as EmergencyAdmin\\n   * @param admin The address of the new admin\\n   */\\n  function addEmergencyAdmin(address admin) external;\\n\\n  /**\\n   * @notice Removes an admin as EmergencyAdmin\\n   * @param admin The address of the admin to remove\\n   */\\n  function removeEmergencyAdmin(address admin) external;\\n\\n  /**\\n   * @notice Returns true if the address is EmergencyAdmin, false otherwise\\n   * @param admin The address to check\\n   * @return True if the given address is EmergencyAdmin, false otherwise\\n   */\\n  function isEmergencyAdmin(address admin) external view returns (bool);\\n\\n  /**\\n   * @notice Adds a new admin as RiskAdmin\\n   * @param admin The address of the new admin\\n   */\\n  function addRiskAdmin(address admin) external;\\n\\n  /**\\n   * @notice Removes an admin as RiskAdmin\\n   * @param admin The address of the admin to remove\\n   */\\n  function removeRiskAdmin(address admin) external;\\n\\n  /**\\n   * @notice Returns true if the address is RiskAdmin, false otherwise\\n   * @param admin The address to check\\n   * @return True if the given address is RiskAdmin, false otherwise\\n   */\\n  function isRiskAdmin(address admin) external view returns (bool);\\n\\n  /**\\n   * @notice Adds a new address as FlashBorrower\\n   * @param borrower The address of the new FlashBorrower\\n   */\\n  function addFlashBorrower(address borrower) external;\\n\\n  /**\\n   * @notice Removes an address as FlashBorrower\\n   * @param borrower The address of the FlashBorrower to remove\\n   */\\n  function removeFlashBorrower(address borrower) external;\\n\\n  /**\\n   * @notice Returns true if the address is FlashBorrower, false otherwise\\n   * @param borrower The address to check\\n   * @return True if the given address is FlashBorrower, false otherwise\\n   */\\n  function isFlashBorrower(address borrower) external view returns (bool);\\n\\n  /**\\n   * @notice Adds a new address as Bridge\\n   * @param bridge The address of the new Bridge\\n   */\\n  function addBridge(address bridge) external;\\n\\n  /**\\n   * @notice Removes an address as Bridge\\n   * @param bridge The address of the bridge to remove\\n   */\\n  function removeBridge(address bridge) external;\\n\\n  /**\\n   * @notice Returns true if the address is Bridge, false otherwise\\n   * @param bridge The address to check\\n   * @return True if the given address is Bridge, false otherwise\\n   */\\n  function isBridge(address bridge) external view returns (bool);\\n\\n  /**\\n   * @notice Adds a new admin as AssetListingAdmin\\n   * @param admin The address of the new admin\\n   */\\n  function addAssetListingAdmin(address admin) external;\\n\\n  /**\\n   * @notice Removes an admin as AssetListingAdmin\\n   * @param admin The address of the admin to remove\\n   */\\n  function removeAssetListingAdmin(address admin) external;\\n\\n  /**\\n   * @notice Returns true if the address is AssetListingAdmin, false otherwise\\n   * @param admin The address to check\\n   * @return True if the given address is AssetListingAdmin, false otherwise\\n   */\\n  function isAssetListingAdmin(address admin) external view returns (bool);\\n}\\n\",\"keccak256\":\"0xe39a407a074d8ac950deb7d1d855b39d53e35a5a441a7074c3d26cddef10406b\",\"license\":\"AGPL-3.0\"},\"@aave/core-v3/contracts/interfaces/IPoolAddressesProvider.sol\":{\"content\":\"// SPDX-License-Identifier: AGPL-3.0\\npragma solidity ^0.8.0;\\n\\n/**\\n * @title IPoolAddressesProvider\\n * @author Aave\\n * @notice Defines the basic interface for a Pool Addresses Provider.\\n */\\ninterface IPoolAddressesProvider {\\n  /**\\n   * @dev Emitted when the market identifier is updated.\\n   * @param oldMarketId The old id of the market\\n   * @param newMarketId The new id of the market\\n   */\\n  event MarketIdSet(string indexed oldMarketId, string indexed newMarketId);\\n\\n  /**\\n   * @dev Emitted when the pool is updated.\\n   * @param oldAddress The old address of the Pool\\n   * @param newAddress The new address of the Pool\\n   */\\n  event PoolUpdated(address indexed oldAddress, address indexed newAddress);\\n\\n  /**\\n   * @dev Emitted when the pool configurator is updated.\\n   * @param oldAddress The old address of the PoolConfigurator\\n   * @param newAddress The new address of the PoolConfigurator\\n   */\\n  event PoolConfiguratorUpdated(address indexed oldAddress, address indexed newAddress);\\n\\n  /**\\n   * @dev Emitted when the price oracle is updated.\\n   * @param oldAddress The old address of the PriceOracle\\n   * @param newAddress The new address of the PriceOracle\\n   */\\n  event PriceOracleUpdated(address indexed oldAddress, address indexed newAddress);\\n\\n  /**\\n   * @dev Emitted when the ACL manager is updated.\\n   * @param oldAddress The old address of the ACLManager\\n   * @param newAddress The new address of the ACLManager\\n   */\\n  event ACLManagerUpdated(address indexed oldAddress, address indexed newAddress);\\n\\n  /**\\n   * @dev Emitted when the ACL admin is updated.\\n   * @param oldAddress The old address of the ACLAdmin\\n   * @param newAddress The new address of the ACLAdmin\\n   */\\n  event ACLAdminUpdated(address indexed oldAddress, address indexed newAddress);\\n\\n  /**\\n   * @dev Emitted when the price oracle sentinel is updated.\\n   * @param oldAddress The old address of the PriceOracleSentinel\\n   * @param newAddress The new address of the PriceOracleSentinel\\n   */\\n  event PriceOracleSentinelUpdated(address indexed oldAddress, address indexed newAddress);\\n\\n  /**\\n   * @dev Emitted when the pool data provider is updated.\\n   * @param oldAddress The old address of the PoolDataProvider\\n   * @param newAddress The new address of the PoolDataProvider\\n   */\\n  event PoolDataProviderUpdated(address indexed oldAddress, address indexed newAddress);\\n\\n  /**\\n   * @dev Emitted when a new proxy is created.\\n   * @param id The identifier of the proxy\\n   * @param proxyAddress The address of the created proxy contract\\n   * @param implementationAddress The address of the implementation contract\\n   */\\n  event ProxyCreated(\\n    bytes32 indexed id,\\n    address indexed proxyAddress,\\n    address indexed implementationAddress\\n  );\\n\\n  /**\\n   * @dev Emitted when a new non-proxied contract address is registered.\\n   * @param id The identifier of the contract\\n   * @param oldAddress The address of the old contract\\n   * @param newAddress The address of the new contract\\n   */\\n  event AddressSet(bytes32 indexed id, address indexed oldAddress, address indexed newAddress);\\n\\n  /**\\n   * @dev Emitted when the implementation of the proxy registered with id is updated\\n   * @param id The identifier of the contract\\n   * @param proxyAddress The address of the proxy contract\\n   * @param oldImplementationAddress The address of the old implementation contract\\n   * @param newImplementationAddress The address of the new implementation contract\\n   */\\n  event AddressSetAsProxy(\\n    bytes32 indexed id,\\n    address indexed proxyAddress,\\n    address oldImplementationAddress,\\n    address indexed newImplementationAddress\\n  );\\n\\n  /**\\n   * @notice Returns the id of the Aave market to which this contract points to.\\n   * @return The market id\\n   */\\n  function getMarketId() external view returns (string memory);\\n\\n  /**\\n   * @notice Associates an id with a specific PoolAddressesProvider.\\n   * @dev This can be used to create an onchain registry of PoolAddressesProviders to\\n   * identify and validate multiple Aave markets.\\n   * @param newMarketId The market id\\n   */\\n  function setMarketId(string calldata newMarketId) external;\\n\\n  /**\\n   * @notice Returns an address by its identifier.\\n   * @dev The returned address might be an EOA or a contract, potentially proxied\\n   * @dev It returns ZERO if there is no registered address with the given id\\n   * @param id The id\\n   * @return The address of the registered for the specified id\\n   */\\n  function getAddress(bytes32 id) external view returns (address);\\n\\n  /**\\n   * @notice General function to update the implementation of a proxy registered with\\n   * certain `id`. If there is no proxy registered, it will instantiate one and\\n   * set as implementation the `newImplementationAddress`.\\n   * @dev IMPORTANT Use this function carefully, only for ids that don't have an explicit\\n   * setter function, in order to avoid unexpected consequences\\n   * @param id The id\\n   * @param newImplementationAddress The address of the new implementation\\n   */\\n  function setAddressAsProxy(bytes32 id, address newImplementationAddress) external;\\n\\n  /**\\n   * @notice Sets an address for an id replacing the address saved in the addresses map.\\n   * @dev IMPORTANT Use this function carefully, as it will do a hard replacement\\n   * @param id The id\\n   * @param newAddress The address to set\\n   */\\n  function setAddress(bytes32 id, address newAddress) external;\\n\\n  /**\\n   * @notice Returns the address of the Pool proxy.\\n   * @return The Pool proxy address\\n   */\\n  function getPool() external view returns (address);\\n\\n  /**\\n   * @notice Updates the implementation of the Pool, or creates a proxy\\n   * setting the new `pool` implementation when the function is called for the first time.\\n   * @param newPoolImpl The new Pool implementation\\n   */\\n  function setPoolImpl(address newPoolImpl) external;\\n\\n  /**\\n   * @notice Returns the address of the PoolConfigurator proxy.\\n   * @return The PoolConfigurator proxy address\\n   */\\n  function getPoolConfigurator() external view returns (address);\\n\\n  /**\\n   * @notice Updates the implementation of the PoolConfigurator, or creates a proxy\\n   * setting the new `PoolConfigurator` implementation when the function is called for the first time.\\n   * @param newPoolConfiguratorImpl The new PoolConfigurator implementation\\n   */\\n  function setPoolConfiguratorImpl(address newPoolConfiguratorImpl) external;\\n\\n  /**\\n   * @notice Returns the address of the price oracle.\\n   * @return The address of the PriceOracle\\n   */\\n  function getPriceOracle() external view returns (address);\\n\\n  /**\\n   * @notice Updates the address of the price oracle.\\n   * @param newPriceOracle The address of the new PriceOracle\\n   */\\n  function setPriceOracle(address newPriceOracle) external;\\n\\n  /**\\n   * @notice Returns the address of the ACL manager.\\n   * @return The address of the ACLManager\\n   */\\n  function getACLManager() external view returns (address);\\n\\n  /**\\n   * @notice Updates the address of the ACL manager.\\n   * @param newAclManager The address of the new ACLManager\\n   */\\n  function setACLManager(address newAclManager) external;\\n\\n  /**\\n   * @notice Returns the address of the ACL admin.\\n   * @return The address of the ACL admin\\n   */\\n  function getACLAdmin() external view returns (address);\\n\\n  /**\\n   * @notice Updates the address of the ACL admin.\\n   * @param newAclAdmin The address of the new ACL admin\\n   */\\n  function setACLAdmin(address newAclAdmin) external;\\n\\n  /**\\n   * @notice Returns the address of the price oracle sentinel.\\n   * @return The address of the PriceOracleSentinel\\n   */\\n  function getPriceOracleSentinel() external view returns (address);\\n\\n  /**\\n   * @notice Updates the address of the price oracle sentinel.\\n   * @param newPriceOracleSentinel The address of the new PriceOracleSentinel\\n   */\\n  function setPriceOracleSentinel(address newPriceOracleSentinel) external;\\n\\n  /**\\n   * @notice Returns the address of the data provider.\\n   * @return The address of the DataProvider\\n   */\\n  function getPoolDataProvider() external view returns (address);\\n\\n  /**\\n   * @notice Updates the address of the data provider.\\n   * @param newDataProvider The address of the new DataProvider\\n   */\\n  function setPoolDataProvider(address newDataProvider) external;\\n}\\n\",\"keccak256\":\"0x33d4308d9407b4ee2297fc4ba5acce1a96a6c658189e2778a4f6b90e032fb3b5\",\"license\":\"AGPL-3.0\"},\"@aave/core-v3/contracts/protocol/libraries/math/PercentageMath.sol\":{\"content\":\"// SPDX-License-Identifier: BUSL-1.1\\npragma solidity ^0.8.0;\\n\\n/**\\n * @title PercentageMath library\\n * @author Aave\\n * @notice Provides functions to perform percentage calculations\\n * @dev Percentages are defined by default with 2 decimals of precision (100.00). The precision is indicated by PERCENTAGE_FACTOR\\n * @dev Operations are rounded. If a value is >=.5, will be rounded up, otherwise rounded down.\\n */\\nlibrary PercentageMath {\\n  // Maximum percentage factor (100.00%)\\n  uint256 internal constant PERCENTAGE_FACTOR = 1e4;\\n\\n  // Half percentage factor (50.00%)\\n  uint256 internal constant HALF_PERCENTAGE_FACTOR = 0.5e4;\\n\\n  /**\\n   * @notice Executes a percentage multiplication\\n   * @dev assembly optimized for improved gas savings, see https://twitter.com/transmissions11/status/1451131036377571328\\n   * @param value The value of which the percentage needs to be calculated\\n   * @param percentage The percentage of the value to be calculated\\n   * @return result value percentmul percentage\\n   */\\n  function percentMul(uint256 value, uint256 percentage) internal pure returns (uint256 result) {\\n    // to avoid overflow, value <= (type(uint256).max - HALF_PERCENTAGE_FACTOR) / percentage\\n    assembly {\\n      if iszero(\\n        or(\\n          iszero(percentage),\\n          iszero(gt(value, div(sub(not(0), HALF_PERCENTAGE_FACTOR), percentage)))\\n        )\\n      ) {\\n        revert(0, 0)\\n      }\\n\\n      result := div(add(mul(value, percentage), HALF_PERCENTAGE_FACTOR), PERCENTAGE_FACTOR)\\n    }\\n  }\\n\\n  /**\\n   * @notice Executes a percentage division\\n   * @dev assembly optimized for improved gas savings, see https://twitter.com/transmissions11/status/1451131036377571328\\n   * @param value The value of which the percentage needs to be calculated\\n   * @param percentage The percentage of the value to be calculated\\n   * @return result value percentdiv percentage\\n   */\\n  function percentDiv(uint256 value, uint256 percentage) internal pure returns (uint256 result) {\\n    // to avoid overflow, value <= (type(uint256).max - halfPercentage) / PERCENTAGE_FACTOR\\n    assembly {\\n      if or(\\n        iszero(percentage),\\n        iszero(iszero(gt(value, div(sub(not(0), div(percentage, 2)), PERCENTAGE_FACTOR))))\\n      ) {\\n        revert(0, 0)\\n      }\\n\\n      result := div(add(mul(value, PERCENTAGE_FACTOR), div(percentage, 2)), percentage)\\n    }\\n  }\\n}\\n\",\"keccak256\":\"0x6a7dcf18e1af47b69c8dd58093b0134e3689bf719ba63eae485d8f9dfc10cac7\",\"license\":\"BUSL-1.1\"},\"@openzeppelin/contracts/access/IAccessControl.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts v4.4.1 (access/IAccessControl.sol)\\n\\npragma solidity ^0.8.0;\\n\\n/**\\n * @dev External interface of AccessControl declared to support ERC165 detection.\\n */\\ninterface IAccessControl {\\n    /**\\n     * @dev Emitted when `newAdminRole` is set as ``role``'s admin role, replacing `previousAdminRole`\\n     *\\n     * `DEFAULT_ADMIN_ROLE` is the starting admin for all roles, despite\\n     * {RoleAdminChanged} not being emitted signaling this.\\n     *\\n     * _Available since v3.1._\\n     */\\n    event RoleAdminChanged(bytes32 indexed role, bytes32 indexed previousAdminRole, bytes32 indexed newAdminRole);\\n\\n    /**\\n     * @dev Emitted when `account` is granted `role`.\\n     *\\n     * `sender` is the account that originated the contract call, an admin role\\n     * bearer except when using {AccessControl-_setupRole}.\\n     */\\n    event RoleGranted(bytes32 indexed role, address indexed account, address indexed sender);\\n\\n    /**\\n     * @dev Emitted when `account` is revoked `role`.\\n     *\\n     * `sender` is the account that originated the contract call:\\n     *   - if using `revokeRole`, it is the admin role bearer\\n     *   - if using `renounceRole`, it is the role bearer (i.e. `account`)\\n     */\\n    event RoleRevoked(bytes32 indexed role, address indexed account, address indexed sender);\\n\\n    /**\\n     * @dev Returns `true` if `account` has been granted `role`.\\n     */\\n    function hasRole(bytes32 role, address account) external view returns (bool);\\n\\n    /**\\n     * @dev Returns the admin role that controls `role`. See {grantRole} and\\n     * {revokeRole}.\\n     *\\n     * To change a role's admin, use {AccessControl-_setRoleAdmin}.\\n     */\\n    function getRoleAdmin(bytes32 role) external view returns (bytes32);\\n\\n    /**\\n     * @dev Grants `role` to `account`.\\n     *\\n     * If `account` had not been already granted `role`, emits a {RoleGranted}\\n     * event.\\n     *\\n     * Requirements:\\n     *\\n     * - the caller must have ``role``'s admin role.\\n     */\\n    function grantRole(bytes32 role, address account) external;\\n\\n    /**\\n     * @dev Revokes `role` from `account`.\\n     *\\n     * If `account` had been granted `role`, emits a {RoleRevoked} event.\\n     *\\n     * Requirements:\\n     *\\n     * - the caller must have ``role``'s admin role.\\n     */\\n    function revokeRole(bytes32 role, address account) external;\\n\\n    /**\\n     * @dev Revokes `role` from the calling account.\\n     *\\n     * Roles are often managed via {grantRole} and {revokeRole}: this function's\\n     * purpose is to provide a mechanism for accounts to lose their privileges\\n     * if they are compromised (such as when a trusted device is misplaced).\\n     *\\n     * If the calling account had been granted `role`, emits a {RoleRevoked}\\n     * event.\\n     *\\n     * Requirements:\\n     *\\n     * - the caller must be `account`.\\n     */\\n    function renounceRole(bytes32 role, address account) external;\\n}\\n\",\"keccak256\":\"0x59ce320a585d7e1f163cd70390a0ef2ff9cec832e2aa544293a00692465a7a57\",\"license\":\"MIT\"},\"@openzeppelin/contracts/interfaces/IERC3156FlashBorrower.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts (last updated v4.7.0) (interfaces/IERC3156FlashBorrower.sol)\\n\\npragma solidity ^0.8.0;\\n\\n/**\\n * @dev Interface of the ERC3156 FlashBorrower, as defined in\\n * https://eips.ethereum.org/EIPS/eip-3156[ERC-3156].\\n *\\n * _Available since v4.1._\\n */\\ninterface IERC3156FlashBorrower {\\n    /**\\n     * @dev Receive a flash loan.\\n     * @param initiator The initiator of the loan.\\n     * @param token The loan currency.\\n     * @param amount The amount of tokens lent.\\n     * @param fee The additional amount of tokens to repay.\\n     * @param data Arbitrary data structure, intended to contain user-defined parameters.\\n     * @return The keccak256 hash of \\\"IERC3156FlashBorrower.onFlashLoan\\\"\\n     */\\n    function onFlashLoan(\\n        address initiator,\\n        address token,\\n        uint256 amount,\\n        uint256 fee,\\n        bytes calldata data\\n    ) external returns (bytes32);\\n}\\n\",\"keccak256\":\"0x294520bb88c710bb1d3c21285f9b531acb5cb9950d77eaeef5598c7328afedb4\",\"license\":\"MIT\"},\"@openzeppelin/contracts/interfaces/IERC3156FlashLender.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts v4.4.1 (interfaces/IERC3156FlashLender.sol)\\n\\npragma solidity ^0.8.0;\\n\\nimport \\\"./IERC3156FlashBorrower.sol\\\";\\n\\n/**\\n * @dev Interface of the ERC3156 FlashLender, as defined in\\n * https://eips.ethereum.org/EIPS/eip-3156[ERC-3156].\\n *\\n * _Available since v4.1._\\n */\\ninterface IERC3156FlashLender {\\n    /**\\n     * @dev The amount of currency available to be lended.\\n     * @param token The loan currency.\\n     * @return The amount of `token` that can be borrowed.\\n     */\\n    function maxFlashLoan(address token) external view returns (uint256);\\n\\n    /**\\n     * @dev The fee to be charged for a given loan.\\n     * @param token The loan currency.\\n     * @param amount The amount of tokens lent.\\n     * @return The amount of `token` to be charged for the loan, on top of the returned principal.\\n     */\\n    function flashFee(address token, uint256 amount) external view returns (uint256);\\n\\n    /**\\n     * @dev Initiate a flash loan.\\n     * @param receiver The receiver of the tokens in the loan, and the receiver of the callback.\\n     * @param token The loan currency.\\n     * @param amount The amount of tokens lent.\\n     * @param data Arbitrary data structure, intended to contain user-defined parameters.\\n     */\\n    function flashLoan(\\n        IERC3156FlashBorrower receiver,\\n        address token,\\n        uint256 amount,\\n        bytes calldata data\\n    ) external returns (bool);\\n}\\n\",\"keccak256\":\"0x0d9159aa6c1a0d8006fb152b0aee46a0f9b8938575ede1a0d7e186b3bc79c8d7\",\"license\":\"MIT\"},\"@openzeppelin/contracts/token/ERC20/IERC20.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts (last updated v4.6.0) (token/ERC20/IERC20.sol)\\n\\npragma solidity ^0.8.0;\\n\\n/**\\n * @dev Interface of the ERC20 standard as defined in the EIP.\\n */\\ninterface IERC20 {\\n    /**\\n     * @dev Emitted when `value` tokens are moved from one account (`from`) to\\n     * another (`to`).\\n     *\\n     * Note that `value` may be zero.\\n     */\\n    event Transfer(address indexed from, address indexed to, uint256 value);\\n\\n    /**\\n     * @dev Emitted when the allowance of a `spender` for an `owner` is set by\\n     * a call to {approve}. `value` is the new allowance.\\n     */\\n    event Approval(address indexed owner, address indexed spender, uint256 value);\\n\\n    /**\\n     * @dev Returns the amount of tokens in existence.\\n     */\\n    function totalSupply() external view returns (uint256);\\n\\n    /**\\n     * @dev Returns the amount of tokens owned by `account`.\\n     */\\n    function balanceOf(address account) external view returns (uint256);\\n\\n    /**\\n     * @dev Moves `amount` tokens from the caller's account to `to`.\\n     *\\n     * Returns a boolean value indicating whether the operation succeeded.\\n     *\\n     * Emits a {Transfer} event.\\n     */\\n    function transfer(address to, uint256 amount) external returns (bool);\\n\\n    /**\\n     * @dev Returns the remaining number of tokens that `spender` will be\\n     * allowed to spend on behalf of `owner` through {transferFrom}. This is\\n     * zero by default.\\n     *\\n     * This value changes when {approve} or {transferFrom} are called.\\n     */\\n    function allowance(address owner, address spender) external view returns (uint256);\\n\\n    /**\\n     * @dev Sets `amount` as the allowance of `spender` over the caller's tokens.\\n     *\\n     * Returns a boolean value indicating whether the operation succeeded.\\n     *\\n     * IMPORTANT: Beware that changing an allowance with this method brings the risk\\n     * that someone may use both the old and the new allowance by unfortunate\\n     * transaction ordering. One possible solution to mitigate this race\\n     * condition is to first reduce the spender's allowance to 0 and set the\\n     * desired value afterwards:\\n     * https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729\\n     *\\n     * Emits an {Approval} event.\\n     */\\n    function approve(address spender, uint256 amount) external returns (bool);\\n\\n    /**\\n     * @dev Moves `amount` tokens from `from` to `to` using the\\n     * allowance mechanism. `amount` is then deducted from the caller's\\n     * allowance.\\n     *\\n     * Returns a boolean value indicating whether the operation succeeded.\\n     *\\n     * Emits a {Transfer} event.\\n     */\\n    function transferFrom(\\n        address from,\\n        address to,\\n        uint256 amount\\n    ) external returns (bool);\\n}\\n\",\"keccak256\":\"0x9750c6b834f7b43000631af5cc30001c5f547b3ceb3635488f140f60e897ea6b\",\"license\":\"MIT\"},\"src/contracts/facilitators/flashMinter/GhoFlashMinter.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.0;\\n\\nimport {IACLManager} from '@aave/core-v3/contracts/interfaces/IACLManager.sol';\\nimport {IPoolAddressesProvider} from '@aave/core-v3/contracts/interfaces/IPoolAddressesProvider.sol';\\nimport {PercentageMath} from '@aave/core-v3/contracts/protocol/libraries/math/PercentageMath.sol';\\nimport {IERC3156FlashBorrower} from '@openzeppelin/contracts/interfaces/IERC3156FlashBorrower.sol';\\nimport {IERC3156FlashLender} from '@openzeppelin/contracts/interfaces/IERC3156FlashLender.sol';\\nimport {IGhoToken} from '../../gho/interfaces/IGhoToken.sol';\\nimport {IGhoFacilitator} from '../../gho/interfaces/IGhoFacilitator.sol';\\nimport {IGhoFlashMinter} from './interfaces/IGhoFlashMinter.sol';\\n\\n/**\\n * @title GhoFlashMinter\\n * @author Aave\\n * @notice Contract that enables FlashMinting of GHO.\\n * @dev Based heavily on the EIP3156 reference implementation\\n */\\ncontract GhoFlashMinter is IGhoFlashMinter {\\n  using PercentageMath for uint256;\\n\\n  // @inheritdoc IGhoFlashMinter\\n  bytes32 public constant CALLBACK_SUCCESS = keccak256('ERC3156FlashBorrower.onFlashLoan');\\n\\n  // @inheritdoc IGhoFlashMinter\\n  uint256 public constant MAX_FEE = 1e4;\\n\\n  // @inheritdoc IGhoFlashMinter\\n  IPoolAddressesProvider public immutable override ADDRESSES_PROVIDER;\\n\\n  // @inheritdoc IGhoFlashMinter\\n  IGhoToken public immutable GHO_TOKEN;\\n\\n  // The Access Control List manager contract\\n  IACLManager private immutable ACL_MANAGER;\\n\\n  // The flashmint fee, expressed in bps (a value of 10000 results in 100.00%)\\n  uint256 private _fee;\\n\\n  // The GHO treasury, the recipient of fee distributions\\n  address private _ghoTreasury;\\n\\n  /**\\n   * @dev Only pool admin can call functions marked by this modifier.\\n   */\\n  modifier onlyPoolAdmin() {\\n    require(ACL_MANAGER.isPoolAdmin(msg.sender), 'CALLER_NOT_POOL_ADMIN');\\n    _;\\n  }\\n\\n  /**\\n   * @dev Constructor\\n   * @param ghoToken The address of the GHO token contract\\n   * @param ghoTreasury The address of the GHO treasury\\n   * @param fee The percentage of the flash-mint amount that needs to be repaid, on top of the principal (in bps)\\n   * @param addressesProvider The address of the Aave PoolAddressesProvider\\n   */\\n  constructor(address ghoToken, address ghoTreasury, uint256 fee, address addressesProvider) {\\n    require(fee <= MAX_FEE, 'FlashMinter: Fee out of range');\\n    GHO_TOKEN = IGhoToken(ghoToken);\\n    _updateGhoTreasury(ghoTreasury);\\n    _updateFee(fee);\\n    ADDRESSES_PROVIDER = IPoolAddressesProvider(addressesProvider);\\n    ACL_MANAGER = IACLManager(IPoolAddressesProvider(addressesProvider).getACLManager());\\n  }\\n\\n  /// @inheritdoc IERC3156FlashLender\\n  function flashLoan(\\n    IERC3156FlashBorrower receiver,\\n    address token,\\n    uint256 amount,\\n    bytes calldata data\\n  ) external override returns (bool) {\\n    require(token == address(GHO_TOKEN), 'FlashMinter: Unsupported currency');\\n\\n    uint256 fee = ACL_MANAGER.isFlashBorrower(msg.sender) ? 0 : _flashFee(amount);\\n    GHO_TOKEN.mint(address(receiver), amount);\\n\\n    require(\\n      receiver.onFlashLoan(msg.sender, address(GHO_TOKEN), amount, fee, data) == CALLBACK_SUCCESS,\\n      'FlashMinter: Callback failed'\\n    );\\n\\n    GHO_TOKEN.transferFrom(address(receiver), address(this), amount + fee);\\n    GHO_TOKEN.burn(amount);\\n\\n    emit FlashMint(address(receiver), msg.sender, address(GHO_TOKEN), amount, fee);\\n\\n    return true;\\n  }\\n\\n  /// @inheritdoc IGhoFacilitator\\n  function distributeFeesToTreasury() external override {\\n    uint256 balance = GHO_TOKEN.balanceOf(address(this));\\n    GHO_TOKEN.transfer(_ghoTreasury, balance);\\n    emit FeesDistributedToTreasury(_ghoTreasury, address(GHO_TOKEN), balance);\\n  }\\n\\n  // @inheritdoc IGhoFlashMinter\\n  function updateFee(uint256 newFee) external override onlyPoolAdmin {\\n    _updateFee(newFee);\\n  }\\n\\n  /// @inheritdoc IGhoFacilitator\\n  function updateGhoTreasury(address newGhoTreasury) external override onlyPoolAdmin {\\n    _updateGhoTreasury(newGhoTreasury);\\n  }\\n\\n  /// @inheritdoc IERC3156FlashLender\\n  function maxFlashLoan(address token) external view override returns (uint256) {\\n    if (token != address(GHO_TOKEN)) {\\n      return 0;\\n    } else {\\n      (uint256 capacity, uint256 level) = GHO_TOKEN.getFacilitatorBucket(address(this));\\n      return capacity > level ? capacity - level : 0;\\n    }\\n  }\\n\\n  /// @inheritdoc IERC3156FlashLender\\n  function flashFee(address token, uint256 amount) external view override returns (uint256) {\\n    require(token == address(GHO_TOKEN), 'FlashMinter: Unsupported currency');\\n    return ACL_MANAGER.isFlashBorrower(msg.sender) ? 0 : _flashFee(amount);\\n  }\\n\\n  /// @inheritdoc IGhoFlashMinter\\n  function getFee() external view override returns (uint256) {\\n    return _fee;\\n  }\\n\\n  /// @inheritdoc IGhoFacilitator\\n  function getGhoTreasury() external view override returns (address) {\\n    return _ghoTreasury;\\n  }\\n\\n  /**\\n   * @notice Returns the fee to charge for a given flashloan.\\n   * @dev Internal function with no checks.\\n   * @param amount The amount of tokens to be borrowed.\\n   * @return The amount of `token` to be charged for the flashloan, on top of the returned principal.\\n   */\\n  function _flashFee(uint256 amount) internal view returns (uint256) {\\n    return amount.percentMul(_fee);\\n  }\\n\\n  function _updateFee(uint256 newFee) internal {\\n    require(newFee <= MAX_FEE, 'FlashMinter: Fee out of range');\\n    uint256 oldFee = _fee;\\n    _fee = newFee;\\n    emit FeeUpdated(oldFee, newFee);\\n  }\\n\\n  function _updateGhoTreasury(address newGhoTreasury) internal {\\n    address oldGhoTreasury = _ghoTreasury;\\n    _ghoTreasury = newGhoTreasury;\\n    emit GhoTreasuryUpdated(oldGhoTreasury, newGhoTreasury);\\n  }\\n}\\n\",\"keccak256\":\"0x9cbd65a8229e1519ac1d57febab53195193f6b3973a3c160c0ad6f06f5bddb3c\",\"license\":\"MIT\"},\"src/contracts/facilitators/flashMinter/interfaces/IGhoFlashMinter.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.0;\\n\\nimport {IERC3156FlashLender} from '@openzeppelin/contracts/interfaces/IERC3156FlashLender.sol';\\nimport {IPoolAddressesProvider} from '@aave/core-v3/contracts/interfaces/IPoolAddressesProvider.sol';\\nimport {IGhoFacilitator} from '../../../gho/interfaces/IGhoFacilitator.sol';\\nimport {IGhoToken} from '../../../gho/interfaces/IGhoToken.sol';\\n\\n/**\\n * @title IGhoFlashMinter\\n * @author Aave\\n * @notice Defines the behavior of the GHO Flash Minter\\n */\\ninterface IGhoFlashMinter is IERC3156FlashLender, IGhoFacilitator {\\n  /**\\n   * @dev Emitted when the percentage fee is updated\\n   * @param oldFee The old fee (in bps)\\n   * @param newFee The new fee (in bps)\\n   */\\n  event FeeUpdated(uint256 oldFee, uint256 newFee);\\n\\n  /**\\n   * @dev Emitted when a FlashMint occurs\\n   * @param receiver The receiver of the FlashMinted tokens (it is also the receiver of the callback)\\n   * @param initiator The address initiating the FlashMint\\n   * @param asset The asset being FlashMinted. Always GHO.\\n   * @param amount The principal being FlashMinted\\n   * @param fee The fee returned on top of the principal\\n   */\\n  event FlashMint(\\n    address indexed receiver,\\n    address indexed initiator,\\n    address asset,\\n    uint256 indexed amount,\\n    uint256 fee\\n  );\\n\\n  /**\\n   * @notice Returns the required return value for a successful flashmint\\n   * @return The required callback, the keccak256 hash of 'ERC3156FlashBorrower.onFlashLoan'\\n   */\\n  function CALLBACK_SUCCESS() external view returns (bytes32);\\n\\n  /**\\n   * @notice Returns the maximum value the fee can be set to\\n   * @return The maximum percentage fee of the flash-minted amount that the flashFee can be set to (in bps).\\n   */\\n  function MAX_FEE() external view returns (uint256);\\n\\n  /**\\n   * @notice Returns the address of the Aave Pool Addresses Provider contract\\n   * @return The address of the PoolAddressesProvider\\n   */\\n  function ADDRESSES_PROVIDER() external view returns (IPoolAddressesProvider);\\n\\n  /**\\n   * @notice Returns the address of the GHO token contract\\n   * @return The address of the GhoToken\\n   */\\n  function GHO_TOKEN() external view returns (IGhoToken);\\n\\n  /**\\n   * @notice Updates the percentage fee. It is the percentage of the flash-minted amount that needs to be repaid.\\n   * @dev The fee is expressed in bps. A value of 100, results in 1.00%\\n   * @param newFee The new percentage fee (in bps)\\n   */\\n  function updateFee(uint256 newFee) external;\\n\\n  /**\\n   * @notice Returns the percentage of each flash mint taken as a fee\\n   * @return The percentage fee of the flash-minted amount that needs to be repaid, on top of the principal (in bps).\\n   */\\n  function getFee() external view returns (uint256);\\n}\\n\",\"keccak256\":\"0x742421d638cd040ab21c1f6432aa1f0bbefbd65a81689dddc3d8803817d0e128\",\"license\":\"MIT\"},\"src/contracts/gho/interfaces/IGhoFacilitator.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.0;\\n\\n/**\\n * @title IGhoFacilitator\\n * @author Aave\\n * @notice Defines the behavior of a Gho Facilitator\\n */\\ninterface IGhoFacilitator {\\n  /**\\n   * @dev Emitted when fees are distributed to the GhoTreasury\\n   * @param ghoTreasury The address of the ghoTreasury\\n   * @param asset The address of the asset transferred to the ghoTreasury\\n   * @param amount The amount of the asset transferred to the ghoTreasury\\n   */\\n  event FeesDistributedToTreasury(\\n    address indexed ghoTreasury,\\n    address indexed asset,\\n    uint256 amount\\n  );\\n\\n  /**\\n   * @dev Emitted when Gho Treasury address is updated\\n   * @param oldGhoTreasury The address of the old GhoTreasury contract\\n   * @param newGhoTreasury The address of the new GhoTreasury contract\\n   */\\n  event GhoTreasuryUpdated(address indexed oldGhoTreasury, address indexed newGhoTreasury);\\n\\n  /**\\n   * @notice Distribute fees to the GhoTreasury\\n   */\\n  function distributeFeesToTreasury() external;\\n\\n  /**\\n   * @notice Updates the address of the Gho Treasury\\n   * @dev WARNING: The GhoTreasury is where revenue fees are sent to. Update carefully\\n   * @param newGhoTreasury The address of the GhoTreasury\\n   */\\n  function updateGhoTreasury(address newGhoTreasury) external;\\n\\n  /**\\n   * @notice Returns the address of the Gho Treasury\\n   * @return The address of the GhoTreasury contract\\n   */\\n  function getGhoTreasury() external view returns (address);\\n}\\n\",\"keccak256\":\"0x5b6aa07d5e310d1fc4892161eb510f842b2141a0760396c374f6e8033c9a53cb\",\"license\":\"MIT\"},\"src/contracts/gho/interfaces/IGhoToken.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.0;\\n\\nimport {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';\\nimport {IAccessControl} from '@openzeppelin/contracts/access/IAccessControl.sol';\\n\\n/**\\n * @title IGhoToken\\n * @author Aave\\n */\\ninterface IGhoToken is IERC20, IAccessControl {\\n  struct Facilitator {\\n    uint128 bucketCapacity;\\n    uint128 bucketLevel;\\n    string label;\\n  }\\n\\n  /**\\n   * @dev Emitted when a new facilitator is added\\n   * @param facilitatorAddress The address of the new facilitator\\n   * @param label A hashed human readable identifier for the facilitator\\n   * @param bucketCapacity The initial capacity of the facilitator's bucket\\n   */\\n  event FacilitatorAdded(\\n    address indexed facilitatorAddress,\\n    bytes32 indexed label,\\n    uint256 bucketCapacity\\n  );\\n\\n  /**\\n   * @dev Emitted when a facilitator is removed\\n   * @param facilitatorAddress The address of the removed facilitator\\n   */\\n  event FacilitatorRemoved(address indexed facilitatorAddress);\\n\\n  /**\\n   * @dev Emitted when the bucket capacity of a facilitator is updated\\n   * @param facilitatorAddress The address of the facilitator whose bucket capacity is being changed\\n   * @param oldCapacity The old capacity of the bucket\\n   * @param newCapacity The new capacity of the bucket\\n   */\\n  event FacilitatorBucketCapacityUpdated(\\n    address indexed facilitatorAddress,\\n    uint256 oldCapacity,\\n    uint256 newCapacity\\n  );\\n\\n  /**\\n   * @dev Emitted when the bucket level changed\\n   * @param facilitatorAddress The address of the facilitator whose bucket level is being changed\\n   * @param oldLevel The old level of the bucket\\n   * @param newLevel The new level of the bucket\\n   */\\n  event FacilitatorBucketLevelUpdated(\\n    address indexed facilitatorAddress,\\n    uint256 oldLevel,\\n    uint256 newLevel\\n  );\\n\\n  /**\\n   * @notice Returns the identifier of the Facilitator Manager Role\\n   * @return The bytes32 id hash of the FacilitatorManager role\\n   */\\n  function FACILITATOR_MANAGER_ROLE() external pure returns (bytes32);\\n\\n  /**\\n   * @notice Returns the identifier of the Bucket Manager Role\\n   * @return The bytes32 id hash of the BucketManager role\\n   */\\n  function BUCKET_MANAGER_ROLE() external pure returns (bytes32);\\n\\n  /**\\n   * @notice Mints the requested amount of tokens to the account address.\\n   * @dev Only facilitators with enough bucket capacity available can mint.\\n   * @dev The bucket level is increased upon minting.\\n   * @param account The address receiving the GHO tokens\\n   * @param amount The amount to mint\\n   */\\n  function mint(address account, uint256 amount) external;\\n\\n  /**\\n   * @notice Burns the requested amount of tokens from the account address.\\n   * @dev Only active facilitators (bucket level > 0) can burn.\\n   * @dev The bucket level is decreased upon burning.\\n   * @param amount The amount to burn\\n   */\\n  function burn(uint256 amount) external;\\n\\n  /**\\n   * @notice Add the facilitator passed with the parameters to the facilitators list.\\n   * @dev Only accounts with `FACILITATOR_MANAGER_ROLE` role can call this function\\n   * @param facilitatorAddress The address of the facilitator to add\\n   * @param facilitatorLabel A human readable identifier for the facilitator\\n   * @param bucketCapacity The upward limit of GHO can be minted by the facilitator\\n   */\\n  function addFacilitator(\\n    address facilitatorAddress,\\n    string calldata facilitatorLabel,\\n    uint128 bucketCapacity\\n  ) external;\\n\\n  /**\\n   * @notice Remove the facilitator from the facilitators list.\\n   * @dev Only accounts with `FACILITATOR_MANAGER_ROLE` role can call this function\\n   * @param facilitatorAddress The address of the facilitator to remove\\n   */\\n  function removeFacilitator(address facilitatorAddress) external;\\n\\n  /**\\n   * @notice Set the bucket capacity of the facilitator.\\n   * @dev Only accounts with `BUCKET_MANAGER_ROLE` role can call this function\\n   * @param facilitator The address of the facilitator\\n   * @param newCapacity The new capacity of the bucket\\n   */\\n  function setFacilitatorBucketCapacity(address facilitator, uint128 newCapacity) external;\\n\\n  /**\\n   * @notice Returns the facilitator data\\n   * @param facilitator The address of the facilitator\\n   * @return The facilitator configuration\\n   */\\n  function getFacilitator(address facilitator) external view returns (Facilitator memory);\\n\\n  /**\\n   * @notice Returns the bucket configuration of the facilitator\\n   * @param facilitator The address of the facilitator\\n   * @return The capacity of the facilitator's bucket\\n   * @return The level of the facilitator's bucket\\n   */\\n  function getFacilitatorBucket(address facilitator) external view returns (uint256, uint256);\\n\\n  /**\\n   * @notice Returns the list of the addresses of the active facilitator\\n   * @return The list of the facilitators addresses\\n   */\\n  function getFacilitatorsList() external view returns (address[] memory);\\n}\\n\",\"keccak256\":\"0x3f80932c9a6b7a93ac8d24e697d1478f000f0e06c9b370cdcbe17e2e8ede5cad\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x60e06040523480156200001157600080fd5b50604051620012443803806200124483398101604081905262000034916200023f565b6127108211156200008c5760405162461bcd60e51b815260206004820152601d60248201527f466c6173684d696e7465723a20466565206f7574206f662072616e676500000060448201526064015b60405180910390fd5b6001600160a01b03841660a052620000a48362000137565b620000af8262000189565b6001600160a01b03811660808190526040805163383e6b8b60e11b8152905163707cd716916004808201926020929091908290030181865afa158015620000fa573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019062000120919062000293565b6001600160a01b031660c05250620002b892505050565b600180546001600160a01b038381166001600160a01b0319831681179093556040519116919082907f13f4413d8d93a259bd6c10f35095371f30ed50f81a73407e52e9f02000d5d16b90600090a35050565b612710811115620001dd5760405162461bcd60e51b815260206004820152601d60248201527f466c6173684d696e7465723a20466565206f7574206f662072616e6765000000604482015260640162000083565b600080549082905560408051828152602081018490527f528d9479e9f9889a87a3c30c7f7ba537e5e59c4c85a37733b16e57c62df61302910160405180910390a15050565b80516001600160a01b03811681146200023a57600080fd5b919050565b600080600080608085870312156200025657600080fd5b620002618562000222565b9350620002716020860162000222565b925060408501519150620002886060860162000222565b905092959194509250565b600060208284031215620002a657600080fd5b620002b18262000222565b9392505050565b60805160a05160c051610ef462000350600039600081816102090152818161033c015281816108000152610928015260008181610195015281816102d5015281816103ed015281816104930152818161055d0152818161061d0152818161068d015281816106fc0152818161075d015281816108c4015281816109cf01528181610a6e0152610aef0152600060be0152610ef46000f3fe608060405234801561001057600080fd5b50600436106100b45760003560e01c8063b1c660f711610071578063b1c660f714610190578063bc063e1a146101b7578063ced72f87146101c0578063d9d98ce4146101c8578063dc49a07b146101db578063e28178cc146101e357600080fd5b80630542975c146100b95780631fde40bb146100fd5780635cffe9de14610112578063613255ab146101355780638237e538146101565780639012c4a81461017d575b600080fd5b6100e07f000000000000000000000000000000000000000000000000000000000000000081565b6040516001600160a01b0390911681526020015b60405180910390f35b61011061010b366004610c7c565b6101f4565b005b610125610120366004610c99565b6102d1565b60405190151581526020016100f4565b610148610143366004610c7c565b6106f8565b6040519081526020016100f4565b6101487f439148f0bbc682ca079e46d6e2c2f0c1e3b820f1a291b069d8882abf8cf18dd981565b61011061018b366004610d38565b6107eb565b6100e07f000000000000000000000000000000000000000000000000000000000000000081565b61014861271081565b600054610148565b6101486101d6366004610d51565b6108c0565b6101106109b7565b6001546001600160a01b03166100e0565b604051637be53ca160e01b81523360048201527f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031690637be53ca190602401602060405180830381865afa158015610258573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061027c9190610d7d565b6102c55760405162461bcd60e51b815260206004820152601560248201527421a0a62622a92fa727aa2fa827a7a62fa0a226a4a760591b60448201526064015b60405180910390fd5b6102ce81610b43565b50565b60007f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316856001600160a01b0316146103245760405162461bcd60e51b81526004016102bc90610d9f565b60405163fa50f29760e01b81523360048201526000907f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03169063fa50f29790602401602060405180830381865afa15801561038b573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906103af9190610d7d565b6103c1576103bc85610b95565b6103c4565b60005b6040516340c10f1960e01b81526001600160a01b038981166004830152602482018890529192507f0000000000000000000000000000000000000000000000000000000000000000909116906340c10f1990604401600060405180830381600087803b15801561043357600080fd5b505af1158015610447573d6000803e3d6000fd5b50506040516323e30c8b60e01b81527f439148f0bbc682ca079e46d6e2c2f0c1e3b820f1a291b069d8882abf8cf18dd992506001600160a01b038a1691506323e30c8b906104c39033907f0000000000000000000000000000000000000000000000000000000000000000908b9088908c908c90600401610de0565b6020604051808303816000875af11580156104e2573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906105069190610e3c565b146105535760405162461bcd60e51b815260206004820152601c60248201527f466c6173684d696e7465723a2043616c6c6261636b206661696c65640000000060448201526064016102bc565b6001600160a01b037f0000000000000000000000000000000000000000000000000000000000000000166323b872dd883061058e858a610e6b565b6040516001600160e01b031960e086901b1681526001600160a01b03938416600482015292909116602483015260448201526064016020604051808303816000875af11580156105e2573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906106069190610d7d565b50604051630852cd8d60e31b8152600481018690527f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316906342966c6890602401600060405180830381600087803b15801561066957600080fd5b505af115801561067d573d6000803e3d6000fd5b5050604080516001600160a01b037f000000000000000000000000000000000000000000000000000000000000000081168252602082018690528994503393508b16917f9c1558194024d73db1b6fc2739c3070cacc4598122100dd6f7d3a3dd8cee5f36910160405180910390a45060019695505050505050565b60007f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316826001600160a01b03161461073b57506000919050565b6040516355017ca560e11b815230600482015260009081906001600160a01b037f0000000000000000000000000000000000000000000000000000000000000000169063aa02f94a906024016040805180830381865afa1580156107a3573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906107c79190610e83565b915091508082116107d95760006107e3565b6107e38183610ea7565b949350505050565b604051637be53ca160e01b81523360048201527f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031690637be53ca190602401602060405180830381865afa15801561084f573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906108739190610d7d565b6108b75760405162461bcd60e51b815260206004820152601560248201527421a0a62622a92fa727aa2fa827a7a62fa0a226a4a760591b60448201526064016102bc565b6102ce81610baa565b60007f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316836001600160a01b0316146109135760405162461bcd60e51b81526004016102bc90610d9f565b60405163fa50f29760e01b81523360048201527f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03169063fa50f29790602401602060405180830381865afa158015610977573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061099b9190610d7d565b6109ad576109a882610b95565b6109b0565b60005b9392505050565b6040516370a0823160e01b81523060048201526000907f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316906370a0823190602401602060405180830381865afa158015610a1e573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190610a429190610e3c565b60015460405163a9059cbb60e01b81526001600160a01b039182166004820152602481018390529192507f0000000000000000000000000000000000000000000000000000000000000000169063a9059cbb906044016020604051808303816000875af1158015610ab7573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190610adb9190610d7d565b506001546040518281526001600160a01b037f000000000000000000000000000000000000000000000000000000000000000081169216907fb29fcda740927812f5a71075b62e132bead3769a455319c29b9a1cc461a654759060200160405180910390a350565b600180546001600160a01b038381166001600160a01b0319831681179093556040519116919082907f13f4413d8d93a259bd6c10f35095371f30ed50f81a73407e52e9f02000d5d16b90600090a35050565b60008054610ba4908390610c41565b92915050565b612710811115610bfc5760405162461bcd60e51b815260206004820152601d60248201527f466c6173684d696e7465723a20466565206f7574206f662072616e676500000060448201526064016102bc565b600080549082905560408051828152602081018490527f528d9479e9f9889a87a3c30c7f7ba537e5e59c4c85a37733b16e57c62df61302910160405180910390a15050565b600081156113881983900484111517610c5957600080fd5b506127109102611388010490565b6001600160a01b03811681146102ce57600080fd5b600060208284031215610c8e57600080fd5b81356109b081610c67565b600080600080600060808688031215610cb157600080fd5b8535610cbc81610c67565b94506020860135610ccc81610c67565b935060408601359250606086013567ffffffffffffffff80821115610cf057600080fd5b818801915088601f830112610d0457600080fd5b813581811115610d1357600080fd5b896020828501011115610d2557600080fd5b9699959850939650602001949392505050565b600060208284031215610d4a57600080fd5b5035919050565b60008060408385031215610d6457600080fd5b8235610d6f81610c67565b946020939093013593505050565b600060208284031215610d8f57600080fd5b815180151581146109b057600080fd5b60208082526021908201527f466c6173684d696e7465723a20556e737570706f727465642063757272656e636040820152607960f81b606082015260800190565b6001600160a01b03878116825286166020820152604081018590526060810184905260a06080820181905281018290526000828460c0840137600060c0848401015260c0601f19601f8501168301019050979650505050505050565b600060208284031215610e4e57600080fd5b5051919050565b634e487b7160e01b600052601160045260246000fd5b60008219821115610e7e57610e7e610e55565b500190565b60008060408385031215610e9657600080fd5b505080516020909101519092909150565b600082821015610eb957610eb9610e55565b50039056fea26469706673582212204491583e315455560e9cba8b0f9f96be5f4be1defefa3f40f947cf22529aa27f64736f6c634300080a0033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100b45760003560e01c8063b1c660f711610071578063b1c660f714610190578063bc063e1a146101b7578063ced72f87146101c0578063d9d98ce4146101c8578063dc49a07b146101db578063e28178cc146101e357600080fd5b80630542975c146100b95780631fde40bb146100fd5780635cffe9de14610112578063613255ab146101355780638237e538146101565780639012c4a81461017d575b600080fd5b6100e07f000000000000000000000000000000000000000000000000000000000000000081565b6040516001600160a01b0390911681526020015b60405180910390f35b61011061010b366004610c7c565b6101f4565b005b610125610120366004610c99565b6102d1565b60405190151581526020016100f4565b610148610143366004610c7c565b6106f8565b6040519081526020016100f4565b6101487f439148f0bbc682ca079e46d6e2c2f0c1e3b820f1a291b069d8882abf8cf18dd981565b61011061018b366004610d38565b6107eb565b6100e07f000000000000000000000000000000000000000000000000000000000000000081565b61014861271081565b600054610148565b6101486101d6366004610d51565b6108c0565b6101106109b7565b6001546001600160a01b03166100e0565b604051637be53ca160e01b81523360048201527f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031690637be53ca190602401602060405180830381865afa158015610258573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061027c9190610d7d565b6102c55760405162461bcd60e51b815260206004820152601560248201527421a0a62622a92fa727aa2fa827a7a62fa0a226a4a760591b60448201526064015b60405180910390fd5b6102ce81610b43565b50565b60007f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316856001600160a01b0316146103245760405162461bcd60e51b81526004016102bc90610d9f565b60405163fa50f29760e01b81523360048201526000907f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03169063fa50f29790602401602060405180830381865afa15801561038b573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906103af9190610d7d565b6103c1576103bc85610b95565b6103c4565b60005b6040516340c10f1960e01b81526001600160a01b038981166004830152602482018890529192507f0000000000000000000000000000000000000000000000000000000000000000909116906340c10f1990604401600060405180830381600087803b15801561043357600080fd5b505af1158015610447573d6000803e3d6000fd5b50506040516323e30c8b60e01b81527f439148f0bbc682ca079e46d6e2c2f0c1e3b820f1a291b069d8882abf8cf18dd992506001600160a01b038a1691506323e30c8b906104c39033907f0000000000000000000000000000000000000000000000000000000000000000908b9088908c908c90600401610de0565b6020604051808303816000875af11580156104e2573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906105069190610e3c565b146105535760405162461bcd60e51b815260206004820152601c60248201527f466c6173684d696e7465723a2043616c6c6261636b206661696c65640000000060448201526064016102bc565b6001600160a01b037f0000000000000000000000000000000000000000000000000000000000000000166323b872dd883061058e858a610e6b565b6040516001600160e01b031960e086901b1681526001600160a01b03938416600482015292909116602483015260448201526064016020604051808303816000875af11580156105e2573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906106069190610d7d565b50604051630852cd8d60e31b8152600481018690527f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316906342966c6890602401600060405180830381600087803b15801561066957600080fd5b505af115801561067d573d6000803e3d6000fd5b5050604080516001600160a01b037f000000000000000000000000000000000000000000000000000000000000000081168252602082018690528994503393508b16917f9c1558194024d73db1b6fc2739c3070cacc4598122100dd6f7d3a3dd8cee5f36910160405180910390a45060019695505050505050565b60007f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316826001600160a01b03161461073b57506000919050565b6040516355017ca560e11b815230600482015260009081906001600160a01b037f0000000000000000000000000000000000000000000000000000000000000000169063aa02f94a906024016040805180830381865afa1580156107a3573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906107c79190610e83565b915091508082116107d95760006107e3565b6107e38183610ea7565b949350505050565b604051637be53ca160e01b81523360048201527f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031690637be53ca190602401602060405180830381865afa15801561084f573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906108739190610d7d565b6108b75760405162461bcd60e51b815260206004820152601560248201527421a0a62622a92fa727aa2fa827a7a62fa0a226a4a760591b60448201526064016102bc565b6102ce81610baa565b60007f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316836001600160a01b0316146109135760405162461bcd60e51b81526004016102bc90610d9f565b60405163fa50f29760e01b81523360048201527f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03169063fa50f29790602401602060405180830381865afa158015610977573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061099b9190610d7d565b6109ad576109a882610b95565b6109b0565b60005b9392505050565b6040516370a0823160e01b81523060048201526000907f00000000000000000000000000000000000000000000000000000000000000006001600160a01b0316906370a0823190602401602060405180830381865afa158015610a1e573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190610a429190610e3c565b60015460405163a9059cbb60e01b81526001600160a01b039182166004820152602481018390529192507f0000000000000000000000000000000000000000000000000000000000000000169063a9059cbb906044016020604051808303816000875af1158015610ab7573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190610adb9190610d7d565b506001546040518281526001600160a01b037f000000000000000000000000000000000000000000000000000000000000000081169216907fb29fcda740927812f5a71075b62e132bead3769a455319c29b9a1cc461a654759060200160405180910390a350565b600180546001600160a01b038381166001600160a01b0319831681179093556040519116919082907f13f4413d8d93a259bd6c10f35095371f30ed50f81a73407e52e9f02000d5d16b90600090a35050565b60008054610ba4908390610c41565b92915050565b612710811115610bfc5760405162461bcd60e51b815260206004820152601d60248201527f466c6173684d696e7465723a20466565206f7574206f662072616e676500000060448201526064016102bc565b600080549082905560408051828152602081018490527f528d9479e9f9889a87a3c30c7f7ba537e5e59c4c85a37733b16e57c62df61302910160405180910390a15050565b600081156113881983900484111517610c5957600080fd5b506127109102611388010490565b6001600160a01b03811681146102ce57600080fd5b600060208284031215610c8e57600080fd5b81356109b081610c67565b600080600080600060808688031215610cb157600080fd5b8535610cbc81610c67565b94506020860135610ccc81610c67565b935060408601359250606086013567ffffffffffffffff80821115610cf057600080fd5b818801915088601f830112610d0457600080fd5b813581811115610d1357600080fd5b896020828501011115610d2557600080fd5b9699959850939650602001949392505050565b600060208284031215610d4a57600080fd5b5035919050565b60008060408385031215610d6457600080fd5b8235610d6f81610c67565b946020939093013593505050565b600060208284031215610d8f57600080fd5b815180151581146109b057600080fd5b60208082526021908201527f466c6173684d696e7465723a20556e737570706f727465642063757272656e636040820152607960f81b606082015260800190565b6001600160a01b03878116825286166020820152604081018590526060810184905260a06080820181905281018290526000828460c0840137600060c0848401015260c0601f19601f8501168301019050979650505050505050565b600060208284031215610e4e57600080fd5b5051919050565b634e487b7160e01b600052601160045260246000fd5b60008219821115610e7e57610e7e610e55565b500190565b60008060408385031215610e9657600080fd5b505080516020909101519092909150565b600082821015610eb957610eb9610e55565b50039056fea26469706673582212204491583e315455560e9cba8b0f9f96be5f4be1defefa3f40f947cf22529aa27f64736f6c634300080a0033",
+  "devdoc": {
+    "author": "Aave",
+    "details": "Based heavily on the EIP3156 reference implementation",
+    "kind": "dev",
+    "methods": {
+      "constructor": {
+        "details": "Constructor",
+        "params": {
+          "addressesProvider": "The address of the Aave PoolAddressesProvider",
+          "fee": "The percentage of the flash-mint amount that needs to be repaid, on top of the principal (in bps)",
+          "ghoToken": "The address of the GHO token contract",
+          "ghoTreasury": "The address of the GHO treasury"
+        }
+      },
+      "flashFee(address,uint256)": {
+        "details": "The fee to be charged for a given loan.",
+        "params": {
+          "amount": "The amount of tokens lent.",
+          "token": "The loan currency."
+        },
+        "returns": {
+          "_0": "The amount of `token` to be charged for the loan, on top of the returned principal."
+        }
+      },
+      "flashLoan(address,address,uint256,bytes)": {
+        "details": "Initiate a flash loan.",
+        "params": {
+          "amount": "The amount of tokens lent.",
+          "data": "Arbitrary data structure, intended to contain user-defined parameters.",
+          "receiver": "The receiver of the tokens in the loan, and the receiver of the callback.",
+          "token": "The loan currency."
+        }
+      },
+      "getFee()": {
+        "returns": {
+          "_0": "The percentage fee of the flash-minted amount that needs to be repaid, on top of the principal (in bps)."
+        }
+      },
+      "getGhoTreasury()": {
+        "returns": {
+          "_0": "The address of the GhoTreasury contract"
+        }
+      },
+      "maxFlashLoan(address)": {
+        "details": "The amount of currency available to be lended.",
+        "params": {
+          "token": "The loan currency."
+        },
+        "returns": {
+          "_0": "The amount of `token` that can be borrowed."
+        }
+      },
+      "updateFee(uint256)": {
+        "details": "The fee is expressed in bps. A value of 100, results in 1.00%",
+        "params": {
+          "newFee": "The new percentage fee (in bps)"
+        }
+      },
+      "updateGhoTreasury(address)": {
+        "details": "WARNING: The GhoTreasury is where revenue fees are sent to. Update carefully",
+        "params": {
+          "newGhoTreasury": "The address of the GhoTreasury"
+        }
+      }
+    },
+    "stateVariables": {
+      "ADDRESSES_PROVIDER": {
+        "return": "The address of the PoolAddressesProvider",
+        "returns": {
+          "_0": "The address of the PoolAddressesProvider"
+        }
+      },
+      "CALLBACK_SUCCESS": {
+        "return": "The required callback, the keccak256 hash of 'ERC3156FlashBorrower.onFlashLoan'",
+        "returns": {
+          "_0": "The required callback, the keccak256 hash of 'ERC3156FlashBorrower.onFlashLoan'"
+        }
+      },
+      "GHO_TOKEN": {
+        "return": "The address of the GhoToken",
+        "returns": {
+          "_0": "The address of the GhoToken"
+        }
+      },
+      "MAX_FEE": {
+        "return": "The maximum percentage fee of the flash-minted amount that the flashFee can be set to (in bps).",
+        "returns": {
+          "_0": "The maximum percentage fee of the flash-minted amount that the flashFee can be set to (in bps)."
+        }
+      }
+    },
+    "title": "GhoFlashMinter",
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "ADDRESSES_PROVIDER()": {
+        "notice": "Returns the address of the Aave Pool Addresses Provider contract"
+      },
+      "CALLBACK_SUCCESS()": {
+        "notice": "Returns the required return value for a successful flashmint"
+      },
+      "GHO_TOKEN()": {
+        "notice": "Returns the address of the GHO token contract"
+      },
+      "MAX_FEE()": {
+        "notice": "Returns the maximum value the fee can be set to"
+      },
+      "distributeFeesToTreasury()": {
+        "notice": "Distribute fees to the GhoTreasury"
+      },
+      "getFee()": {
+        "notice": "Returns the percentage of each flash mint taken as a fee"
+      },
+      "getGhoTreasury()": {
+        "notice": "Returns the address of the Gho Treasury"
+      },
+      "updateFee(uint256)": {
+        "notice": "Updates the percentage fee. It is the percentage of the flash-minted amount that needs to be repaid."
+      },
+      "updateGhoTreasury(address)": {
+        "notice": "Updates the address of the Gho Treasury"
+      }
+    },
+    "notice": "Contract that enables FlashMinting of GHO.",
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 75056,
+        "contract": "src/contracts/facilitators/flashMinter/GhoFlashMinter.sol:GhoFlashMinter",
+        "label": "_fee",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 75058,
+        "contract": "src/contracts/facilitators/flashMinter/GhoFlashMinter.sol:GhoFlashMinter",
+        "label": "_ghoTreasury",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_address"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      }
+    }
+  }
+}
