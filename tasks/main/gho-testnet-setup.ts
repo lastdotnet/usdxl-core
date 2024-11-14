@@ -6,8 +6,8 @@ task('gho-testnet-setup', 'Deploy and Configure Gho').setAction(async (params, h
   /*****************************************
    *          INITIALIZE RESERVE           *
    ******************************************/
-  blankSpace();
-  await hre.run('initialize-gho-reserve');
+  // blankSpace();
+  //await hre.run('initialize-gho-reserve');
 
   /*****************************************
    *          CONFIGURE RESERVE            *
