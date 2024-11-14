@@ -139,6 +139,7 @@ export async function initializeMakeSuite() {
     });
   }
 
+  //CONFIG
   testEnv.deployer = deployer;
   testEnv.poolAdmin = deployer;
   testEnv.aclAdmin = deployer;

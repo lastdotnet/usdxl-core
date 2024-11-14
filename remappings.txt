@@ -12,6 +12,7 @@ aave-address-book/=lib/aave-address-book/src/
 aave-helpers/=lib/aave-stk-v1-5/lib/aave-helpers/
 aave-v3-core/=lib/aave-address-book/lib/aave-v3-core/
 aave-v3-periphery/=lib/aave-address-book/lib/aave-v3-periphery/
+aave-v3_2-core/=lib/aave-v3-origin/
 erc4626-tests/=lib/aave-stk-v1-5/lib/openzeppelin-contracts/lib/erc4626-tests/
 openzeppelin-contracts/=lib/aave-stk-v1-5/lib/openzeppelin-contracts/
 solidity-utils/=lib/solidity-utils/src/
