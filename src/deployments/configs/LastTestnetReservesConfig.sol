@@ -5,7 +5,7 @@ import {IAaveOracle} from '@aave/core-v3/contracts/interfaces/IAaveOracle.sol';
 import {IPoolConfigurator} from '@aave/core-v3/contracts/interfaces/IPoolConfigurator.sol';
 import {ConfiguratorInputTypes} from '@aave/core-v3/contracts/protocol/libraries/types/ConfiguratorInputTypes.sol';
 import {IDefaultInterestRateStrategyV2} from '@aave/core-v3/contracts/interfaces/IDefaultInterestRateStrategyV2.sol';
-import {UsdxlToken} from 'src/contracts/usdxl/UsdxlToken.sol';
+import {GhoToken} from 'src/contracts/gho/GhoToken.sol';
 import 'forge-std/console.sol';
 
 contract LastTestnetReservesConfig {
@@ -49,9 +49,6 @@ function _setAssetSources(
     address[] memory oracles
   )
     internal
-    returns (
-        address[] memory tokens
-    )
   { 
     // set oracles
     _getAaveOracle().setAssetSources(tokens, oracles);

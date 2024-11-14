@@ -52,15 +52,15 @@ contract MockUpgradeableBurnMintTokenPool is Initializable {
   }
 
   function initialize(
-    address owner,
+    address owner_,
     address[] memory allowlist,
     address router,
     uint256 bridgeLimit
   ) public virtual initializer {
     allowlist;
-    if (owner == address(0)) revert ZeroAddressNotAllowed();
+    if (owner_ == address(0)) revert ZeroAddressNotAllowed();
     if (router == address(0)) revert ZeroAddressNotAllowed();
-    _transferOwnership(owner);
+    _transferOwnership(owner_);
 
     s_router = IRouter(router);
     s_bridgeLimit = bridgeLimit;

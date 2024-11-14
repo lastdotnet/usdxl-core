@@ -6,9 +6,11 @@ import {IAccessControl} from '@openzeppelin/contracts/access/IAccessControl.sol'
 import {IACLManager} from '@aave/core-v3/contracts/interfaces/IACLManager.sol';
 import {AaveV3Ethereum, AaveV3EthereumAssets} from 'aave-address-book/AaveV3Ethereum.sol';
 import {MiscEthereum} from 'aave-address-book/MiscEthereum.sol';
-import {IPoolAddressesProvider, IPoolDataProvider, IPool} from 'aave-address-book/AaveV3.sol';
-import {DataTypes} from 'aave-v3-core/contracts/protocol/libraries/types/DataTypes.sol';
-import {ReserveConfiguration} from 'aave-v3-core/contracts/protocol/libraries/configuration/ReserveConfiguration.sol';
+import {IPoolAddressesProvider} from '@aave/core-v3/contracts/interfaces/IPoolAddressesProvider.sol';
+import {IPoolDataProvider} from '@aave/core-v3/contracts/interfaces/IPoolDataProvider.sol';
+import {IPool} from '@aave/core-v3/contracts/interfaces/IPool.sol';
+import {DataTypes} from '@aave/core-v3/contracts/protocol/libraries/types/DataTypes.sol';
+import {ReserveConfiguration} from '@aave/core-v3/contracts/protocol/libraries/configuration/ReserveConfiguration.sol';
 import {FixedFeeStrategyFactory} from '../contracts/facilitators/gsm/feeStrategy/FixedFeeStrategyFactory.sol';
 import {IGsmFeeStrategy} from '../contracts/facilitators/gsm/feeStrategy/interfaces/IGsmFeeStrategy.sol';
 import {Gsm} from '../contracts/facilitators/gsm/Gsm.sol';

@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import {GhoVariableDebtToken} from '../../contracts/facilitators/aave/tokens/GhoVariableDebtToken.sol';
 import {GhoAToken} from '../../contracts/facilitators/aave/tokens/GhoAToken.sol';
-import {IGhoToken} from '../../contracts/gho/interfaces/IGhoToken.sol';
+import {IGhoToken} from 'src/contracts/gho/interfaces/IGhoToken.sol';
 import {GhoDiscountRateStrategy} from '../../contracts/facilitators/aave/interestStrategy/GhoDiscountRateStrategy.sol';
 import {GhoInterestRateStrategy} from '../../contracts/facilitators/aave/interestStrategy/GhoInterestRateStrategy.sol';
 import {IPool} from '@aave/core-v3/contracts/interfaces/IPool.sol';
@@ -13,9 +13,7 @@ import {Pool} from '@aave/core-v3/contracts/protocol/pool/Pool.sol';
 import {UserConfiguration} from '@aave/core-v3/contracts/protocol/libraries/configuration/UserConfiguration.sol';
 import {ReserveConfiguration} from '@aave/core-v3/contracts/protocol/libraries/configuration/ReserveConfiguration.sol';
 import {ReserveLogic} from '@aave/core-v3/contracts/protocol/libraries/logic/ReserveLogic.sol';
-import {Helpers} from '@aave/core-v3/contracts/protocol/libraries/helpers/Helpers.sol';
 import {DataTypes} from '@aave/core-v3/contracts/protocol/libraries/types/DataTypes.sol';
-import {StableDebtToken} from '@aave/core-v3/contracts/protocol/tokenization/StableDebtToken.sol';
 import {IERC20} from '@aave/core-v3/contracts/dependencies/openzeppelin/contracts/ERC20.sol';
 import {Errors} from '@aave/core-v3/contracts/protocol/libraries/helpers/Errors.sol';
 
@@ -45,7 +43,6 @@ contract MockPool is Pool {
     GHO = ghoAToken.UNDERLYING_ASSET_ADDRESS();
     _reserves[GHO].init(
       address(ATOKEN),
-      address(new StableDebtToken(IPool(address(this)))),
       address(DEBT_TOKEN),
       address(new GhoInterestRateStrategy(address(0), 2e25))
     );

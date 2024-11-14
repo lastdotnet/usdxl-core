@@ -2,7 +2,7 @@
 pragma solidity ^0.8.10;
 
 import {EnumerableSet} from '@openzeppelin/contracts/utils/structs/EnumerableSet.sol';
-import {VersionedInitializable} from '@aave/core-v3/contracts/protocol/libraries/aave-upgradeability/VersionedInitializable.sol';
+import {VersionedInitializable} from '@aave/core-v3/contracts/misc/aave-upgradeability/VersionedInitializable.sol';
 import {IFixedFeeStrategyFactory} from './interfaces/IFixedFeeStrategyFactory.sol';
 import {IGsmFeeStrategy} from './interfaces/IGsmFeeStrategy.sol';
 import {FixedFeeStrategy} from './FixedFeeStrategy.sol';

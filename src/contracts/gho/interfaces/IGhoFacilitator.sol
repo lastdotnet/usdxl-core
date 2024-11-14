@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 /**
  * @title IGhoFacilitator
  * @author Aave
- * @notice Defines the behavior of a Gho Facilitator
+ * @notice Defines the behavior of a Usdxl Facilitator
  */
 interface IGhoFacilitator {
   /**

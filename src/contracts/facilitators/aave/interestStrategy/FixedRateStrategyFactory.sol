@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import {IDefaultInterestRateStrategy} from '@aave/core-v3/contracts/interfaces/IDefaultInterestRateStrategy.sol';
-import {VersionedInitializable} from '@aave/core-v3/contracts/protocol/libraries/aave-upgradeability/VersionedInitializable.sol';
+import {IDefaultInterestRateStrategyV2} from '@aave/core-v3/contracts/interfaces/IDefaultInterestRateStrategyV2.sol';
+import {VersionedInitializable} from '@aave/core-v3/contracts/misc/aave-upgradeability/VersionedInitializable.sol';
 import {IFixedRateStrategyFactory} from './interfaces/IFixedRateStrategyFactory.sol';
 import {GhoInterestRateStrategy} from './GhoInterestRateStrategy.sol';
 
@@ -36,7 +36,7 @@ contract FixedRateStrategyFactory is VersionedInitializable, IFixedRateStrategyF
   function initialize(address[] memory fixedRateStrategiesList) external initializer {
     for (uint256 i = 0; i < fixedRateStrategiesList.length; i++) {
       address fixedRateStrategy = fixedRateStrategiesList[i];
-      uint256 rate = IDefaultInterestRateStrategy(fixedRateStrategy).getBaseVariableBorrowRate();
+      uint256 rate = IDefaultInterestRateStrategyV2(fixedRateStrategy).getBaseVariableBorrowRate();
 
       _strategiesByRate[rate] = fixedRateStrategy;
       _strategies.push(fixedRateStrategy);

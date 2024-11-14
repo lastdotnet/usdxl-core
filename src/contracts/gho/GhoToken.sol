@@ -4,33 +4,33 @@ pragma solidity ^0.8.0;
 import {EnumerableSet} from '@openzeppelin/contracts/utils/structs/EnumerableSet.sol';
 import {AccessControl} from '@openzeppelin/contracts/access/AccessControl.sol';
 import {ERC20} from './ERC20.sol';
-import {IUsdxlToken} from './interfaces/IUsdxlToken.sol';
+import {IGhoToken} from './interfaces/IGhoToken.sol';
 
 /**
- * @title USDXL Token
- * @author Last Labs
+ * @title GHO Token
+ * @author Aave
  */
-contract UsdxlToken is ERC20, AccessControl, IUsdxlToken {
+contract GhoToken is ERC20, AccessControl, IGhoToken {
   using EnumerableSet for EnumerableSet.AddressSet;
 
   mapping(address => Facilitator) internal _facilitators;
   EnumerableSet.AddressSet internal _facilitatorsList;
 
-  /// @inheritdoc IUsdxlToken
+  /// @inheritdoc IGhoToken
   bytes32 public constant FACILITATOR_MANAGER_ROLE = keccak256('FACILITATOR_MANAGER_ROLE');
 
-  /// @inheritdoc IUsdxlToken
+  /// @inheritdoc IGhoToken
   bytes32 public constant BUCKET_MANAGER_ROLE = keccak256('BUCKET_MANAGER_ROLE');
 
   /**
    * @dev Constructor
    * @param admin This is the initial holder of the default admin role
    */
-  constructor(address admin) ERC20('Usdxl Token', 'USDXL', 18) {
+  constructor(address admin) ERC20('Gho Token', 'GHO', 18) {
     _setupRole(DEFAULT_ADMIN_ROLE, admin);
   }
 
-  /// @inheritdoc IUsdxlToken
+  /// @inheritdoc IGhoToken
   function mint(address account, uint256 amount) external {
     require(amount > 0, 'INVALID_MINT_AMOUNT');
     Facilitator storage f = _facilitators[msg.sender];
@@ -45,7 +45,7 @@ contract UsdxlToken is ERC20, AccessControl, IUsdxlToken {
     emit FacilitatorBucketLevelUpdated(msg.sender, currentBucketLevel, newBucketLevel);
   }
 
-  /// @inheritdoc IUsdxlToken
+  /// @inheritdoc IGhoToken
   function burn(uint256 amount) external {
     require(amount > 0, 'INVALID_BURN_AMOUNT');
 
@@ -59,7 +59,7 @@ contract UsdxlToken is ERC20, AccessControl, IUsdxlToken {
     emit FacilitatorBucketLevelUpdated(msg.sender, currentBucketLevel, newBucketLevel);
   }
 
-  /// @inheritdoc IUsdxlToken
+  /// @inheritdoc IGhoToken
   function addFacilitator(
     address facilitatorAddress,
     string calldata facilitatorLabel,
@@ -81,7 +81,7 @@ contract UsdxlToken is ERC20, AccessControl, IUsdxlToken {
     );
   }
 
-  /// @inheritdoc IUsdxlToken
+  /// @inheritdoc IGhoToken
   function removeFacilitator(
     address facilitatorAddress
   ) external onlyRole(FACILITATOR_MANAGER_ROLE) {
@@ -100,7 +100,7 @@ contract UsdxlToken is ERC20, AccessControl, IUsdxlToken {
     emit FacilitatorRemoved(facilitatorAddress);
   }
 
-  /// @inheritdoc IUsdxlToken
+  /// @inheritdoc IGhoToken
   function setFacilitatorBucketCapacity(
     address facilitator,
     uint128 newCapacity
@@ -113,17 +113,17 @@ contract UsdxlToken is ERC20, AccessControl, IUsdxlToken {
     emit FacilitatorBucketCapacityUpdated(facilitator, oldCapacity, newCapacity);
   }
 
-  /// @inheritdoc IUsdxlToken
+  /// @inheritdoc IGhoToken
   function getFacilitator(address facilitator) external view returns (Facilitator memory) {
     return _facilitators[facilitator];
   }
 
-  /// @inheritdoc IUsdxlToken
+  /// @inheritdoc IGhoToken
   function getFacilitatorBucket(address facilitator) external view returns (uint256, uint256) {
     return (_facilitators[facilitator].bucketCapacity, _facilitators[facilitator].bucketLevel);
   }
 
-  /// @inheritdoc IUsdxlToken
+  /// @inheritdoc IGhoToken
   function getFacilitatorsList() external view returns (address[] memory) {
     return _facilitatorsList.values();
   }

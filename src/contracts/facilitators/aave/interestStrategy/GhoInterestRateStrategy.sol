@@ -2,7 +2,7 @@
 pragma solidity ^0.8.10;
 
 import {DataTypes} from '@aave/core-v3/contracts/protocol/libraries/types/DataTypes.sol';
-import {IDefaultInterestRateStrategy} from '@aave/core-v3/contracts/interfaces/IDefaultInterestRateStrategy.sol';
+import {IDefaultInterestRateStrategyV2} from '@aave/core-v3/contracts/interfaces/IDefaultInterestRateStrategyV2.sol';
 import {IReserveInterestRateStrategy} from '@aave/core-v3/contracts/interfaces/IReserveInterestRateStrategy.sol';
 import {IPoolAddressesProvider} from '@aave/core-v3/contracts/interfaces/IPoolAddressesProvider.sol';
 
@@ -12,20 +12,20 @@ import {IPoolAddressesProvider} from '@aave/core-v3/contracts/interfaces/IPoolAd
  * @notice Implements the calculation of GHO interest rates, which defines a fixed variable borrow rate.
  * @dev The variable borrow interest rate is fixed at deployment time. The rest of parameters are zeroed.
  */
-contract GhoInterestRateStrategy is IDefaultInterestRateStrategy {
-  /// @inheritdoc IDefaultInterestRateStrategy
+contract GhoInterestRateStrategy is IDefaultInterestRateStrategyV2 {
+  /// @inheritdoc IDefaultInterestRateStrategyV2
   uint256 public constant OPTIMAL_USAGE_RATIO = 0;
 
-  /// @inheritdoc IDefaultInterestRateStrategy
+  /// @inheritdoc IDefaultInterestRateStrategyV2
   uint256 public constant OPTIMAL_STABLE_TO_TOTAL_DEBT_RATIO = 0;
 
-  /// @inheritdoc IDefaultInterestRateStrategy
+  /// @inheritdoc IDefaultInterestRateStrategyV2
   uint256 public constant MAX_EXCESS_USAGE_RATIO = 0;
 
-  /// @inheritdoc IDefaultInterestRateStrategy
+  /// @inheritdoc IDefaultInterestRateStrategyV2
   uint256 public constant MAX_EXCESS_STABLE_TO_TOTAL_DEBT_RATIO = 0;
 
-  /// @inheritdoc IDefaultInterestRateStrategy
+  /// @inheritdoc IDefaultInterestRateStrategyV2
   IPoolAddressesProvider public immutable ADDRESSES_PROVIDER;
 
   // Base variable borrow rate when usage rate = 0. Expressed in ray
@@ -41,42 +41,42 @@ contract GhoInterestRateStrategy is IDefaultInterestRateStrategy {
     _baseVariableBorrowRate = borrowRate;
   }
 
-  /// @inheritdoc IDefaultInterestRateStrategy
+  /// @inheritdoc IDefaultInterestRateStrategyV2
   function getVariableRateSlope1() external pure returns (uint256) {
     return 0;
   }
 
-  /// @inheritdoc IDefaultInterestRateStrategy
+  /// @inheritdoc IDefaultInterestRateStrategyV2
   function getVariableRateSlope2() external pure returns (uint256) {
     return 0;
   }
 
-  /// @inheritdoc IDefaultInterestRateStrategy
+  /// @inheritdoc IDefaultInterestRateStrategyV2
   function getStableRateSlope1() external pure returns (uint256) {
     return 0;
   }
 
-  /// @inheritdoc IDefaultInterestRateStrategy
+  /// @inheritdoc IDefaultInterestRateStrategyV2
   function getStableRateSlope2() external pure returns (uint256) {
     return 0;
   }
 
-  /// @inheritdoc IDefaultInterestRateStrategy
+  /// @inheritdoc IDefaultInterestRateStrategyV2
   function getStableRateExcessOffset() external pure returns (uint256) {
     return 0;
   }
 
-  /// @inheritdoc IDefaultInterestRateStrategy
+  /// @inheritdoc IDefaultInterestRateStrategyV2
   function getBaseStableBorrowRate() public pure returns (uint256) {
     return 0;
   }
 
-  /// @inheritdoc IDefaultInterestRateStrategy
+  /// @inheritdoc IDefaultInterestRateStrategyV2
   function getBaseVariableBorrowRate() external view override returns (uint256) {
     return _baseVariableBorrowRate;
   }
 
-  /// @inheritdoc IDefaultInterestRateStrategy
+  /// @inheritdoc IDefaultInterestRateStrategyV2
   function getMaxVariableBorrowRate() external view override returns (uint256) {
     return _baseVariableBorrowRate;
   }

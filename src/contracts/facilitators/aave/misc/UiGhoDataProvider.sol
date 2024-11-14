@@ -4,7 +4,7 @@ pragma solidity ^0.8.10;
 import {IERC20} from '@aave/core-v3/contracts/dependencies/openzeppelin/contracts/IERC20.sol';
 import {IPool} from '@aave/core-v3/contracts/interfaces/IPool.sol';
 import {DataTypes} from '@aave/core-v3/contracts/protocol/libraries/types/DataTypes.sol';
-import {IGhoToken} from '../../../gho/interfaces/IGhoToken.sol';
+import {IGhoToken} from 'src/contracts/gho/interfaces/IGhoToken.sol';
 import {GhoDiscountRateStrategy} from '../interestStrategy/GhoDiscountRateStrategy.sol';
 import {IGhoVariableDebtToken} from '../tokens/interfaces/IGhoVariableDebtToken.sol';
 import {IUiGhoDataProvider} from './interfaces/IUiGhoDataProvider.sol';
