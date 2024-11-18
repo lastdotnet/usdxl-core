@@ -71,7 +71,7 @@ contract GsmConverter is Ownable, EIP712, IGsmConverter {
     address issuanceReceiverContract,
     address issuedAsset,
     address redeemedAsset
-  ) EIP712('GSMConverter', '1') {
+  ) EIP712('GSMConverter', '1') Ownable(admin) {
     require(admin != address(0), 'ZERO_ADDRESS_NOT_VALID');
     require(gsm != address(0), 'ZERO_ADDRESS_NOT_VALID');
     require(redemptionContract != address(0), 'ZERO_ADDRESS_NOT_VALID');

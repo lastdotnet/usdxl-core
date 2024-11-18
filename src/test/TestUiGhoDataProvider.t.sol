@@ -13,7 +13,7 @@ contract TestUiGhoDataProvider is TestGhoBase {
   }
 
   function testGhoReserveData() public {
-    DataTypes.ReserveData memory baseData = POOL.getReserveData(address(GHO_TOKEN));
+    DataTypes.ReserveDataLegacy memory baseData = POOL.getReserveData(address(GHO_TOKEN));
     (uint256 bucketCapacity, uint256 bucketLevel) = GHO_TOKEN.getFacilitatorBucket(
       baseData.aTokenAddress
     );

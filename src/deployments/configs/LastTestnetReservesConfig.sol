@@ -20,7 +20,7 @@ contract LastTestnetReservesConfig {
   { 
     tokens  = new address[](1);
 
-    tokens[0] = address(new GhoToken(deployerAddress));
+    tokens[0] = address(new GhoToken(deployer));
 
     oracles = new address[](1);
 

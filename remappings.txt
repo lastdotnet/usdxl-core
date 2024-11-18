@@ -1,5 +1,5 @@
 @aave/core-v3/=lib/aave-v3-origin/src/
-@openzeppelin/=lib/openzeppelin-contracts/
+@aave/stk-v1-5/=lib/aave-v3-origin/src/contracts/staking/v1-5/
 ds-test/=lib/forge-std/lib/ds-test/src/
 eth-gas-reporter/=node_modules/eth-gas-reporter/
 forge-std/=lib/aave-v3-origin/lib/forge-std/src/
@@ -7,5 +7,4 @@ hardhat-deploy/=node_modules/hardhat-deploy/
 hardhat/=node_modules/hardhat/
 aave-address-book/=src/deployments/addresses/
 erc4626-tests/=lib/openzeppelin-contracts/lib/erc4626-tests/
-openzeppelin-contracts/=lib/openzeppelin-contracts/
 solidity-utils/=lib/aave-v3-origin/lib/solidity-utils/src/

@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import {Math} from '@openzeppelin/contracts/utils/math/Math.sol';
-import {IERC4626} from '@openzeppelin/contracts/interfaces/IERC4626.sol';
+import {Math} from 'lib/openzeppelin-contracts/contracts/utils/math/Math.sol';
+import {IERC4626} from 'lib/openzeppelin-contracts/contracts/interfaces/IERC4626.sol';
 import {IGsmPriceStrategy} from './interfaces/IGsmPriceStrategy.sol';
 
 /**

@@ -20,7 +20,7 @@ contract MockPoolDataProvider is IPoolDataProvider {
   }
 
   function getInterestRateStrategyAddress(address asset) external view returns (address) {
-    DataTypes.ReserveData memory reserveData = IPool(
+    DataTypes.ReserveDataLegacy memory reserveData = IPool(
       IPoolAddressesProvider(POOL_ADDRESSES_PROVIDER).getPool()
     ).getReserveData(asset);
     return reserveData.interestRateStrategyAddress;
@@ -54,9 +54,18 @@ contract MockPoolDataProvider is IPoolDataProvider {
     return 0;
   }
 
+  function getIsVirtualAccActive(address asset) external view returns (bool) {
+    return false;
+  }
+
+  function getVirtualUnderlyingBalance(address asset) external view returns (uint256) {
+    return 0;
+  }
+
   function getPaused(address asset) external view returns (bool isPaused) {
     return false;
   }
+
   function getReserveCaps(
     address asset
   ) external view returns (uint256 borrowCap, uint256 supplyCap) {

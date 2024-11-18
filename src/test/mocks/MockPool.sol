@@ -37,6 +37,12 @@ contract MockPool is Pool {
     // Excludes contract from coverage.
   }
 
+  function initialize(IPoolAddressesProvider provider) external virtual override {}
+
+  function getRevision() internal pure virtual override returns (uint256) {
+    return 1;
+  }
+
   function setGhoTokens(GhoVariableDebtToken ghoDebtToken, GhoAToken ghoAToken) external {
     DEBT_TOKEN = ghoDebtToken;
     ATOKEN = ghoAToken;
@@ -68,7 +74,7 @@ contract MockPool is Pool {
 
     DEBT_TOKEN.mint(msg.sender, onBehalfOf, amount, reserveCache.nextVariableBorrowIndex);
 
-    reserve.updateInterestRates(reserveCache, GHO, 0, amount);
+    reserve.updateInterestRatesAndVirtualBalance(reserveCache, GHO, 0, amount);
 
     ATOKEN.transferUnderlyingTo(onBehalfOf, amount);
   }
@@ -91,7 +97,7 @@ contract MockPool is Pool {
 
     DEBT_TOKEN.burn(onBehalfOf, paybackAmount, reserveCache.nextVariableBorrowIndex);
 
-    reserve.updateInterestRates(reserveCache, GHO, 0, amount);
+    reserve.updateInterestRatesAndVirtualBalance(reserveCache, GHO, 0, amount);
 
     IERC20(GHO).transferFrom(msg.sender, reserveCache.aTokenAddress, paybackAmount);
 

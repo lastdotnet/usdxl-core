@@ -42,12 +42,11 @@ import {MockPoolDataProvider} from './mocks/MockPoolDataProvider.sol';
 // interfaces
 import {IAaveIncentivesController} from '@aave/core-v3/contracts/interfaces/IAaveIncentivesController.sol';
 import {IAToken} from '@aave/core-v3/contracts/interfaces/IAToken.sol';
-import {IERC20} from '@openzeppelin/contracts/interfaces/IERC20.sol';
+import {IERC20} from '@aave/core-v3/contracts/dependencies/openzeppelin/contracts/IERC20.sol';
 import {IERC3156FlashBorrower} from '@openzeppelin/contracts/interfaces/IERC3156FlashBorrower.sol';
 import {IERC3156FlashLender} from '@openzeppelin/contracts/interfaces/IERC3156FlashLender.sol';
 import {IERC4626} from '@openzeppelin/contracts/interfaces/IERC4626.sol';
 import {IGhoToken} from '../contracts/gho/interfaces/IGhoToken.sol';
-import {IGhoVariableDebtTokenTransferHook} from 'src/contracts/interfaces/IGhoVariableDebtTokenTransferHook.sol';
 import {IPool} from '@aave/core-v3/contracts/interfaces/IPool.sol';
 import {IPoolAddressesProvider} from '@aave/core-v3/contracts/interfaces/IPoolAddressesProvider.sol';
 
@@ -93,6 +92,11 @@ import {GhoCcipSteward} from '../contracts/misc/GhoCcipSteward.sol';
 import {GhoBucketSteward} from '../contracts/misc/GhoBucketSteward.sol';
 import {GsmConverter} from '../contracts/facilitators/gsm/converter/GsmConverter.sol';
 
+// STK contracts
+import {IStakedAaveV3} from '@aave/stk-v1-5/interfaces/IStakedAaveV3.sol';
+import {StakedAaveV3} from '@aave/stk-v1-5/StakedAaveV3.sol';
+import {IGhoVariableDebtTokenTransferHook} from '@aave/stk-v1-5/interfaces/IGhoVariableDebtTokenTransferHook.sol';
+
 contract TestGhoBase is Test, Constants, Events {
   using WadRayMath for uint256;
   using SafeCast for uint256;
@@ -114,6 +118,7 @@ contract TestGhoBase is Test, Constants, Events {
 
   GhoToken GHO_TOKEN;
   TestnetERC20 AAVE_TOKEN;
+  IStakedAaveV3 STK_TOKEN;
   TestnetERC20 USDC_TOKEN;
   TestnetERC20 BUIDL_TOKEN;
   MockERC4626 USDC_4626_TOKEN;
@@ -130,7 +135,6 @@ contract TestGhoBase is Test, Constants, Events {
   PriceOracle PRICE_ORACLE;
   WETH9Mock WETH;
   GhoVariableDebtToken GHO_DEBT_TOKEN;
-  GhoStableDebtToken GHO_STABLE_DEBT_TOKEN;
   GhoAToken GHO_ATOKEN;
   GhoFlashMinter GHO_FLASH_MINTER;
   GhoDiscountRateStrategy GHO_DISCOUNT_STRATEGY;
@@ -183,8 +187,8 @@ contract TestGhoBase is Test, Constants, Events {
     GHO_TOKEN.grantRole(GHO_TOKEN_BUCKET_MANAGER_ROLE, address(this));
     AAVE_TOKEN = new TestnetERC20('AAVE', 'AAVE', 18, FAUCET);
     StakedAaveV3 stkAave = new StakedAaveV3(
-      IERC20(address(AAVE_TOKEN)),
-      IERC20(address(AAVE_TOKEN)),
+      address(AAVE_TOKEN),
+      address(AAVE_TOKEN),
       1,
       address(0),
       address(0),
@@ -214,7 +218,6 @@ contract TestGhoBase is Test, Constants, Events {
     IPool iPool = IPool(address(POOL));
     WETH = new WETH9Mock('Wrapped Ether', 'WETH', FAUCET);
     GHO_DEBT_TOKEN = new GhoVariableDebtToken(iPool);
-    GHO_STABLE_DEBT_TOKEN = new GhoStableDebtToken(iPool);
     GHO_ATOKEN = new GhoAToken(iPool);
     GHO_DEBT_TOKEN.initialize(
       iPool,
@@ -223,15 +226,6 @@ contract TestGhoBase is Test, Constants, Events {
       18,
       'Aave Variable Debt GHO',
       'variableDebtGHO',
-      empty
-    );
-    GHO_STABLE_DEBT_TOKEN.initialize(
-      iPool,
-      address(GHO_TOKEN),
-      IAaveIncentivesController(address(0)),
-      18,
-      'Aave Stable Debt GHO',
-      'stableDebtGHO',
       empty
     );
     GHO_ATOKEN.initialize(

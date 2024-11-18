@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import {Math} from '@openzeppelin/contracts/utils/math/Math.sol';
+import {Math} from 'lib/openzeppelin-contracts/contracts/utils/math/Math.sol';
 import {PercentageMath} from '@aave/core-v3/contracts/protocol/libraries/math/PercentageMath.sol';
 import {IGsmFeeStrategy} from './interfaces/IGsmFeeStrategy.sol';
 

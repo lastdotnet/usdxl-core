@@ -30,7 +30,7 @@ contract UiGhoDataProvider is IUiGhoDataProvider {
 
   /// @inheritdoc IUiGhoDataProvider
   function getGhoReserveData() public view override returns (GhoReserveData memory) {
-    DataTypes.ReserveData memory baseData = POOL.getReserveData(address(GHO));
+    DataTypes.ReserveDataLegacy memory baseData = POOL.getReserveData(address(GHO));
     IGhoVariableDebtToken debtToken = IGhoVariableDebtToken(baseData.variableDebtTokenAddress);
     GhoDiscountRateStrategy discountRateStrategy = GhoDiscountRateStrategy(
       debtToken.getDiscountRateStrategy()
@@ -56,7 +56,7 @@ contract UiGhoDataProvider is IUiGhoDataProvider {
 
   /// @inheritdoc IUiGhoDataProvider
   function getGhoUserData(address user) public view override returns (GhoUserData memory) {
-    DataTypes.ReserveData memory baseData = POOL.getReserveData(address(GHO));
+    DataTypes.ReserveDataLegacy memory baseData = POOL.getReserveData(address(GHO));
     IGhoVariableDebtToken debtToken = IGhoVariableDebtToken(baseData.variableDebtTokenAddress);
     address discountToken = debtToken.getDiscountToken();
 

@@ -46,7 +46,7 @@ contract GhoBucketSteward is Ownable, RiskCouncilControlled, IGhoBucketSteward {
     address owner,
     address ghoToken,
     address riskCouncil
-  ) RiskCouncilControlled(riskCouncil) {
+  ) RiskCouncilControlled(riskCouncil) Ownable(owner) {
     require(owner != address(0), 'INVALID_OWNER');
     require(ghoToken != address(0), 'INVALID_GHO_TOKEN');
 

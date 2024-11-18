@@ -2,7 +2,7 @@
 pragma solidity ^0.8.10;
 
 import {DataTypes} from '@aave/core-v3/contracts/protocol/libraries/types/DataTypes.sol';
-import {IDefaultInterestRateStrategyV2} from '@aave/core-v3/contracts/interfaces/IDefaultInterestRateStrategyV2.sol';
+import {IDefaultInterestRateStrategy} from '@aave/core-v3/contracts/interfaces/IDefaultInterestRateStrategy.sol';
 import {IReserveInterestRateStrategy} from '@aave/core-v3/contracts/interfaces/IReserveInterestRateStrategy.sol';
 import {IPoolAddressesProvider} from '@aave/core-v3/contracts/interfaces/IPoolAddressesProvider.sol';
 
@@ -12,20 +12,20 @@ import {IPoolAddressesProvider} from '@aave/core-v3/contracts/interfaces/IPoolAd
  * @notice Implements the calculation of GHO interest rates, which defines a fixed variable borrow rate.
  * @dev The variable borrow interest rate is fixed at deployment time. The rest of parameters are zeroed.
  */
-contract GhoInterestRateStrategy is IDefaultInterestRateStrategyV2 {
-  /// @inheritdoc IDefaultInterestRateStrategyV2
+contract GhoInterestRateStrategy is IDefaultInterestRateStrategy {
+  /// @inheritdoc IDefaultInterestRateStrategy
   uint256 public constant OPTIMAL_USAGE_RATIO = 0;
 
-  /// @inheritdoc IDefaultInterestRateStrategyV2
+  /// @inheritdoc IDefaultInterestRateStrategy
   uint256 public constant OPTIMAL_STABLE_TO_TOTAL_DEBT_RATIO = 0;
 
-  /// @inheritdoc IDefaultInterestRateStrategyV2
+  /// @inheritdoc IDefaultInterestRateStrategy
   uint256 public constant MAX_EXCESS_USAGE_RATIO = 0;
 
-  /// @inheritdoc IDefaultInterestRateStrategyV2
+  /// @inheritdoc IDefaultInterestRateStrategy
   uint256 public constant MAX_EXCESS_STABLE_TO_TOTAL_DEBT_RATIO = 0;
 
-  /// @inheritdoc IDefaultInterestRateStrategyV2
+  /// @inheritdoc IDefaultInterestRateStrategy
   IPoolAddressesProvider public immutable ADDRESSES_PROVIDER;
 
   // Base variable borrow rate when usage rate = 0. Expressed in ray
@@ -41,42 +41,41 @@ contract GhoInterestRateStrategy is IDefaultInterestRateStrategyV2 {
     _baseVariableBorrowRate = borrowRate;
   }
 
-  /// @inheritdoc IDefaultInterestRateStrategyV2
   function getVariableRateSlope1() external pure returns (uint256) {
     return 0;
   }
 
-  /// @inheritdoc IDefaultInterestRateStrategyV2
+  /// @inheritdoc IDefaultInterestRateStrategy
   function getVariableRateSlope2() external pure returns (uint256) {
     return 0;
   }
 
-  /// @inheritdoc IDefaultInterestRateStrategyV2
+  /// @inheritdoc IDefaultInterestRateStrategy
   function getStableRateSlope1() external pure returns (uint256) {
     return 0;
   }
 
-  /// @inheritdoc IDefaultInterestRateStrategyV2
+  /// @inheritdoc IDefaultInterestRateStrategy
   function getStableRateSlope2() external pure returns (uint256) {
     return 0;
   }
 
-  /// @inheritdoc IDefaultInterestRateStrategyV2
+  /// @inheritdoc IDefaultInterestRateStrategy
   function getStableRateExcessOffset() external pure returns (uint256) {
     return 0;
   }
 
-  /// @inheritdoc IDefaultInterestRateStrategyV2
+  /// @inheritdoc IDefaultInterestRateStrategy
   function getBaseStableBorrowRate() public pure returns (uint256) {
     return 0;
   }
 
-  /// @inheritdoc IDefaultInterestRateStrategyV2
+  /// @inheritdoc IDefaultInterestRateStrategy
   function getBaseVariableBorrowRate() external view override returns (uint256) {
     return _baseVariableBorrowRate;
   }
 
-  /// @inheritdoc IDefaultInterestRateStrategyV2
+  /// @inheritdoc IDefaultInterestRateStrategy
   function getMaxVariableBorrowRate() external view override returns (uint256) {
     return _baseVariableBorrowRate;
   }
@@ -84,7 +83,11 @@ contract GhoInterestRateStrategy is IDefaultInterestRateStrategyV2 {
   /// @inheritdoc IReserveInterestRateStrategy
   function calculateInterestRates(
     DataTypes.CalculateInterestRatesParams memory
-  ) public view override returns (uint256, uint256, uint256) {
-    return (0, 0, _baseVariableBorrowRate);
+  ) public view override returns (uint256, uint256) {
+    return (0, _baseVariableBorrowRate);
   }
+
+  //TODO: decode struct and set storage values
+  /// @inheritdoc IReserveInterestRateStrategy
+  function setInterestRateParams(address reserve, bytes calldata rateData) external {}
 }

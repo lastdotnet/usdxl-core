@@ -16,8 +16,7 @@ contract TestGhoInterestRateStrategy is TestGhoBase {
     assertEq(address(ghoInterest.ADDRESSES_PROVIDER()), addressesProvider);
     assertEq(ghoInterest.getBaseVariableBorrowRate(), variableBorrowRate);
     assertEq(ghoInterest.getMaxVariableBorrowRate(), variableBorrowRate);
-    (uint256 x, uint256 y, uint256 z) = ghoInterest.calculateInterestRates(params);
-    assertEq(x, 0, 'Unexpected first return value in interest rate');
+    (uint256 y, uint256 z) = ghoInterest.calculateInterestRates(params);
     assertEq(y, 0, 'Unexpected second return value in interest rate');
     assertEq(z, variableBorrowRate, 'Unexpected variable borrow rate');
   }
