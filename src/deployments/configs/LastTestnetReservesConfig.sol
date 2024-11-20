@@ -1,10 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
-import {MockAggregator} from '@aave/core-v3/contracts/mocks/oracle/CLAggregators/MockAggregator.sol';
+import {GhoOracle} from 'src/contracts/facilitators/aave/oracle/GhoOracle.sol';
 import {IAaveOracle} from '@aave/core-v3/contracts/interfaces/IAaveOracle.sol';
+import {IPool} from '@aave/core-v3/contracts/interfaces/IPool.sol';
 import {IPoolConfigurator} from '@aave/core-v3/contracts/interfaces/IPoolConfigurator.sol';
 import {ConfiguratorInputTypes} from '@aave/core-v3/contracts/protocol/libraries/types/ConfiguratorInputTypes.sol';
-import {IDefaultInterestRateStrategyV2} from '@aave/core-v3/contracts/interfaces/IDefaultInterestRateStrategyV2.sol';
+import {GhoInterestRateStrategy} from 'src/contracts/facilitators/aave/interestStrategy/GhoInterestRateStrategy.sol';
+import {GhoAToken} from 'src/contracts/facilitators/aave/tokens/GhoAToken.sol';
+import {GhoVariableDebtToken} from 'src/contracts/facilitators/aave/tokens/GhoVariableDebtToken.sol';
 import {GhoToken} from 'src/contracts/gho/GhoToken.sol';
 import 'forge-std/console.sol';
 
@@ -24,7 +27,7 @@ contract LastTestnetReservesConfig {
 
     oracles = new address[](1);
 
-    oracles[0] = address(new MockAggregator(1.005e8));
+    oracles[0] = address(new GhoOracle());
 
     return (tokens, oracles);
   }
@@ -44,7 +47,7 @@ contract LastTestnetReservesConfig {
     return tokens;
   }
 
-function _setAssetSources(
+function _setGhoOracle(
     address[] memory tokens,
     address[] memory oracles
   )
@@ -54,25 +57,31 @@ function _setAssetSources(
     _getAaveOracle().setAssetSources(tokens, oracles);
   }
 
-  function _initReserves(
+  function _initializeGhoReserve(
     address[] memory tokens
   ) 
     internal
   {
     ConfiguratorInputTypes.InitReserveInput[] memory inputs = new ConfiguratorInputTypes.InitReserveInput[](1);
 
-    IDefaultInterestRateStrategyV2.InterestRateData memory rateData = IDefaultInterestRateStrategyV2.InterestRateData({
-      optimalUsageRatio: uint16(80_00),
-      baseVariableBorrowRate: uint32(1_00),
-      variableRateSlope1: uint32(4_00),
-      variableRateSlope2: uint32(60_00)
-    });
+    GhoAToken ghoAToken = new GhoAToken(
+      IPool(0xBD2f32C02140641f497B0Db7B365122214f7c548) // Pool
+    );
+
+    GhoVariableDebtToken ghoVariableDebtToken = new GhoVariableDebtToken(
+      IPool(0xBD2f32C02140641f497B0Db7B365122214f7c548)
+    );
+
+    GhoInterestRateStrategy ghoInterestRateStrategy = new GhoInterestRateStrategy(
+      0x270542372e5a73c39E4290291AB88e2901cCEF2D, // PoolAddressesProvider
+      15000000000000000000000000 // base variable borrow rate (1.5%)
+    );
 
     inputs[0] = ConfiguratorInputTypes.InitReserveInput({
-      aTokenImpl: address(0xEcfc9497777345BEda45506deA064c2e17B06B8c), // Address of the aToken implementation
-      variableDebtTokenImpl: address(0x49526edA124F2295BBF0f02817D1bB27E1C6F23E ), // Address of the variable debt token implementation
-      useVirtualBalance: false, // TODO is this important? not mentioned in code or spark interface
-      interestRateStrategyAddress: address(0xDeaeA8D8769a14092d381Ac44D9cfB5638D68478), // Address of the interest rate strategy
+      aTokenImpl: address(ghoAToken), // Address of the aToken implementation
+      variableDebtTokenImpl: address(ghoVariableDebtToken), // Address of the variable debt token implementation
+      useVirtualBalance: false, // true for all normal assets and should be false only in special cases (ex. GHO) where an asset is minted instead of supplied.
+      interestRateStrategyAddress: address(ghoInterestRateStrategy), // Address of the interest rate strategy
       underlyingAsset: address(tokens[0]), // GHO address
       treasury: address(0xa2CCdD20525d5225b4AB08c10D1aFfb6de84D518), // Address of the treasury
       incentivesController: address(0x21455b64CD8f992B2500a55243d2C179a77C83A1), // Address of the incentives controller
@@ -80,8 +89,8 @@ function _setAssetSources(
       aTokenSymbol: 'awUSDXL',
       variableDebtTokenName: 'Test USDXL Variable Debt Aave',
       variableDebtTokenSymbol: 'variableDebtTestUSDXL',
-      params: bytes(''), // Additional parameters for initialization
-      interestRateData: abi.encode(rateData)
+      params: bytes('0x10'), // Additional parameters for initialization
+      interestRateData: bytes('')
     });
     
     // set reserves configs
@@ -101,7 +110,7 @@ function _setAssetSources(
     );
   }
 
-  function _enableBorrowing(
+  function _enableGhoBorrowing(
     address[] memory tokens
   )
     internal

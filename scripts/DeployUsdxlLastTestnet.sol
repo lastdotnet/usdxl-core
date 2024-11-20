@@ -23,13 +23,22 @@ contract DeployUsdxlLastTestnet is LastTestnetReservesConfig, Script {
 
     (tokens, oracles) = _deployTestnetTokens(deployerAddress);
 
+    // set oracles
+    _setGhoOracle(tokens, oracles);
+
     // set reserve config
-    _initReserves(tokens);
+    _initializeGhoReserve(tokens);
 
     // enable borrowing
-    _enableBorrowing(tokens);
+    _enableGhoBorrowing(tokens);
 
-    // set oracles
-    _setAssetSources(tokens, oracles);
+    // add GHO as entity
+    _addGhoAsEntity(tokens);
+
+    // add GHO flashminter as entity
+    _addGhoFlastMinterAsEntity(tokens);
+
+    // set GHO addresses
+    _setGhoAddresses(tokens);
   }
 }

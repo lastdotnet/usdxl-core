@@ -87,7 +87,6 @@ contract GhoInterestRateStrategy is IDefaultInterestRateStrategy {
     return (0, _baseVariableBorrowRate);
   }
 
-  //TODO: decode struct and set storage values
   /// @inheritdoc IReserveInterestRateStrategy
   function setInterestRateParams(address reserve, bytes calldata rateData) external {}
 }
