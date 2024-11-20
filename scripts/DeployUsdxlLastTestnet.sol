@@ -33,7 +33,7 @@ contract DeployUsdxlLastTestnet is LastTestnetReservesConfig, Script {
     _enableGhoBorrowing(tokens);
 
     // add GHO as entity
-    _addGhoAsEntity(tokens);
+    _addGhoATokenAsEntity(tokens);
 
     // add GHO flashminter as entity
     _addGhoFlastMinterAsEntity(tokens);

@@ -1,17 +1,25 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
-import {GhoOracle} from 'src/contracts/facilitators/aave/oracle/GhoOracle.sol';
+
 import {IAaveOracle} from '@aave/core-v3/contracts/interfaces/IAaveOracle.sol';
 import {IPool} from '@aave/core-v3/contracts/interfaces/IPool.sol';
 import {IPoolConfigurator} from '@aave/core-v3/contracts/interfaces/IPoolConfigurator.sol';
 import {ConfiguratorInputTypes} from '@aave/core-v3/contracts/protocol/libraries/types/ConfiguratorInputTypes.sol';
-import {GhoInterestRateStrategy} from 'src/contracts/facilitators/aave/interestStrategy/GhoInterestRateStrategy.sol';
+
+import {GhoToken} from 'src/contracts/gho/GhoToken.sol';
+import {GhoOracle} from 'src/contracts/facilitators/aave/oracle/GhoOracle.sol';
 import {GhoAToken} from 'src/contracts/facilitators/aave/tokens/GhoAToken.sol';
 import {GhoVariableDebtToken} from 'src/contracts/facilitators/aave/tokens/GhoVariableDebtToken.sol';
-import {GhoToken} from 'src/contracts/gho/GhoToken.sol';
+import {GhoInterestRateStrategy} from 'src/contracts/facilitators/aave/interestStrategy/GhoInterestRateStrategy.sol';
+import {GhoFlashMinter} from 'src/contracts/facilitators/flashMinter/GhoFlashMinter.sol';
+
 import 'forge-std/console.sol';
 
 contract LastTestnetReservesConfig {
+
+  GhoAToken ghoAToken;
+  GhoVariableDebtToken ghoVariableDebtToken;
+  
   function _deployTestnetTokens(
     address deployer
   )
@@ -64,11 +72,11 @@ function _setGhoOracle(
   {
     ConfiguratorInputTypes.InitReserveInput[] memory inputs = new ConfiguratorInputTypes.InitReserveInput[](1);
 
-    GhoAToken ghoAToken = new GhoAToken(
+    ghoAToken = new GhoAToken(
       IPool(0xBD2f32C02140641f497B0Db7B365122214f7c548) // Pool
     );
 
-    GhoVariableDebtToken ghoVariableDebtToken = new GhoVariableDebtToken(
+    ghoVariableDebtToken = new GhoVariableDebtToken(
       IPool(0xBD2f32C02140641f497B0Db7B365122214f7c548)
     );
 
@@ -116,6 +124,59 @@ function _setGhoOracle(
     internal
   {
     _getPoolConfigurator().setReserveBorrowing(tokens[0], true);
+  }
+
+  function _addGhoATokenAsEntity(
+    address[] memory tokens
+  )
+    internal
+  {
+    GhoToken(tokens[0]).addFacilitator(
+      address(ghoAToken),
+      'Aave V3 Last Testnet Market', // entity label
+      1e27 // entity mint limit (100mil)
+    );
+  }
+
+  function _addGhoFlashMinterAsEntity(
+    address[] memory tokens
+  )
+    internal
+  {
+    GhoFlashMinter ghoFlashMinter = new GhoFlashMinter(
+      tokens[0], // GHO token
+      0xa2CCdD20525d5225b4AB08c10D1aFfb6de84D518, // TreasuryProxy
+      0, // fee in bips for flash-minting (covered on repay)
+      0x270542372e5a73c39E4290291AB88e2901cCEF2D // PoolAddressesProvider
+    );
+
+    GhoToken(tokens[0]).addFacilitator(
+      address(ghoFlashMinter),
+      'Aave V3 Last Testnet Market', // entity label
+      1e27 // entity mint limit (100mil)
+    );
+  }
+
+  function _setGhoAddresses(
+    address[] memory tokens
+  )
+    internal
+  {
+    ghoAToken.updateGhoTreasury(0xa2CCdD20525d5225b4AB08c10D1aFfb6de84D518);
+
+    ghoAToken.setVariableDebtToken(address(ghoVariableDebtToken));
+
+    ghoVariableDebtToken.setAToken(address(ghoAToken));
+  }
+
+  function _setDiscountRateStrategy(
+    address discountRateStrategy,
+    address discountToken
+  )
+    internal
+  {
+    ghoVariableDebtToken.updateDiscountRateStrategy(discountRateStrategy);
+    ghoVariableDebtToken.updateDiscountToken(discountToken);
   }
 
   function _getAaveOracle()
