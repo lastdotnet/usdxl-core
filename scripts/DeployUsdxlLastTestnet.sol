@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import {Script, console2} from 'forge-std/Script.sol';
 import {LastTestnetReservesConfig} from 'src/deployments/configs/LastTestnetReservesConfig.sol';
 
-contract DeployUsdxlLastTestnet is LastTestnetReservesConfig, Script {
+contract Default is LastTestnetReservesConfig, Script {
   function run() external {
     uint256 deployerPrivateKey = vm.envUint('PRIVATE_KEY');
     address deployerAddress = vm.addr(deployerPrivateKey);
@@ -36,7 +36,7 @@ contract DeployUsdxlLastTestnet is LastTestnetReservesConfig, Script {
     _addGhoATokenAsEntity(tokens);
 
     // add GHO flashminter as entity
-    _addGhoFlastMinterAsEntity(tokens);
+    _addGhoFlashMinterAsEntity(tokens);
 
     // set GHO addresses
     _setGhoAddresses(tokens);

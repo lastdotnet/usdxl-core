@@ -50,7 +50,7 @@ contract LastTestnetReservesConfig {
   { 
     tokens  = new address[](1);
     
-    tokens[0] = address(0x0); // GHO
+    tokens[0] = address(0x17a44c591ac723D76050Fe6bf02B49A0CC8F3994); // GHO
 
     return tokens;
   }
@@ -103,19 +103,6 @@ function _setGhoOracle(
     
     // set reserves configs
     _getPoolConfigurator().initReserves(inputs);
-  }
-
-  function _enableCollateral(
-    address[] memory tokens
-  )
-    internal
-  {
-    _getPoolConfigurator().configureReserveAsCollateral(
-      tokens[0],
-      8000, // LTV (80%)
-      9000, // Liq. threshold (90%)
-      10500 // Liq. bonus (5% tax)
-    );
   }
 
   function _enableGhoBorrowing(

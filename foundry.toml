@@ -5,7 +5,7 @@ test = 'src/test'
 script = 'src/script'
 cache_path  = 'cache_forge'
 libs = ['node_modules', 'lib']
-
+evm_version = 'shanghai'
 
 solc_version = "0.8.20"
 extra_output_files = ["metadata"]

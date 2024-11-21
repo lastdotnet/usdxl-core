@@ -28,6 +28,7 @@ contract GhoToken is ERC20, AccessControl, IGhoToken {
    */
   constructor(address admin) ERC20('Usdxl Token', 'USDXL', 18) {
     _grantRole(DEFAULT_ADMIN_ROLE, admin);
+    _grantRole(FACILITATOR_MANAGER_ROLE, admin);
   }
 
   /// @inheritdoc IGhoToken
