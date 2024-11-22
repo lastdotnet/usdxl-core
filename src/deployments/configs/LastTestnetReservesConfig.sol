@@ -6,6 +6,7 @@ import {IPool} from '@aave/core-v3/contracts/interfaces/IPool.sol';
 import {IPoolConfigurator} from '@aave/core-v3/contracts/interfaces/IPoolConfigurator.sol';
 import {ConfiguratorInputTypes} from '@aave/core-v3/contracts/protocol/libraries/types/ConfiguratorInputTypes.sol';
 
+import {IGhoToken} from 'src/contracts/gho/interfaces/IGhoToken.sol';
 import {GhoToken} from 'src/contracts/gho/GhoToken.sol';
 import {GhoOracle} from 'src/contracts/facilitators/aave/oracle/GhoOracle.sol';
 import {GhoAToken} from 'src/contracts/facilitators/aave/tokens/GhoAToken.sol';
@@ -50,7 +51,7 @@ contract LastTestnetReservesConfig {
   { 
     tokens  = new address[](1);
     
-    tokens[0] = address(0x17a44c591ac723D76050Fe6bf02B49A0CC8F3994); // GHO
+    tokens[0] = address(_getGhoToken()); // GHO
 
     return tokens;
   }
@@ -73,11 +74,11 @@ function _setGhoOracle(
     ConfiguratorInputTypes.InitReserveInput[] memory inputs = new ConfiguratorInputTypes.InitReserveInput[](1);
 
     ghoAToken = new GhoAToken(
-      IPool(0xBD2f32C02140641f497B0Db7B365122214f7c548) // Pool
+      _getPoolInstance()
     );
 
     ghoVariableDebtToken = new GhoVariableDebtToken(
-      IPool(0xBD2f32C02140641f497B0Db7B365122214f7c548)
+      _getPoolInstance()
     );
 
     GhoInterestRateStrategy ghoInterestRateStrategy = new GhoInterestRateStrategy(
@@ -113,13 +114,11 @@ function _setGhoOracle(
     _getPoolConfigurator().setReserveBorrowing(tokens[0], true);
   }
 
-  function _addGhoATokenAsEntity(
-    address[] memory tokens
-  )
+  function _addGhoATokenAsEntity()
     internal
   {
-    GhoToken(tokens[0]).addFacilitator(
-      address(ghoAToken),
+    _getGhoToken().addFacilitator(
+      address(_getGhoATokenProxy()),
       'Aave V3 Last Testnet Market', // entity label
       1e27 // entity mint limit (100mil)
     );
@@ -156,14 +155,32 @@ function _setGhoOracle(
     ghoVariableDebtToken.setAToken(address(ghoAToken));
   }
 
-  function _setDiscountRateStrategy(
+  function _setDiscountTokenAndStrategy(
     address discountRateStrategy,
     address discountToken
   )
     internal
   {
-    ghoVariableDebtToken.updateDiscountRateStrategy(discountRateStrategy);
-    ghoVariableDebtToken.updateDiscountToken(discountToken);
+    ghoVariableDebtToken = GhoVariableDebtToken(0x9A29D4ad8fa79C328c4350BF771399fD2f991dC4);
+    if (discountRateStrategy != address(0))
+      ghoVariableDebtToken.updateDiscountRateStrategy(discountRateStrategy);
+    if (discountToken != address(0))
+      ghoVariableDebtToken.updateDiscountToken(discountToken);
+  }
+
+  function _borrowUsdxl(
+    uint256 amount,
+    address onBehalfOf
+  )
+    internal
+  {
+    _getPoolInstance().borrow(
+      address(_getGhoToken()),
+      amount,
+      2, // interest rate mode
+      0,
+      onBehalfOf
+    );
   }
 
   function _getAaveOracle()
@@ -184,5 +201,35 @@ function _setGhoOracle(
     )
   {
     return IPoolConfigurator(0x4c1E6019200329A039d5AD5b577838967250c0C3);
+  }
+
+  function _getPoolInstance()
+    internal
+    pure
+    returns (
+      IPool
+    )
+  {
+    return IPool(0xBD2f32C02140641f497B0Db7B365122214f7c548);
+  }
+
+  function _getGhoToken()
+    internal
+    pure
+    returns (
+      IGhoToken
+    )
+  {
+    return IGhoToken(0x17a44c591ac723D76050Fe6bf02B49A0CC8F3994);
+  }
+
+  function _getGhoATokenProxy()
+    internal
+    pure
+    returns (
+      address
+    )
+  {
+    return 0x43FF14af721DC22e891cA16A1504692aFcf0a06b;
   }
 }
