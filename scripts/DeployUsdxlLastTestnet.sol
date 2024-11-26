@@ -23,34 +23,34 @@ contract Default is LastTestnetReservesConfig, Script {
     address[] memory tokens;
     address[] memory oracles;
 
-    // (tokens, oracles) = _deployTestnetTokens(deployerAddress);
+    (tokens, oracles) = _deployTestnetTokens(deployerAddress);
 
-    // // set oracles
-    // _setGhoOracle(tokens, oracles);
+    // set oracles
+    _setGhoOracle(tokens, oracles);
 
-    // // set reserve config
-    // _initializeGhoReserve(tokens);
+    // set reserve config
+    _initializeGhoReserve(tokens);
 
-    // // enable borrowing
-    // _enableGhoBorrowing(tokens);
+    // enable borrowing
+    _enableGhoBorrowing(tokens);
 
     // add GHO as entity
     _addGhoATokenAsEntity();
 
-    // // add GHO flashminter as entity
-    // _addGhoFlashMinterAsEntity(tokens);
+    // add GHO flashminter as entity
+    _addGhoFlashMinterAsEntity(tokens);
 
-    // // set GHO addresses
-    // _setGhoAddresses(tokens);
+    // set GHO addresses
+    _setGhoAddresses(tokens);
 
-    // ERC20 nonMintableErc20;
+    ERC20 nonMintableErc20;
 
-    // nonMintableErc20 = new ERC20('Discount Token', 'DSCNT');
+    nonMintableErc20 = new ERC20('Discount Token', 'DSCNT');
 
-    // ZeroDiscountRateStrategy discountRateStrategy;
+    ZeroDiscountRateStrategy discountRateStrategy;
 
-    // discountRateStrategy = new ZeroDiscountRateStrategy();
+    discountRateStrategy = new ZeroDiscountRateStrategy();
 
-    // _setDiscountTokenAndStrategy(address(discountRateStrategy), address(nonMintableErc20));
+    _setDiscountTokenAndStrategy(address(discountRateStrategy), address(nonMintableErc20));
   }
 }
