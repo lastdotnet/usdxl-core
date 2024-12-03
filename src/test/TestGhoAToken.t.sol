@@ -5,14 +5,14 @@ import './TestGhoBase.t.sol';
 
 contract TestGhoAToken is TestGhoBase {
   function testConstructor() public {
-    GhoAToken aToken = new GhoAToken(IPool(address(POOL)));
+    UsdxlAToken aToken = new UsdxlAToken(IPool(address(POOL)));
     assertEq(aToken.name(), 'GHO_ATOKEN_IMPL', 'Wrong default ERC20 name');
     assertEq(aToken.symbol(), 'GHO_ATOKEN_IMPL', 'Wrong default ERC20 symbol');
     assertEq(aToken.decimals(), 0, 'Wrong default ERC20 decimals');
   }
 
   function testInitialize() public {
-    GhoAToken aToken = new GhoAToken(IPool(address(POOL)));
+    UsdxlAToken aToken = new UsdxlAToken(IPool(address(POOL)));
     string memory tokenName = 'Aave GHO';
     string memory tokenSymbol = 'aGHO';
     bytes memory empty;
@@ -37,7 +37,7 @@ contract TestGhoAToken is TestGhoBase {
     string memory tokenSymbol = 'aGHO';
     bytes memory empty;
 
-    GhoAToken aToken = new GhoAToken(IPool(address(POOL)));
+    UsdxlAToken aToken = new UsdxlAToken(IPool(address(POOL)));
     vm.expectRevert(bytes(Errors.POOL_ADDRESSES_DO_NOT_MATCH));
     aToken.initialize(
       IPool(address(0)),
@@ -99,7 +99,7 @@ contract TestGhoAToken is TestGhoBase {
   }
 
   function testUnauthorizedSetVariableDebtToken() public {
-    GhoAToken aToken = new GhoAToken(IPool(address(POOL)));
+    UsdxlAToken aToken = new UsdxlAToken(IPool(address(POOL)));
 
     vm.startPrank(ALICE);
     ACL_MANAGER.setState(false);
@@ -109,7 +109,7 @@ contract TestGhoAToken is TestGhoBase {
   }
 
   function testSetVariableDebtToken() public {
-    GhoAToken aToken = new GhoAToken(IPool(address(POOL)));
+    UsdxlAToken aToken = new UsdxlAToken(IPool(address(POOL)));
 
     vm.expectEmit(true, true, true, true, address(aToken));
     emit VariableDebtTokenSet(address(GHO_DEBT_TOKEN));
@@ -124,7 +124,7 @@ contract TestGhoAToken is TestGhoBase {
   }
 
   function testZeroVariableDebtToken() public {
-    GhoAToken aToken = new GhoAToken(IPool(address(POOL)));
+    UsdxlAToken aToken = new UsdxlAToken(IPool(address(POOL)));
 
     vm.startPrank(ALICE);
     vm.expectRevert(bytes('ZERO_ADDRESS_NOT_VALID'));
@@ -221,15 +221,15 @@ contract TestGhoAToken is TestGhoBase {
 
   function testUpdateGhoTreasuryRevertIfZero() public {
     vm.expectRevert(bytes('ZERO_ADDRESS_NOT_VALID'));
-    GHO_ATOKEN.updateGhoTreasury(address(0));
+    GHO_ATOKEN.updateUsdxlTreasury(address(0));
   }
 
   function testUpdateGhoTreasury() public {
     vm.expectEmit(true, true, true, true, address(GHO_ATOKEN));
     emit GhoTreasuryUpdated(TREASURY, ALICE);
-    GHO_ATOKEN.updateGhoTreasury(ALICE);
+    GHO_ATOKEN.updateUsdxlTreasury(ALICE);
 
-    assertEq(GHO_ATOKEN.getGhoTreasury(), ALICE);
+    assertEq(GHO_ATOKEN.getUsdxlTreasury(), ALICE);
   }
 
   function testUnauthorizedUpdateGhoTreasuryRevert() public {
@@ -238,7 +238,7 @@ contract TestGhoAToken is TestGhoBase {
     vm.prank(ALICE);
 
     vm.expectRevert(bytes(Errors.CALLER_NOT_POOL_ADMIN));
-    GHO_ATOKEN.updateGhoTreasury(ALICE);
+    GHO_ATOKEN.updateUsdxlTreasury(ALICE);
   }
 
   function testDomainSeparator() public {

@@ -9,15 +9,15 @@ contract TestGhoFlashMinter is TestGhoBase {
     emit GhoTreasuryUpdated(address(0), TREASURY);
     vm.expectEmit(false, false, false, true);
     emit FeeUpdated(0, DEFAULT_FLASH_FEE);
-    GhoFlashMinter flashMinter = new GhoFlashMinter(
+    UsdxlFlashMinter flashMinter = new UsdxlFlashMinter(
       address(GHO_TOKEN),
       TREASURY,
       DEFAULT_FLASH_FEE,
       address(PROVIDER)
     );
-    assertEq(address(flashMinter.GHO_TOKEN()), address(GHO_TOKEN), 'Wrong GHO token address');
+    assertEq(address(flashMinter.USDXL_TOKEN()), address(GHO_TOKEN), 'Wrong GHO token address');
     assertEq(flashMinter.getFee(), DEFAULT_FLASH_FEE, 'Wrong fee');
-    assertEq(flashMinter.getGhoTreasury(), TREASURY, 'Wrong TREASURY address');
+    assertEq(flashMinter.getUsdxlTreasury(), TREASURY, 'Wrong TREASURY address');
     assertEq(
       address(flashMinter.ADDRESSES_PROVIDER()),
       address(PROVIDER),
@@ -27,7 +27,7 @@ contract TestGhoFlashMinter is TestGhoBase {
 
   function testRevertConstructorFeeOutOfRange() public {
     vm.expectRevert('FlashMinter: Fee out of range');
-    new GhoFlashMinter(address(GHO_TOKEN), TREASURY, 10001, address(PROVIDER));
+    new UsdxlFlashMinter(address(GHO_TOKEN), TREASURY, 10001, address(PROVIDER));
   }
 
   function testRevertFlashloanNonRecipient() public {
@@ -103,7 +103,7 @@ contract TestGhoFlashMinter is TestGhoBase {
     );
 
     vm.expectRevert('CALLER_NOT_POOL_ADMIN');
-    GHO_FLASH_MINTER.updateGhoTreasury(address(0));
+    GHO_FLASH_MINTER.updateUsdxlTreasury(address(0));
   }
 
   function testRevertFlashfeeNotGho() public {
@@ -170,11 +170,11 @@ contract TestGhoFlashMinter is TestGhoBase {
   }
 
   function testUpdateGhoTreasury() public {
-    assertEq(GHO_FLASH_MINTER.getGhoTreasury(), TREASURY, 'Flashminter non-default TREASURY');
+    assertEq(GHO_FLASH_MINTER.getUsdxlTreasury(), TREASURY, 'Flashminter non-default TREASURY');
     assertTrue(TREASURY != address(this));
     vm.expectEmit(true, true, false, false, address(GHO_FLASH_MINTER));
     emit GhoTreasuryUpdated(TREASURY, address(this));
-    GHO_FLASH_MINTER.updateGhoTreasury(address(this));
+    GHO_FLASH_MINTER.updateUsdxlTreasury(address(this));
   }
 
   function testMaxFlashloanNotGho() public {

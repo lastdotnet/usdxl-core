@@ -8,8 +8,8 @@ import {EIP712} from '@openzeppelin/contracts/utils/cryptography/EIP712.sol';
 import {SignatureChecker} from '@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol';
 import {SafeCast} from '@openzeppelin/contracts/utils/math/SafeCast.sol';
 import {AccessControl} from '@openzeppelin/contracts/access/AccessControl.sol';
-import {IGhoFacilitator} from '../../contracts/gho/interfaces/IGhoFacilitator.sol';
-import {IGhoToken} from '../../contracts/gho/interfaces/IGhoToken.sol';
+import {IUsdxlFacilitator} from '../../contracts/gho/interfaces/IGhoFacilitator.sol';
+import {IUsdxlToken} from '../../contracts/gho/interfaces/IGhoToken.sol';
 import {IGsmPriceStrategy} from '../../contracts/facilitators/gsm/priceStrategy/interfaces/IGsmPriceStrategy.sol';
 import {IGsmFeeStrategy} from '../../contracts/facilitators/gsm/feeStrategy/interfaces/IGsmFeeStrategy.sol';
 import {IGsm} from '../../contracts/facilitators/gsm/interfaces/IGsm.sol';
@@ -53,7 +53,7 @@ contract MockGsmFailedBuyAssetRemainingGhoBalance is
     );
 
   /// @inheritdoc IGsm
-  address public immutable GHO_TOKEN;
+  address public immutable USDXL_TOKEN;
 
   /// @inheritdoc IGsm
   address public immutable UNDERLYING_ASSET;
@@ -106,7 +106,7 @@ contract MockGsmFailedBuyAssetRemainingGhoBalance is
       IGsmPriceStrategy(priceStrategy).UNDERLYING_ASSET() == underlyingAsset,
       'INVALID_PRICE_STRATEGY'
     );
-    GHO_TOKEN = ghoToken;
+    USDXL_TOKEN = ghoToken;
     UNDERLYING_ASSET = underlyingAsset;
     PRICE_STRATEGY = priceStrategy;
   }
@@ -202,7 +202,7 @@ contract MockGsmFailedBuyAssetRemainingGhoBalance is
     uint256 amount
   ) external onlyRole(TOKEN_RESCUER_ROLE) {
     require(amount > 0, 'INVALID_AMOUNT');
-    if (token == GHO_TOKEN) {
+    if (token == USDXL_TOKEN) {
       uint256 rescuableBalance = IERC20(token).balanceOf(address(this)) - _accruedFees;
       require(rescuableBalance >= amount, 'INSUFFICIENT_GHO_TO_RESCUE');
     }
@@ -231,7 +231,7 @@ contract MockGsmFailedBuyAssetRemainingGhoBalance is
     _currentExposure = 0;
     _updateExposureCap(0);
 
-    (, uint256 ghoMinted) = IGhoToken(GHO_TOKEN).getFacilitatorBucket(address(this));
+    (, uint256 ghoMinted) = IUsdxlToken(USDXL_TOKEN).getFacilitatorBucket(address(this));
     uint256 underlyingBalance = IERC20(UNDERLYING_ASSET).balanceOf(address(this));
     if (underlyingBalance > 0) {
       IERC20(UNDERLYING_ASSET).safeTransfer(_ghoTreasury, underlyingBalance);
@@ -246,12 +246,12 @@ contract MockGsmFailedBuyAssetRemainingGhoBalance is
     require(_isSeized, 'GSM_NOT_SEIZED');
     require(amount > 0, 'INVALID_AMOUNT');
 
-    (, uint256 ghoMinted) = IGhoToken(GHO_TOKEN).getFacilitatorBucket(address(this));
+    (, uint256 ghoMinted) = IUsdxlToken(USDXL_TOKEN).getFacilitatorBucket(address(this));
     if (amount > ghoMinted) {
       amount = ghoMinted;
     }
-    IGhoToken(GHO_TOKEN).transferFrom(msg.sender, address(this), amount);
-    IGhoToken(GHO_TOKEN).burn(amount);
+    IUsdxlToken(USDXL_TOKEN).transferFrom(msg.sender, address(this), amount);
+    IUsdxlToken(USDXL_TOKEN).burn(amount);
 
     emit BurnAfterSeize(msg.sender, amount, (ghoMinted - amount));
     return amount;
@@ -267,18 +267,20 @@ contract MockGsmFailedBuyAssetRemainingGhoBalance is
     _updateExposureCap(exposureCap);
   }
 
-  /// @inheritdoc IGhoFacilitator
+  /// @inheritdoc IUsdxlFacilitator
   function distributeFeesToTreasury() public virtual override {
     uint256 accruedFees = _accruedFees;
     if (accruedFees > 0) {
       _accruedFees = 0;
-      IERC20(GHO_TOKEN).transfer(_ghoTreasury, accruedFees);
-      emit FeesDistributedToTreasury(_ghoTreasury, GHO_TOKEN, accruedFees);
+      IERC20(USDXL_TOKEN).transfer(_ghoTreasury, accruedFees);
+      emit FeesDistributedToTreasury(_ghoTreasury, USDXL_TOKEN, accruedFees);
     }
   }
 
-  /// @inheritdoc IGhoFacilitator
-  function updateGhoTreasury(address newGhoTreasury) external override onlyRole(CONFIGURATOR_ROLE) {
+  /// @inheritdoc IUsdxlFacilitator
+  function updateUsdxlTreasury(
+    address newGhoTreasury
+  ) external override onlyRole(CONFIGURATOR_ROLE) {
     _updateGhoTreasury(newGhoTreasury);
   }
 
@@ -383,8 +385,8 @@ contract MockGsmFailedBuyAssetRemainingGhoBalance is
     return !_isFrozen && !_isSeized;
   }
 
-  /// @inheritdoc IGhoFacilitator
-  function getGhoTreasury() external view override returns (address) {
+  /// @inheritdoc IUsdxlFacilitator
+  function getUsdxlTreasury() external view override returns (address) {
     return _ghoTreasury;
   }
 
@@ -421,8 +423,8 @@ contract MockGsmFailedBuyAssetRemainingGhoBalance is
     _currentExposure -= uint128(assetAmount);
     _accruedFees += fee.toUint128();
     // TRIGGER ERROR: transfer incorrect GHO amount to GSM
-    IGhoToken(GHO_TOKEN).transferFrom(originator, address(this), ghoSold - 1);
-    IGhoToken(GHO_TOKEN).burn(grossAmount);
+    IUsdxlToken(USDXL_TOKEN).transferFrom(originator, address(this), ghoSold - 1);
+    IUsdxlToken(USDXL_TOKEN).burn(grossAmount);
     IERC20(UNDERLYING_ASSET).safeTransfer(receiver, assetAmount);
 
     emit BuyAsset(originator, receiver, assetAmount, ghoSold, fee);
@@ -467,8 +469,8 @@ contract MockGsmFailedBuyAssetRemainingGhoBalance is
     _accruedFees += fee.toUint128();
     IERC20(UNDERLYING_ASSET).safeTransferFrom(originator, address(this), assetAmount);
 
-    IGhoToken(GHO_TOKEN).mint(address(this), grossAmount);
-    IGhoToken(GHO_TOKEN).transfer(receiver, ghoBought);
+    IUsdxlToken(USDXL_TOKEN).mint(address(this), grossAmount);
+    IUsdxlToken(USDXL_TOKEN).transfer(receiver, ghoBought);
 
     emit SellAsset(originator, receiver, assetAmount, grossAmount, fee);
     return (assetAmount, ghoBought);
@@ -571,7 +573,7 @@ contract MockGsmFailedBuyAssetRemainingGhoBalance is
     require(newGhoTreasury != address(0), 'ZERO_ADDRESS_NOT_VALID');
     address oldGhoTreasury = _ghoTreasury;
     _ghoTreasury = newGhoTreasury;
-    emit GhoTreasuryUpdated(oldGhoTreasury, newGhoTreasury);
+    emit UsdxlTreasuryUpdated(oldGhoTreasury, newGhoTreasury);
   }
 
   /// @inheritdoc VersionedInitializable

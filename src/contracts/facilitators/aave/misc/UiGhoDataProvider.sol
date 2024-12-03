@@ -4,68 +4,68 @@ pragma solidity ^0.8.10;
 import {IERC20} from '@aave/core-v3/contracts/dependencies/openzeppelin/contracts/IERC20.sol';
 import {IPool} from '@aave/core-v3/contracts/interfaces/IPool.sol';
 import {DataTypes} from '@aave/core-v3/contracts/protocol/libraries/types/DataTypes.sol';
-import {IGhoToken} from 'src/contracts/gho/interfaces/IGhoToken.sol';
-import {GhoDiscountRateStrategy} from '../interestStrategy/GhoDiscountRateStrategy.sol';
-import {IGhoVariableDebtToken} from '../tokens/interfaces/IGhoVariableDebtToken.sol';
-import {IUiGhoDataProvider} from './interfaces/IUiGhoDataProvider.sol';
+import {IUsdxlToken} from 'src/contracts/gho/interfaces/IGhoToken.sol';
+import {UsdxlDiscountRateStrategy} from '../interestStrategy/GhoDiscountRateStrategy.sol';
+import {IUsdxlVariableDebtToken} from '../tokens/interfaces/IGhoVariableDebtToken.sol';
+import {IUiUsdxlDataProvider} from './interfaces/IUiGhoDataProvider.sol';
 
 /**
  * @title UiGhoDataProvider
  * @author Aave
- * @notice Data provider of GHO token as a reserve within the Aave Protocol
+ * @notice Data provider of USDXL token as a reserve within the Aave Protocol
  */
-contract UiGhoDataProvider is IUiGhoDataProvider {
+contract UiUsdxlDataProvider is IUiUsdxlDataProvider {
   IPool public immutable POOL;
-  IGhoToken public immutable GHO;
+  IUsdxlToken public immutable USDXL;
 
   /**
    * @dev Constructor
    * @param pool The address of the Pool contract
-   * @param ghoToken The address of the GhoToken contract
+   * @param usdxlToken The address of the GhoToken contract
    */
-  constructor(IPool pool, IGhoToken ghoToken) {
+  constructor(IPool pool, IUsdxlToken usdxlToken) {
     POOL = pool;
-    GHO = ghoToken;
+    USDXL = usdxlToken;
   }
 
-  /// @inheritdoc IUiGhoDataProvider
-  function getGhoReserveData() public view override returns (GhoReserveData memory) {
-    DataTypes.ReserveDataLegacy memory baseData = POOL.getReserveData(address(GHO));
-    IGhoVariableDebtToken debtToken = IGhoVariableDebtToken(baseData.variableDebtTokenAddress);
-    GhoDiscountRateStrategy discountRateStrategy = GhoDiscountRateStrategy(
+  /// @inheritdoc IUiUsdxlDataProvider
+  function getUsdxlReserveData() public view override returns (UsdxlReserveData memory) {
+    DataTypes.ReserveDataLegacy memory baseData = POOL.getReserveData(address(USDXL));
+    IUsdxlVariableDebtToken debtToken = IUsdxlVariableDebtToken(baseData.variableDebtTokenAddress);
+    UsdxlDiscountRateStrategy discountRateStrategy = UsdxlDiscountRateStrategy(
       debtToken.getDiscountRateStrategy()
     );
 
-    (uint256 bucketCapacity, uint256 bucketLevel) = GHO.getFacilitatorBucket(
+    (uint256 bucketCapacity, uint256 bucketLevel) = USDXL.getFacilitatorBucket(
       baseData.aTokenAddress
     );
 
     return
-      GhoReserveData({
-        ghoBaseVariableBorrowRate: baseData.currentVariableBorrowRate,
-        ghoDiscountedPerToken: discountRateStrategy.GHO_DISCOUNTED_PER_DISCOUNT_TOKEN(),
-        ghoDiscountRate: discountRateStrategy.DISCOUNT_RATE(),
-        ghoMinDebtTokenBalanceForDiscount: discountRateStrategy.MIN_DEBT_TOKEN_BALANCE(),
-        ghoMinDiscountTokenBalanceForDiscount: discountRateStrategy.MIN_DISCOUNT_TOKEN_BALANCE(),
-        ghoReserveLastUpdateTimestamp: baseData.lastUpdateTimestamp,
-        ghoCurrentBorrowIndex: baseData.variableBorrowIndex,
+      UsdxlReserveData({
+        usdxlBaseVariableBorrowRate: baseData.currentVariableBorrowRate,
+        usdxlDiscountedPerToken: discountRateStrategy.USDXL_DISCOUNTED_PER_DISCOUNT_TOKEN(),
+        usdxlDiscountRate: discountRateStrategy.DISCOUNT_RATE(),
+        usdxlMinDebtTokenBalanceForDiscount: discountRateStrategy.MIN_DEBT_TOKEN_BALANCE(),
+        usdxlMinDiscountTokenBalanceForDiscount: discountRateStrategy.MIN_DISCOUNT_TOKEN_BALANCE(),
+        usdxlReserveLastUpdateTimestamp: baseData.lastUpdateTimestamp,
+        usdxlCurrentBorrowIndex: baseData.variableBorrowIndex,
         aaveFacilitatorBucketLevel: bucketLevel,
         aaveFacilitatorBucketMaxCapacity: bucketCapacity
       });
   }
 
-  /// @inheritdoc IUiGhoDataProvider
-  function getGhoUserData(address user) public view override returns (GhoUserData memory) {
-    DataTypes.ReserveDataLegacy memory baseData = POOL.getReserveData(address(GHO));
-    IGhoVariableDebtToken debtToken = IGhoVariableDebtToken(baseData.variableDebtTokenAddress);
+  /// @inheritdoc IUiUsdxlDataProvider
+  function getUsdxlUserData(address user) public view override returns (UsdxlUserData memory) {
+    DataTypes.ReserveDataLegacy memory baseData = POOL.getReserveData(address(USDXL));
+    IUsdxlVariableDebtToken debtToken = IUsdxlVariableDebtToken(baseData.variableDebtTokenAddress);
     address discountToken = debtToken.getDiscountToken();
 
     return
-      GhoUserData({
-        userGhoDiscountPercent: debtToken.getDiscountPercent(user),
+      UsdxlUserData({
+        userUsdxlDiscountPercent: debtToken.getDiscountPercent(user),
         userDiscountTokenBalance: IERC20(discountToken).balanceOf(user),
-        userPreviousGhoBorrowIndex: debtToken.getPreviousIndex(user),
-        userGhoScaledBorrowBalance: debtToken.scaledBalanceOf(user)
+        userPreviousUsdxlBorrowIndex: debtToken.getPreviousIndex(user),
+        userUsdxlScaledBorrowBalance: debtToken.scaledBalanceOf(user)
       });
   }
 }

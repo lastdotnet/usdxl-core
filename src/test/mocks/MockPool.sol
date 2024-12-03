@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {GhoVariableDebtToken} from '../../contracts/facilitators/aave/tokens/GhoVariableDebtToken.sol';
-import {GhoAToken} from '../../contracts/facilitators/aave/tokens/GhoAToken.sol';
-import {IGhoToken} from 'src/contracts/gho/interfaces/IGhoToken.sol';
-import {GhoDiscountRateStrategy} from '../../contracts/facilitators/aave/interestStrategy/GhoDiscountRateStrategy.sol';
-import {GhoInterestRateStrategy} from '../../contracts/facilitators/aave/interestStrategy/GhoInterestRateStrategy.sol';
+import {UsdxlVariableDebtToken} from '../../contracts/facilitators/aave/tokens/GhoVariableDebtToken.sol';
+import {UsdxlAToken} from '../../contracts/facilitators/aave/tokens/GhoAToken.sol';
+import {IUsdxlToken} from 'src/contracts/gho/interfaces/IGhoToken.sol';
+import {UsdxlDiscountRateStrategy} from '../../contracts/facilitators/aave/interestStrategy/GhoDiscountRateStrategy.sol';
+import {UsdxlInterestRateStrategy} from '../../contracts/facilitators/aave/interestStrategy/GhoInterestRateStrategy.sol';
 import {IPool} from '@aave/core-v3/contracts/interfaces/IPool.sol';
 import {IPoolAddressesProvider} from '@aave/core-v3/contracts/interfaces/IPoolAddressesProvider.sol';
 import {IAaveIncentivesController} from '@aave/core-v3/contracts/interfaces/IAaveIncentivesController.sol';
@@ -26,8 +26,8 @@ contract MockPool is Pool {
   using UserConfiguration for DataTypes.UserConfigurationMap;
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
 
-  GhoVariableDebtToken public DEBT_TOKEN;
-  GhoAToken public ATOKEN;
+  UsdxlVariableDebtToken public DEBT_TOKEN;
+  UsdxlAToken public ATOKEN;
   address public GHO;
 
   constructor(IPoolAddressesProvider provider) Pool(provider) {}
@@ -43,14 +43,14 @@ contract MockPool is Pool {
     return 1;
   }
 
-  function setGhoTokens(GhoVariableDebtToken ghoDebtToken, GhoAToken ghoAToken) external {
+  function setGhoTokens(UsdxlVariableDebtToken ghoDebtToken, UsdxlAToken ghoAToken) external {
     DEBT_TOKEN = ghoDebtToken;
     ATOKEN = ghoAToken;
     GHO = ghoAToken.UNDERLYING_ASSET_ADDRESS();
     _reserves[GHO].init(
       address(ATOKEN),
       address(DEBT_TOKEN),
-      address(new GhoInterestRateStrategy(address(0), 2e25))
+      address(new UsdxlInterestRateStrategy(address(0), 2e25))
     );
   }
 

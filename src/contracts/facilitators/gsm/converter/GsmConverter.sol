@@ -6,7 +6,7 @@ import {IERC20} from '@aave/core-v3/contracts/dependencies/openzeppelin/contract
 import {EIP712} from '@openzeppelin/contracts/utils/cryptography/EIP712.sol';
 import {SignatureChecker} from '@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol';
 import {Ownable} from '@openzeppelin/contracts/access/Ownable.sol';
-import {IGhoToken} from '../../../gho/interfaces/IGhoToken.sol';
+import {IUsdxlToken} from '../../../gho/interfaces/IGhoToken.sol';
 import {IGsm} from '../interfaces/IGsm.sol';
 import {IGsmConverter} from './interfaces/IGsmConverter.sol';
 import {IRedemption} from '../dependencies/circle/IRedemption.sol';
@@ -84,7 +84,7 @@ contract GsmConverter is Ownable, EIP712, IGsmConverter {
     SUBSCRIPTION_CONTRACT = issuanceReceiverContract;
     ISSUED_ASSET = issuedAsset; // BUIDL
     REDEEMED_ASSET = redeemedAsset; // USDC
-    GHO_TOKEN = IGsm(GSM).GHO_TOKEN();
+    GHO_TOKEN = IGsm(GSM).USDXL_TOKEN();
 
     transferOwnership(admin);
   }
@@ -177,17 +177,17 @@ contract GsmConverter is Ownable, EIP712, IGsmConverter {
     uint256 minAmount,
     address receiver
   ) internal returns (uint256, uint256) {
-    uint256 initialGhoBalance = IGhoToken(GHO_TOKEN).balanceOf(address(this));
+    uint256 initialGhoBalance = IUsdxlToken(GHO_TOKEN).balanceOf(address(this));
     uint256 initialIssuedAssetBalance = IERC20(ISSUED_ASSET).balanceOf(address(this));
     uint256 initialRedeemedAssetBalance = IERC20(REDEEMED_ASSET).balanceOf(address(this));
 
     (, uint256 ghoAmount, , ) = IGsm(GSM).getGhoAmountForBuyAsset(minAmount);
 
     IERC20(GHO_TOKEN).safeTransferFrom(originator, address(this), ghoAmount);
-    IGhoToken(GHO_TOKEN).approve(address(GSM), ghoAmount);
+    IUsdxlToken(GHO_TOKEN).approve(address(GSM), ghoAmount);
     (uint256 boughtAssetAmount, uint256 ghoSold) = IGsm(GSM).buyAsset(minAmount, address(this));
     require(ghoAmount == ghoSold, 'INVALID_GHO_SOLD');
-    IGhoToken(GHO_TOKEN).approve(address(GSM), 0);
+    IUsdxlToken(GHO_TOKEN).approve(address(GSM), 0);
 
     IERC20(ISSUED_ASSET).approve(address(REDEMPTION_CONTRACT), boughtAssetAmount);
     IRedemption(REDEMPTION_CONTRACT).redeem(boughtAssetAmount);
@@ -201,7 +201,7 @@ contract GsmConverter is Ownable, EIP712, IGsmConverter {
     IERC20(REDEEMED_ASSET).safeTransfer(receiver, boughtAssetAmount);
 
     require(
-      IGhoToken(GHO_TOKEN).balanceOf(address(this)) == initialGhoBalance,
+      IUsdxlToken(GHO_TOKEN).balanceOf(address(this)) == initialGhoBalance,
       'INVALID_REMAINING_GHO_BALANCE'
     );
     require(
@@ -226,7 +226,7 @@ contract GsmConverter is Ownable, EIP712, IGsmConverter {
     uint256 maxAmount,
     address receiver
   ) internal returns (uint256, uint256) {
-    uint256 initialGhoBalance = IGhoToken(GHO_TOKEN).balanceOf(address(this));
+    uint256 initialGhoBalance = IUsdxlToken(GHO_TOKEN).balanceOf(address(this));
     uint256 initialIssuedAssetBalance = IERC20(ISSUED_ASSET).balanceOf(address(this));
     uint256 initialRedeemedAssetBalance = IERC20(REDEEMED_ASSET).balanceOf(address(this));
 
@@ -259,7 +259,7 @@ contract GsmConverter is Ownable, EIP712, IGsmConverter {
 
     // by the end of the transaction, this contract should not retain any of the assets
     require(
-      IGhoToken(GHO_TOKEN).balanceOf(address(this)) == initialGhoBalance,
+      IUsdxlToken(GHO_TOKEN).balanceOf(address(this)) == initialGhoBalance,
       'INVALID_REMAINING_GHO_BALANCE'
     );
     require(

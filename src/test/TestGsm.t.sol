@@ -20,7 +20,7 @@ contract TestGsm is TestGhoBase {
       address(USDC_TOKEN),
       address(GHO_GSM_FIXED_PRICE_STRATEGY)
     );
-    assertEq(gsm.GHO_TOKEN(), address(GHO_TOKEN), 'Unexpected GHO token address');
+    assertEq(gsm.USDXL_TOKEN(), address(GHO_TOKEN), 'Unexpected GHO token address');
     assertEq(gsm.UNDERLYING_ASSET(), address(USDC_TOKEN), 'Unexpected underlying asset address');
     assertEq(
       gsm.PRICE_STRATEGY(),
@@ -1061,8 +1061,8 @@ contract TestGsm is TestGhoBase {
     address newGhoTreasury = address(GHO_GSM);
     vm.expectEmit(true, true, true, true, address(newGhoTreasury));
     emit GhoTreasuryUpdated(TREASURY, newGhoTreasury);
-    GHO_GSM.updateGhoTreasury(newGhoTreasury);
-    assertEq(GHO_GSM.getGhoTreasury(), newGhoTreasury);
+    GHO_GSM.updateUsdxlTreasury(newGhoTreasury);
+    assertEq(GHO_GSM.getUsdxlTreasury(), newGhoTreasury);
 
     vm.expectEmit(true, true, false, true, address(GHO_GSM));
     emit ExposureCapUpdated(DEFAULT_GSM_USDC_EXPOSURE, 0);
@@ -1086,7 +1086,7 @@ contract TestGsm is TestGhoBase {
     vm.expectRevert(AccessControlErrorsLib.MISSING_ROLE(GSM_CONFIGURATOR_ROLE, ALICE));
     GHO_GSM.updateExposureCap(0);
     vm.expectRevert(AccessControlErrorsLib.MISSING_ROLE(GSM_CONFIGURATOR_ROLE, ALICE));
-    GHO_GSM.updateGhoTreasury(ALICE);
+    GHO_GSM.updateUsdxlTreasury(ALICE);
     vm.stopPrank();
   }
 
@@ -1102,21 +1102,21 @@ contract TestGsm is TestGhoBase {
 
   function testUpdateGhoTreasuryRevertIfZero() public {
     vm.expectRevert(bytes('ZERO_ADDRESS_NOT_VALID'));
-    GHO_GSM.updateGhoTreasury(address(0));
+    GHO_GSM.updateUsdxlTreasury(address(0));
   }
 
   function testUpdateGhoTreasury() public {
     vm.expectEmit(true, true, true, true, address(GHO_GSM));
     emit GhoTreasuryUpdated(TREASURY, ALICE);
-    GHO_GSM.updateGhoTreasury(ALICE);
+    GHO_GSM.updateUsdxlTreasury(ALICE);
 
-    assertEq(GHO_GSM.getGhoTreasury(), ALICE);
+    assertEq(GHO_GSM.getUsdxlTreasury(), ALICE);
   }
 
   function testUnauthorizedUpdateGhoTreasuryRevert() public {
     vm.expectRevert(AccessControlErrorsLib.MISSING_ROLE(GSM_CONFIGURATOR_ROLE, ALICE));
     vm.prank(ALICE);
-    GHO_GSM.updateGhoTreasury(ALICE);
+    GHO_GSM.updateUsdxlTreasury(ALICE);
   }
 
   function testRescueTokens() public {

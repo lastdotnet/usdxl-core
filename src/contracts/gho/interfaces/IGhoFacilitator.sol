@@ -6,25 +6,25 @@ pragma solidity ^0.8.0;
  * @author Aave
  * @notice Defines the behavior of a Usdxl Facilitator
  */
-interface IGhoFacilitator {
+interface IUsdxlFacilitator {
   /**
    * @dev Emitted when fees are distributed to the GhoTreasury
-   * @param ghoTreasury The address of the ghoTreasury
+   * @param usdxlTreasury The address of the ghoTreasury
    * @param asset The address of the asset transferred to the ghoTreasury
    * @param amount The amount of the asset transferred to the ghoTreasury
    */
   event FeesDistributedToTreasury(
-    address indexed ghoTreasury,
+    address indexed usdxlTreasury,
     address indexed asset,
     uint256 amount
   );
 
   /**
    * @dev Emitted when Gho Treasury address is updated
-   * @param oldGhoTreasury The address of the old GhoTreasury contract
-   * @param newGhoTreasury The address of the new GhoTreasury contract
+   * @param oldUsdxlTreasury The address of the old GhoTreasury contract
+   * @param newUsdxlTreasury The address of the new GhoTreasury contract
    */
-  event GhoTreasuryUpdated(address indexed oldGhoTreasury, address indexed newGhoTreasury);
+  event UsdxlTreasuryUpdated(address indexed oldUsdxlTreasury, address indexed newUsdxlTreasury);
 
   /**
    * @notice Distribute fees to the GhoTreasury
@@ -34,13 +34,13 @@ interface IGhoFacilitator {
   /**
    * @notice Updates the address of the Gho Treasury
    * @dev WARNING: The GhoTreasury is where revenue fees are sent to. Update carefully
-   * @param newGhoTreasury The address of the GhoTreasury
+   * @param newUsdxlTreasury The address of the GhoTreasury
    */
-  function updateGhoTreasury(address newGhoTreasury) external;
+  function updateUsdxlTreasury(address newUsdxlTreasury) external;
 
   /**
    * @notice Returns the address of the Gho Treasury
    * @return The address of the GhoTreasury contract
    */
-  function getGhoTreasury() external view returns (address);
+  function getUsdxlTreasury() external view returns (address);
 }

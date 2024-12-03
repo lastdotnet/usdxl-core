@@ -12,7 +12,7 @@ import {IPoolAddressesProvider} from '@aave/core-v3/contracts/interfaces/IPoolAd
  * @notice Implements the calculation of GHO interest rates, which defines a fixed variable borrow rate.
  * @dev The variable borrow interest rate is fixed at deployment time. The rest of parameters are zeroed.
  */
-contract GhoInterestRateStrategy is IDefaultInterestRateStrategy {
+contract UsdxlInterestRateStrategy is IDefaultInterestRateStrategy {
   /// @inheritdoc IDefaultInterestRateStrategy
   uint256 public constant OPTIMAL_USAGE_RATIO = 0;
 

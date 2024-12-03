@@ -5,7 +5,7 @@ import {InitializableImmutableAdminUpgradeabilityProxy} from '@aave/core-v3/cont
 import './TestGhoBase.t.sol';
 
 contract TestGhoVariableDebtTokenForked is TestGhoBase {
-  IGhoToken gho = IGhoToken(0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f);
+  IUsdxlToken gho = IUsdxlToken(0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f);
   address usdc = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
   address aave = 0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9;
   address stkAave = 0x4da27a545c0c5B758a6BA100e3a049001de870f5;
@@ -59,12 +59,16 @@ contract TestGhoVariableDebtTokenForked is TestGhoBase {
 
     // Verify isBorrowing is false, but there is a non-zero scaledBalance
     assertEq(isBorrowing, false, 'Unexpected borrow state');
-    assertEq(GhoAToken(address(debtToken)).scaledBalanceOf(ALICE), 1, 'Unexpected scaled balance');
+    assertEq(
+      UsdxlAToken(address(debtToken)).scaledBalanceOf(ALICE),
+      1,
+      'Unexpected scaled balance'
+    );
   }
 
   function testBorrowAndRepayFullAmountUpgradeVerifyNoDust(uint256 timeSkip) public {
     timeSkip = bound(timeSkip, 1, 31_560_000);
-    address newDebtToken = address(new GhoVariableDebtToken(pool));
+    address newDebtToken = address(new UsdxlVariableDebtToken(pool));
 
     // Stake AAVE
     deal(aave, ALICE, stkAaveAmount);
@@ -102,6 +106,10 @@ contract TestGhoVariableDebtTokenForked is TestGhoBase {
 
     // Ensure isBorrowing is false and the scaledBalance never exceeds zero
     assertEq(isBorrowing, false, 'Unexpected borrow state');
-    assertEq(GhoAToken(address(debtToken)).scaledBalanceOf(ALICE), 0, 'Unexpected scaled balance');
+    assertEq(
+      UsdxlAToken(address(debtToken)).scaledBalanceOf(ALICE),
+      0,
+      'Unexpected scaled balance'
+    );
   }
 }

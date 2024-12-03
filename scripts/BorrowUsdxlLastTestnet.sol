@@ -18,6 +18,6 @@ contract Default is LastTestnetReservesConfig, Script {
 
   function _deploy(address deployerAddress) internal {
     // call borrow for USDXL
-    _borrowUsdxl(1e18, vm.envAddress('SENDER'));
+    _borrowUsdxl(1e18, vm.envAddress('PUBLIC_KEY'));
   }
 }

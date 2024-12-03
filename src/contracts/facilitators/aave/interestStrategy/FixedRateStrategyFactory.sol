@@ -4,7 +4,7 @@ pragma solidity ^0.8.10;
 import {IDefaultInterestRateStrategy} from '@aave/core-v3/contracts/interfaces/IDefaultInterestRateStrategy.sol';
 import {VersionedInitializable} from '@aave/core-v3/contracts/misc/aave-upgradeability/VersionedInitializable.sol';
 import {IFixedRateStrategyFactory} from './interfaces/IFixedRateStrategyFactory.sol';
-import {GhoInterestRateStrategy} from './GhoInterestRateStrategy.sol';
+import {UsdxlInterestRateStrategy} from './GhoInterestRateStrategy.sol';
 
 /**
  * @title FixedRateStrategyFactory
@@ -53,7 +53,7 @@ contract FixedRateStrategyFactory is VersionedInitializable, IFixedRateStrategyF
       address cachedStrategy = _strategiesByRate[rate];
 
       if (cachedStrategy == address(0)) {
-        cachedStrategy = address(new GhoInterestRateStrategy(POOL_ADDRESSES_PROVIDER, rate));
+        cachedStrategy = address(new UsdxlInterestRateStrategy(POOL_ADDRESSES_PROVIDER, rate));
         _strategiesByRate[rate] = cachedStrategy;
         _strategies.push(cachedStrategy);
 

@@ -15,8 +15,8 @@ import {EIP712Base} from '@aave/core-v3/contracts/protocol/tokenization/base/EIP
 import {DebtTokenBase} from '@aave/core-v3/contracts/protocol/tokenization/base/DebtTokenBase.sol';
 
 // Gho Imports
-import {IGhoDiscountRateStrategy} from '../interestStrategy/interfaces/IGhoDiscountRateStrategy.sol';
-import {IGhoVariableDebtToken} from './interfaces/IGhoVariableDebtToken.sol';
+import {IUsdxlDiscountRateStrategy} from '../interestStrategy/interfaces/IGhoDiscountRateStrategy.sol';
+import {IUsdxlVariableDebtToken} from './interfaces/IGhoVariableDebtToken.sol';
 import {ScaledBalanceTokenBase} from './base/ScaledBalanceTokenBase.sol';
 
 /**
@@ -26,7 +26,7 @@ import {ScaledBalanceTokenBase} from './base/ScaledBalanceTokenBase.sol';
  * at variable rate mode for GHO
  * @dev Transfer and approve functionalities are disabled since its a non-transferable token
  */
-contract GhoVariableDebtToken is DebtTokenBase, ScaledBalanceTokenBase, IGhoVariableDebtToken {
+contract UsdxlVariableDebtToken is DebtTokenBase, ScaledBalanceTokenBase, IUsdxlVariableDebtToken {
   using WadRayMath for uint256;
   using SafeCast for uint256;
   using PercentageMath for uint256;
@@ -40,7 +40,7 @@ contract GhoVariableDebtToken is DebtTokenBase, ScaledBalanceTokenBase, IGhoVari
   IERC20 internal _discountToken;
 
   // Strategy of the discount rate to apply on debt interests
-  IGhoDiscountRateStrategy internal _discountRateStrategy;
+  IUsdxlDiscountRateStrategy internal _discountRateStrategy;
 
   struct GhoUserState {
     // Accumulated debt interest of the user
@@ -218,34 +218,34 @@ contract GhoVariableDebtToken is DebtTokenBase, ScaledBalanceTokenBase, IGhoVari
     return _underlyingAsset;
   }
 
-  /// @inheritdoc IGhoVariableDebtToken
+  /// @inheritdoc IUsdxlVariableDebtToken
   function setAToken(address ghoAToken) external override onlyPoolAdmin {
     require(ghoAToken != address(0), 'ZERO_ADDRESS_NOT_VALID');
     _ghoAToken = ghoAToken;
     emit ATokenSet(ghoAToken);
   }
 
-  /// @inheritdoc IGhoVariableDebtToken
+  /// @inheritdoc IUsdxlVariableDebtToken
   function getAToken() external view override returns (address) {
     return _ghoAToken;
   }
 
-  /// @inheritdoc IGhoVariableDebtToken
+  /// @inheritdoc IUsdxlVariableDebtToken
   function updateDiscountRateStrategy(
     address newDiscountRateStrategy
   ) external override onlyPoolAdmin {
     require(newDiscountRateStrategy != address(0), 'ZERO_ADDRESS_NOT_VALID');
     address oldDiscountRateStrategy = address(_discountRateStrategy);
-    _discountRateStrategy = IGhoDiscountRateStrategy(newDiscountRateStrategy);
+    _discountRateStrategy = IUsdxlDiscountRateStrategy(newDiscountRateStrategy);
     emit DiscountRateStrategyUpdated(oldDiscountRateStrategy, newDiscountRateStrategy);
   }
 
-  /// @inheritdoc IGhoVariableDebtToken
+  /// @inheritdoc IUsdxlVariableDebtToken
   function getDiscountRateStrategy() external view override returns (address) {
     return address(_discountRateStrategy);
   }
 
-  /// @inheritdoc IGhoVariableDebtToken
+  /// @inheritdoc IUsdxlVariableDebtToken
   function updateDiscountToken(address newDiscountToken) external override onlyPoolAdmin {
     require(newDiscountToken != address(0), 'ZERO_ADDRESS_NOT_VALID');
     address oldDiscountToken = address(_discountToken);
@@ -253,12 +253,12 @@ contract GhoVariableDebtToken is DebtTokenBase, ScaledBalanceTokenBase, IGhoVari
     emit DiscountTokenUpdated(oldDiscountToken, newDiscountToken);
   }
 
-  /// @inheritdoc IGhoVariableDebtToken
+  /// @inheritdoc IUsdxlVariableDebtToken
   function getDiscountToken() external view override returns (address) {
     return address(_discountToken);
   }
 
-  /// @inheritdoc IGhoVariableDebtToken
+  /// @inheritdoc IUsdxlVariableDebtToken
   function updateDiscountDistribution(
     address sender,
     address recipient,
@@ -327,23 +327,23 @@ contract GhoVariableDebtToken is DebtTokenBase, ScaledBalanceTokenBase, IGhoVari
     }
   }
 
-  /// @inheritdoc IGhoVariableDebtToken
+  /// @inheritdoc IUsdxlVariableDebtToken
   function getDiscountPercent(address user) external view override returns (uint256) {
     return _ghoUserState[user].discountPercent;
   }
 
-  /// @inheritdoc IGhoVariableDebtToken
+  /// @inheritdoc IUsdxlVariableDebtToken
   function getBalanceFromInterest(address user) external view override returns (uint256) {
     return _ghoUserState[user].accumulatedDebtInterest;
   }
 
-  /// @inheritdoc IGhoVariableDebtToken
+  /// @inheritdoc IUsdxlVariableDebtToken
   function decreaseBalanceFromInterest(address user, uint256 amount) external override onlyAToken {
     _ghoUserState[user].accumulatedDebtInterest = (_ghoUserState[user].accumulatedDebtInterest -
       amount).toUint128();
   }
 
-  /// @inheritdoc IGhoVariableDebtToken
+  /// @inheritdoc IUsdxlVariableDebtToken
   function rebalanceUserDiscountPercent(address user) external override {
     uint256 index = POOL.getReserveNormalizedVariableDebt(_underlyingAsset);
     uint256 previousScaledBalance = super.balanceOf(user);

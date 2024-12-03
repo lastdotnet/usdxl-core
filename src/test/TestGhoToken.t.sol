@@ -5,7 +5,7 @@ import './TestGhoBase.t.sol';
 
 contract TestGhoToken is TestGhoBase {
   function testConstructor() public {
-    GhoToken ghoToken = new GhoToken(address(this));
+    UsdxlToken ghoToken = new UsdxlToken(address(this));
     vm.expectEmit(true, true, true, true, address(GHO_TOKEN));
     emit RoleGranted(DEFAULT_ADMIN_ROLE, msg.sender, address(this));
     GHO_TOKEN.grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
@@ -16,14 +16,14 @@ contract TestGhoToken is TestGhoBase {
   }
 
   function testGetFacilitatorData() public {
-    IGhoToken.Facilitator memory data = GHO_TOKEN.getFacilitator(address(GHO_ATOKEN));
+    IUsdxlToken.Facilitator memory data = GHO_TOKEN.getFacilitator(address(GHO_ATOKEN));
     assertEq(data.label, 'Aave V3 Pool', 'Unexpected facilitator label');
     assertEq(data.bucketCapacity, DEFAULT_CAPACITY, 'Unexpected bucket capacity');
     assertEq(data.bucketLevel, 0, 'Unexpected bucket level');
   }
 
   function testGetNonFacilitatorData() public {
-    IGhoToken.Facilitator memory data = GHO_TOKEN.getFacilitator(ALICE);
+    IUsdxlToken.Facilitator memory data = GHO_TOKEN.getFacilitator(ALICE);
     assertEq(data.label, '', 'Unexpected facilitator label');
     assertEq(data.bucketCapacity, 0, 'Unexpected bucket capacity');
     assertEq(data.bucketLevel, 0, 'Unexpected bucket level');

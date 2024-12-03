@@ -20,7 +20,7 @@ contract TestFixedRateStrategyFactory is TestGhoBase {
 
   function testInitialize() public {
     address[] memory strategies = new address[](1);
-    strategies[0] = address(new GhoInterestRateStrategy(address(PROVIDER), 100));
+    strategies[0] = address(new UsdxlInterestRateStrategy(address(PROVIDER), 100));
 
     vm.expectEmit(true, true, false, false, address(FIXED_RATE_STRATEGY_FACTORY));
     emit RateStrategyCreated(strategies[0], 100);
@@ -34,9 +34,9 @@ contract TestFixedRateStrategyFactory is TestGhoBase {
 
   function testInitializeMultiple() public {
     address[] memory strategies = new address[](3);
-    strategies[0] = address(new GhoInterestRateStrategy(address(PROVIDER), 100));
-    strategies[1] = address(new GhoInterestRateStrategy(address(PROVIDER), 200));
-    strategies[2] = address(new GhoInterestRateStrategy(address(PROVIDER), 300));
+    strategies[0] = address(new UsdxlInterestRateStrategy(address(PROVIDER), 100));
+    strategies[1] = address(new UsdxlInterestRateStrategy(address(PROVIDER), 200));
+    strategies[2] = address(new UsdxlInterestRateStrategy(address(PROVIDER), 300));
 
     vm.expectEmit(true, true, false, false, address(FIXED_RATE_STRATEGY_FACTORY));
     emit RateStrategyCreated(strategies[0], 100);
@@ -56,7 +56,7 @@ contract TestFixedRateStrategyFactory is TestGhoBase {
 
   function testRevertInitializeTwice() public {
     address[] memory strategies = new address[](1);
-    strategies[0] = address(new GhoInterestRateStrategy(address(PROVIDER), 100));
+    strategies[0] = address(new UsdxlInterestRateStrategy(address(PROVIDER), 100));
 
     FIXED_RATE_STRATEGY_FACTORY.initialize(strategies);
     vm.expectRevert('Contract instance has already been initialized');
@@ -75,7 +75,7 @@ contract TestFixedRateStrategyFactory is TestGhoBase {
     address[] memory strategies = FIXED_RATE_STRATEGY_FACTORY.createStrategies(rates);
 
     assertEq(strategies.length, 1);
-    assertEq(GhoInterestRateStrategy(strategies[0]).getBaseVariableBorrowRate(), rates[0]);
+    assertEq(UsdxlInterestRateStrategy(strategies[0]).getBaseVariableBorrowRate(), rates[0]);
   }
 
   function testCreateStrategiesMultiple() public {
@@ -107,9 +107,9 @@ contract TestFixedRateStrategyFactory is TestGhoBase {
     address[] memory strategies = FIXED_RATE_STRATEGY_FACTORY.createStrategies(rates);
 
     assertEq(strategies.length, 3);
-    assertEq(GhoInterestRateStrategy(strategies[0]).getBaseVariableBorrowRate(), rates[0]);
-    assertEq(GhoInterestRateStrategy(strategies[1]).getBaseVariableBorrowRate(), rates[1]);
-    assertEq(GhoInterestRateStrategy(strategies[2]).getBaseVariableBorrowRate(), rates[2]);
+    assertEq(UsdxlInterestRateStrategy(strategies[0]).getBaseVariableBorrowRate(), rates[0]);
+    assertEq(UsdxlInterestRateStrategy(strategies[1]).getBaseVariableBorrowRate(), rates[1]);
+    assertEq(UsdxlInterestRateStrategy(strategies[2]).getBaseVariableBorrowRate(), rates[2]);
   }
 
   function testCreateStrategiesCached() public {

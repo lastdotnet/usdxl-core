@@ -8,8 +8,8 @@ import {EIP712} from '@openzeppelin/contracts/utils/cryptography/EIP712.sol';
 import {SignatureChecker} from '@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol';
 import {SafeCast} from '@openzeppelin/contracts/utils/math/SafeCast.sol';
 import {AccessControl} from '@openzeppelin/contracts/access/AccessControl.sol';
-import {IGhoFacilitator} from '../../contracts/gho/interfaces/IGhoFacilitator.sol';
-import {IGhoToken} from '../../contracts/gho/interfaces/IGhoToken.sol';
+import {IUsdxlFacilitator} from '../../contracts/gho/interfaces/IGhoFacilitator.sol';
+import {IUsdxlToken} from '../../contracts/gho/interfaces/IGhoToken.sol';
 import {IGsmPriceStrategy} from '../../contracts/facilitators/gsm/priceStrategy/interfaces/IGsmPriceStrategy.sol';
 import {IGsmFeeStrategy} from '../../contracts/facilitators/gsm/feeStrategy/interfaces/IGsmFeeStrategy.sol';
 import {IGsm} from '../../contracts/facilitators/gsm/interfaces/IGsm.sol';
@@ -53,7 +53,7 @@ contract MockGsmFailedSellAssetRemainingGhoBalance is
     );
 
   /// @inheritdoc IGsm
-  address public immutable GHO_TOKEN;
+  address public immutable USDXL_TOKEN;
 
   /// @inheritdoc IGsm
   address public immutable UNDERLYING_ASSET;
@@ -106,7 +106,7 @@ contract MockGsmFailedSellAssetRemainingGhoBalance is
       IGsmPriceStrategy(priceStrategy).UNDERLYING_ASSET() == underlyingAsset,
       'INVALID_PRICE_STRATEGY'
     );
-    GHO_TOKEN = ghoToken;
+    USDXL_TOKEN = ghoToken;
     UNDERLYING_ASSET = underlyingAsset;
     PRICE_STRATEGY = priceStrategy;
   }
@@ -218,13 +218,15 @@ contract MockGsmFailedSellAssetRemainingGhoBalance is
     // intentionally left blank
   }
 
-  /// @inheritdoc IGhoFacilitator
+  /// @inheritdoc IUsdxlFacilitator
   function distributeFeesToTreasury() public virtual override {
     // intentionally left blank
   }
 
-  /// @inheritdoc IGhoFacilitator
-  function updateGhoTreasury(address newGhoTreasury) external override onlyRole(CONFIGURATOR_ROLE) {
+  /// @inheritdoc IUsdxlFacilitator
+  function updateUsdxlTreasury(
+    address newGhoTreasury
+  ) external override onlyRole(CONFIGURATOR_ROLE) {
     // intentionally left blank
   }
 
@@ -314,8 +316,8 @@ contract MockGsmFailedSellAssetRemainingGhoBalance is
     return !_isFrozen && !_isSeized;
   }
 
-  /// @inheritdoc IGhoFacilitator
-  function getGhoTreasury() external view override returns (address) {
+  /// @inheritdoc IUsdxlFacilitator
+  function getUsdxlTreasury() external view override returns (address) {
     return _ghoTreasury;
   }
 
@@ -353,10 +355,10 @@ contract MockGsmFailedSellAssetRemainingGhoBalance is
     _accruedFees += fee.toUint128();
     IERC20(UNDERLYING_ASSET).safeTransferFrom(originator, address(this), assetAmount);
 
-    IGhoToken(GHO_TOKEN).mint(address(this), grossAmount);
-    IGhoToken(GHO_TOKEN).transfer(receiver, ghoBought);
+    IUsdxlToken(USDXL_TOKEN).mint(address(this), grossAmount);
+    IUsdxlToken(USDXL_TOKEN).transfer(receiver, ghoBought);
     // TRIGGER ERROR: invalid transfer of GHO amount to GSM Converter (msg.sender)
-    IGhoToken(GHO_TOKEN).transfer(msg.sender, 1);
+    IUsdxlToken(USDXL_TOKEN).transfer(msg.sender, 1);
 
     emit SellAsset(originator, receiver, assetAmount, grossAmount, fee);
     return (assetAmount, ghoBought);
@@ -421,7 +423,7 @@ contract MockGsmFailedSellAssetRemainingGhoBalance is
     require(newGhoTreasury != address(0), 'ZERO_ADDRESS_NOT_VALID');
     address oldGhoTreasury = _ghoTreasury;
     _ghoTreasury = newGhoTreasury;
-    emit GhoTreasuryUpdated(oldGhoTreasury, newGhoTreasury);
+    emit UsdxlTreasuryUpdated(oldGhoTreasury, newGhoTreasury);
   }
 
   /// @inheritdoc VersionedInitializable

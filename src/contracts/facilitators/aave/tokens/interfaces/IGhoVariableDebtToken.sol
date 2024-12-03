@@ -8,7 +8,7 @@ import {IVariableDebtToken} from '@aave/core-v3/contracts/interfaces/IVariableDe
  * @author Aave
  * @notice Defines the basic interface of the VariableDebtToken
  */
-interface IGhoVariableDebtToken is IVariableDebtToken {
+interface IUsdxlVariableDebtToken is IVariableDebtToken {
   /**
    * @dev Emitted when the address of the GHO AToken is set
    * @param aToken The address of the GhoAToken contract

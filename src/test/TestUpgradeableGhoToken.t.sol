@@ -71,14 +71,14 @@ contract TestUpgradeableGhoToken is TestUpgradeableGhoTokenSetup {
   }
 
   function testGetFacilitatorData() public {
-    IGhoToken.Facilitator memory data = ghoToken.getFacilitator(address(GHO_ATOKEN));
+    IUsdxlToken.Facilitator memory data = ghoToken.getFacilitator(address(GHO_ATOKEN));
     assertEq(data.label, 'Aave V3 Pool', 'Unexpected facilitator label');
     assertEq(data.bucketCapacity, DEFAULT_CAPACITY, 'Unexpected bucket capacity');
     assertEq(data.bucketLevel, 0, 'Unexpected bucket level');
   }
 
   function testGetNonFacilitatorData() public {
-    IGhoToken.Facilitator memory data = ghoToken.getFacilitator(ALICE);
+    IUsdxlToken.Facilitator memory data = ghoToken.getFacilitator(ALICE);
     assertEq(data.label, '', 'Unexpected facilitator label');
     assertEq(data.bucketCapacity, 0, 'Unexpected bucket capacity');
     assertEq(data.bucketLevel, 0, 'Unexpected bucket level');

@@ -14,7 +14,7 @@ import {ReserveConfiguration} from '@aave/core-v3/contracts/protocol/libraries/c
 import {FixedFeeStrategyFactory} from '../contracts/facilitators/gsm/feeStrategy/FixedFeeStrategyFactory.sol';
 import {IGsmFeeStrategy} from '../contracts/facilitators/gsm/feeStrategy/interfaces/IGsmFeeStrategy.sol';
 import {Gsm} from '../contracts/facilitators/gsm/Gsm.sol';
-import {GhoToken} from '../contracts/gho/GhoToken.sol';
+import {UsdxlToken} from '../contracts/gho/GhoToken.sol';
 import {IGhoAaveSteward} from '../contracts/misc/interfaces/IGhoAaveSteward.sol';
 import {GhoAaveSteward} from '../contracts/misc/GhoAaveSteward.sol';
 import {GhoBucketSteward} from '../contracts/misc/GhoBucketSteward.sol';
@@ -81,8 +81,8 @@ contract TestGhoStewardsForkEthereum is Test {
     );
 
     GHO_BUCKET_STEWARD = new GhoBucketSteward(OWNER, GHO_TOKEN, RISK_COUNCIL);
-    GhoToken(GHO_TOKEN).grantRole(
-      GhoToken(GHO_TOKEN).BUCKET_MANAGER_ROLE(),
+    UsdxlToken(GHO_TOKEN).grantRole(
+      UsdxlToken(GHO_TOKEN).BUCKET_MANAGER_ROLE(),
       address(GHO_BUCKET_STEWARD)
     );
 
@@ -116,7 +116,7 @@ contract TestGhoStewardsForkEthereum is Test {
 
     assertEq(
       IAccessControl(GHO_TOKEN).hasRole(
-        GhoToken(GHO_TOKEN).BUCKET_MANAGER_ROLE(),
+        UsdxlToken(GHO_TOKEN).BUCKET_MANAGER_ROLE(),
         address(GHO_BUCKET_STEWARD)
       ),
       true
@@ -175,13 +175,13 @@ contract TestGhoStewardsForkEthereum is Test {
   }
 
   function testGhoBucketStewardUpdateFacilitatorBucketCapacity() public {
-    (uint256 currentBucketCapacity, ) = GhoToken(GHO_TOKEN).getFacilitatorBucket(
+    (uint256 currentBucketCapacity, ) = UsdxlToken(GHO_TOKEN).getFacilitatorBucket(
       address(GHO_ATOKEN)
     );
     vm.prank(RISK_COUNCIL);
     uint128 newBucketCapacity = uint128(currentBucketCapacity) + 1;
     GHO_BUCKET_STEWARD.updateFacilitatorBucketCapacity(address(GHO_ATOKEN), newBucketCapacity);
-    (uint256 capacity, ) = GhoToken(GHO_TOKEN).getFacilitatorBucket(address(GHO_ATOKEN));
+    (uint256 capacity, ) = UsdxlToken(GHO_TOKEN).getFacilitatorBucket(address(GHO_ATOKEN));
     assertEq(newBucketCapacity, capacity);
   }
 

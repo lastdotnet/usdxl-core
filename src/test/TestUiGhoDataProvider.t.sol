@@ -3,13 +3,13 @@ pragma solidity ^0.8.0;
 
 import './TestGhoBase.t.sol';
 
-import {UiGhoDataProvider, IUiGhoDataProvider} from '../contracts/facilitators/aave/misc/UiGhoDataProvider.sol';
+import {UiUsdxlDataProvider, IUiUsdxlDataProvider} from '../contracts/facilitators/aave/misc/UiGhoDataProvider.sol';
 
 contract TestUiGhoDataProvider is TestGhoBase {
-  UiGhoDataProvider dataProvider;
+  UiUsdxlDataProvider dataProvider;
 
   function setUp() public {
-    dataProvider = new UiGhoDataProvider(IPool(POOL), GHO_TOKEN);
+    dataProvider = new UiUsdxlDataProvider(IPool(POOL), GHO_TOKEN);
   }
 
   function testGhoReserveData() public {
@@ -17,38 +17,42 @@ contract TestUiGhoDataProvider is TestGhoBase {
     (uint256 bucketCapacity, uint256 bucketLevel) = GHO_TOKEN.getFacilitatorBucket(
       baseData.aTokenAddress
     );
-    IUiGhoDataProvider.GhoReserveData memory result = dataProvider.getGhoReserveData();
+    IUiUsdxlDataProvider.UsdxlReserveData memory result = dataProvider.getUsdxlReserveData();
     assertEq(
-      result.ghoBaseVariableBorrowRate,
+      result.usdxlBaseVariableBorrowRate,
       baseData.currentVariableBorrowRate,
       'Unexpected variable borrow rate'
     );
     assertEq(
-      result.ghoDiscountedPerToken,
-      GHO_DISCOUNT_STRATEGY.GHO_DISCOUNTED_PER_DISCOUNT_TOKEN(),
+      result.usdxlDiscountedPerToken,
+      GHO_DISCOUNT_STRATEGY.USDXL_DISCOUNTED_PER_DISCOUNT_TOKEN(),
       'Unexpected discount per token'
     );
     assertEq(
-      result.ghoDiscountRate,
+      result.usdxlDiscountRate,
       GHO_DISCOUNT_STRATEGY.DISCOUNT_RATE(),
       'Unexpected discount rate'
     );
     assertEq(
-      result.ghoMinDiscountTokenBalanceForDiscount,
+      result.usdxlMinDiscountTokenBalanceForDiscount,
       GHO_DISCOUNT_STRATEGY.MIN_DISCOUNT_TOKEN_BALANCE(),
       'Unexpected minimum discount token balance'
     );
     assertEq(
-      result.ghoMinDebtTokenBalanceForDiscount,
+      result.usdxlMinDebtTokenBalanceForDiscount,
       GHO_DISCOUNT_STRATEGY.MIN_DEBT_TOKEN_BALANCE(),
       'Unexpected minimum debt token balance'
     );
     assertEq(
-      result.ghoReserveLastUpdateTimestamp,
+      result.usdxlReserveLastUpdateTimestamp,
       baseData.lastUpdateTimestamp,
       'Unexpected last timestamp'
     );
-    assertEq(result.ghoCurrentBorrowIndex, baseData.variableBorrowIndex, 'Unexpected borrow index');
+    assertEq(
+      result.usdxlCurrentBorrowIndex,
+      baseData.variableBorrowIndex,
+      'Unexpected borrow index'
+    );
     assertEq(result.aaveFacilitatorBucketLevel, bucketLevel, 'Unexpected facilitator bucket level');
     assertEq(
       result.aaveFacilitatorBucketMaxCapacity,
@@ -58,9 +62,9 @@ contract TestUiGhoDataProvider is TestGhoBase {
   }
 
   function testGhoUserData() public {
-    IUiGhoDataProvider.GhoUserData memory result = dataProvider.getGhoUserData(ALICE);
+    IUiUsdxlDataProvider.UsdxlUserData memory result = dataProvider.getUsdxlUserData(ALICE);
     assertEq(
-      result.userGhoDiscountPercent,
+      result.userUsdxlDiscountPercent,
       GHO_DEBT_TOKEN.getDiscountPercent(ALICE),
       'Unexpected discount percent'
     );
@@ -70,12 +74,12 @@ contract TestUiGhoDataProvider is TestGhoBase {
       'Unexpected discount token balance'
     );
     assertEq(
-      result.userPreviousGhoBorrowIndex,
+      result.userPreviousUsdxlBorrowIndex,
       GHO_DEBT_TOKEN.getPreviousIndex(ALICE),
       'Unexpected previous index'
     );
     assertEq(
-      result.userGhoScaledBorrowBalance,
+      result.userUsdxlScaledBorrowBalance,
       GHO_DEBT_TOKEN.scaledBalanceOf(ALICE),
       'Unexpected scaled balance'
     );

@@ -46,7 +46,7 @@ import {IERC20} from '@aave/core-v3/contracts/dependencies/openzeppelin/contract
 import {IERC3156FlashBorrower} from '@openzeppelin/contracts/interfaces/IERC3156FlashBorrower.sol';
 import {IERC3156FlashLender} from '@openzeppelin/contracts/interfaces/IERC3156FlashLender.sol';
 import {IERC4626} from '@openzeppelin/contracts/interfaces/IERC4626.sol';
-import {IGhoToken} from '../contracts/gho/interfaces/IGhoToken.sol';
+import {IUsdxlToken} from '../contracts/gho/interfaces/IGhoToken.sol';
 import {IPool} from '@aave/core-v3/contracts/interfaces/IPool.sol';
 import {IPoolAddressesProvider} from '@aave/core-v3/contracts/interfaces/IPoolAddressesProvider.sol';
 
@@ -57,16 +57,16 @@ import {ReserveConfiguration} from '@aave/core-v3/contracts/protocol/libraries/c
 import {TransparentUpgradeableProxy} from 'solidity-utils/contracts/transparent-proxy/TransparentUpgradeableProxy.sol';
 
 // GHO contracts
-import {GhoAToken} from '../contracts/facilitators/aave/tokens/GhoAToken.sol';
-import {GhoDiscountRateStrategy} from '../contracts/facilitators/aave/interestStrategy/GhoDiscountRateStrategy.sol';
-import {GhoFlashMinter} from '../contracts/facilitators/flashMinter/GhoFlashMinter.sol';
-import {GhoInterestRateStrategy} from '../contracts/facilitators/aave/interestStrategy/GhoInterestRateStrategy.sol';
+import {UsdxlAToken} from '../contracts/facilitators/aave/tokens/GhoAToken.sol';
+import {UsdxlDiscountRateStrategy} from '../contracts/facilitators/aave/interestStrategy/GhoDiscountRateStrategy.sol';
+import {UsdxlFlashMinter} from '../contracts/facilitators/flashMinter/GhoFlashMinter.sol';
+import {UsdxlInterestRateStrategy} from '../contracts/facilitators/aave/interestStrategy/GhoInterestRateStrategy.sol';
 import {IGhoAaveSteward} from '../contracts/misc/interfaces/IGhoAaveSteward.sol';
 import {GhoAaveSteward} from '../contracts/misc/GhoAaveSteward.sol';
-import {GhoOracle} from '../contracts/facilitators/aave/oracle/GhoOracle.sol';
-import {GhoToken} from '../contracts/gho/GhoToken.sol';
+import {UsdxlOracle} from '../contracts/facilitators/aave/oracle/GhoOracle.sol';
+import {UsdxlToken} from '../contracts/gho/GhoToken.sol';
 import {UpgradeableGhoToken} from '../contracts/gho/UpgradeableGhoToken.sol';
-import {GhoVariableDebtToken} from '../contracts/facilitators/aave/tokens/GhoVariableDebtToken.sol';
+import {UsdxlVariableDebtToken} from '../contracts/facilitators/aave/tokens/GhoVariableDebtToken.sol';
 import {FixedRateStrategyFactory} from '../contracts/facilitators/aave/interestStrategy/FixedRateStrategyFactory.sol';
 
 // GSM contracts
@@ -116,7 +116,7 @@ contract TestGhoBase is Test, Constants, Events {
     uint256 discountPercent;
   }
 
-  GhoToken GHO_TOKEN;
+  UsdxlToken GHO_TOKEN;
   TestnetERC20 AAVE_TOKEN;
   IStakedAaveV3 STK_TOKEN;
   TestnetERC20 USDC_TOKEN;
@@ -134,10 +134,10 @@ contract TestGhoBase is Test, Constants, Events {
   MockBUIDLSubscriptionFailedInvalidUSDCAccepted BUIDL_USDC_ISSUANCE_FAILED_INVALID_USDC;
   PriceOracle PRICE_ORACLE;
   WETH9Mock WETH;
-  GhoVariableDebtToken GHO_DEBT_TOKEN;
-  GhoAToken GHO_ATOKEN;
-  GhoFlashMinter GHO_FLASH_MINTER;
-  GhoDiscountRateStrategy GHO_DISCOUNT_STRATEGY;
+  UsdxlVariableDebtToken GHO_DEBT_TOKEN;
+  UsdxlAToken GHO_ATOKEN;
+  UsdxlFlashMinter GHO_FLASH_MINTER;
+  UsdxlDiscountRateStrategy GHO_DISCOUNT_STRATEGY;
   MockFlashBorrower FLASH_BORROWER;
   Gsm GHO_GSM;
   Gsm4626 GHO_GSM_4626;
@@ -150,7 +150,7 @@ contract TestGhoBase is Test, Constants, Events {
   SampleLiquidator GHO_GSM_LAST_RESORT_LIQUIDATOR;
   SampleSwapFreezer GHO_GSM_SWAP_FREEZER;
   GsmRegistry GHO_GSM_REGISTRY;
-  GhoOracle GHO_ORACLE;
+  UsdxlOracle GHO_ORACLE;
   GhoAaveSteward GHO_AAVE_STEWARD;
   GhoCcipSteward GHO_CCIP_STEWARD;
   GhoGsmSteward GHO_GSM_STEWARD;
@@ -181,8 +181,8 @@ contract TestGhoBase is Test, Constants, Events {
     PROVIDER.setPool(address(POOL));
     PROVIDER.setConfigurator(address(CONFIGURATOR));
     PROVIDER.setPriceOracle(address(PRICE_ORACLE));
-    GHO_ORACLE = new GhoOracle();
-    GHO_TOKEN = new GhoToken(address(this));
+    GHO_ORACLE = new UsdxlOracle();
+    GHO_TOKEN = new UsdxlToken(address(this));
     GHO_TOKEN.grantRole(GHO_TOKEN_FACILITATOR_MANAGER_ROLE, address(this));
     GHO_TOKEN.grantRole(GHO_TOKEN_BUCKET_MANAGER_ROLE, address(this));
     AAVE_TOKEN = new TestnetERC20('AAVE', 'AAVE', 18, FAUCET);
@@ -217,8 +217,8 @@ contract TestGhoBase is Test, Constants, Events {
     USDC_4626_TOKEN = new MockERC4626('USD Coin 4626', '4626', address(USDC_TOKEN));
     IPool iPool = IPool(address(POOL));
     WETH = new WETH9Mock('Wrapped Ether', 'WETH', FAUCET);
-    GHO_DEBT_TOKEN = new GhoVariableDebtToken(iPool);
-    GHO_ATOKEN = new GhoAToken(iPool);
+    GHO_DEBT_TOKEN = new UsdxlVariableDebtToken(iPool);
+    GHO_ATOKEN = new UsdxlAToken(iPool);
     GHO_DEBT_TOKEN.initialize(
       iPool,
       address(GHO_TOKEN),
@@ -238,9 +238,9 @@ contract TestGhoBase is Test, Constants, Events {
       'aGHO',
       empty
     );
-    GHO_ATOKEN.updateGhoTreasury(TREASURY);
+    GHO_ATOKEN.updateUsdxlTreasury(TREASURY);
     GHO_DEBT_TOKEN.updateDiscountToken(address(STK_TOKEN));
-    GHO_DISCOUNT_STRATEGY = new GhoDiscountRateStrategy();
+    GHO_DISCOUNT_STRATEGY = new UsdxlDiscountRateStrategy();
     GHO_DEBT_TOKEN.updateDiscountRateStrategy(address(GHO_DISCOUNT_STRATEGY));
     GHO_DEBT_TOKEN.setAToken(address(GHO_ATOKEN));
     GHO_ATOKEN.setVariableDebtToken(address(GHO_DEBT_TOKEN));
@@ -249,7 +249,7 @@ contract TestGhoBase is Test, Constants, Events {
     GHO_TOKEN.addFacilitator(address(GHO_ATOKEN), 'Aave V3 Pool', DEFAULT_CAPACITY);
     POOL.setGhoTokens(GHO_DEBT_TOKEN, GHO_ATOKEN);
 
-    GHO_FLASH_MINTER = new GhoFlashMinter(
+    GHO_FLASH_MINTER = new UsdxlFlashMinter(
       address(GHO_TOKEN),
       TREASURY,
       DEFAULT_FLASH_FEE,

@@ -26,22 +26,22 @@ contract Default is LastTestnetReservesConfig, Script {
     (tokens, oracles) = _deployTestnetTokens(deployerAddress);
 
     // set oracles
-    _setGhoOracle(tokens, oracles);
+    _setUsdxlOracle(tokens, oracles);
 
     // set reserve config
-    _initializeGhoReserve(tokens);
+    _initializeUsdxlReserve(tokens);
 
     // enable borrowing
-    _enableGhoBorrowing(tokens);
+    _enableUsdxlBorrowing(tokens);
 
     // add GHO as entity
-    _addGhoATokenAsEntity();
+    _addUsdxlATokenAsEntity();
 
     // add GHO flashminter as entity
-    _addGhoFlashMinterAsEntity(tokens);
+    _addUsdxlFlashMinterAsEntity(tokens);
 
     // set GHO addresses
-    _setGhoAddresses();
+    _setUsdxlAddresses();
 
     ERC20 nonMintableErc20;
 

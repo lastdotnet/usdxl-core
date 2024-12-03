@@ -15,17 +15,17 @@ import {IncentivizedERC20} from '@aave/core-v3/contracts/protocol/tokenization/b
 import {EIP712Base} from '@aave/core-v3/contracts/protocol/tokenization/base/EIP712Base.sol';
 
 // Gho Imports
-import {IGhoToken} from '../../../gho/interfaces/IGhoToken.sol';
-import {IGhoFacilitator} from '../../../gho/interfaces/IGhoFacilitator.sol';
-import {IGhoAToken} from './interfaces/IGhoAToken.sol';
-import {GhoVariableDebtToken} from './GhoVariableDebtToken.sol';
+import {IUsdxlToken} from '../../../gho/interfaces/IGhoToken.sol';
+import {IUsdxlFacilitator} from '../../../gho/interfaces/IGhoFacilitator.sol';
+import {IUsdxlAToken} from './interfaces/IGhoAToken.sol';
+import {UsdxlVariableDebtToken} from './GhoVariableDebtToken.sol';
 
 /**
  * @title GhoAToken
  * @author Aave
  * @notice Implementation of the interest bearing token for the Aave protocol
  */
-contract GhoAToken is VersionedInitializable, ScaledBalanceTokenBase, EIP712Base, IGhoAToken {
+contract UsdxlAToken is VersionedInitializable, ScaledBalanceTokenBase, EIP712Base, IUsdxlAToken {
   using WadRayMath for uint256;
   using GPv2SafeERC20 for IERC20;
 
@@ -38,8 +38,8 @@ contract GhoAToken is VersionedInitializable, ScaledBalanceTokenBase, EIP712Base
   address internal _underlyingAsset;
 
   // Gho Storage
-  GhoVariableDebtToken internal _ghoVariableDebtToken;
-  address internal _ghoTreasury;
+  UsdxlVariableDebtToken internal _usdxlVariableDebtToken;
+  address internal _usdxlTreasury;
 
   /// @inheritdoc VersionedInitializable
   function getRevision() internal pure virtual override returns (uint256) {
@@ -154,7 +154,7 @@ contract GhoAToken is VersionedInitializable, ScaledBalanceTokenBase, EIP712Base
    * @param amount The amount getting transferred
    */
   function transferUnderlyingTo(address target, uint256 amount) external virtual override onlyPool {
-    IGhoToken(_underlyingAsset).mint(target, amount);
+    IUsdxlToken(_underlyingAsset).mint(target, amount);
   }
 
   /// @inheritdoc IAToken
@@ -163,20 +163,20 @@ contract GhoAToken is VersionedInitializable, ScaledBalanceTokenBase, EIP712Base
     address onBehalfOf,
     uint256 amount
   ) external virtual override onlyPool {
-    uint256 balanceFromInterest = _ghoVariableDebtToken.getBalanceFromInterest(onBehalfOf);
+    uint256 balanceFromInterest = _usdxlVariableDebtToken.getBalanceFromInterest(onBehalfOf);
     if (amount <= balanceFromInterest) {
-      _ghoVariableDebtToken.decreaseBalanceFromInterest(onBehalfOf, amount);
+      _usdxlVariableDebtToken.decreaseBalanceFromInterest(onBehalfOf, amount);
     } else {
-      _ghoVariableDebtToken.decreaseBalanceFromInterest(onBehalfOf, balanceFromInterest);
-      IGhoToken(_underlyingAsset).burn(amount - balanceFromInterest);
+      _usdxlVariableDebtToken.decreaseBalanceFromInterest(onBehalfOf, balanceFromInterest);
+      IUsdxlToken(_underlyingAsset).burn(amount - balanceFromInterest);
     }
   }
 
-  /// @inheritdoc IGhoFacilitator
+  /// @inheritdoc IUsdxlFacilitator
   function distributeFeesToTreasury() external virtual override {
     uint256 balance = IERC20(_underlyingAsset).balanceOf(address(this));
-    IERC20(_underlyingAsset).transfer(_ghoTreasury, balance);
-    emit FeesDistributedToTreasury(_ghoTreasury, _underlyingAsset, balance);
+    IERC20(_underlyingAsset).transfer(_usdxlTreasury, balance);
+    emit FeesDistributedToTreasury(_usdxlTreasury, _underlyingAsset, balance);
   }
 
   /// @inheritdoc IAToken
@@ -229,29 +229,29 @@ contract GhoAToken is VersionedInitializable, ScaledBalanceTokenBase, EIP712Base
     IERC20(token).safeTransfer(to, amount);
   }
 
-  /// @inheritdoc IGhoAToken
-  function setVariableDebtToken(address ghoVariableDebtToken) external override onlyPoolAdmin {
-    require(address(_ghoVariableDebtToken) == address(0), 'VARIABLE_DEBT_TOKEN_ALREADY_SET');
-    require(ghoVariableDebtToken != address(0), 'ZERO_ADDRESS_NOT_VALID');
-    _ghoVariableDebtToken = GhoVariableDebtToken(ghoVariableDebtToken);
-    emit VariableDebtTokenSet(ghoVariableDebtToken);
+  /// @inheritdoc IUsdxlAToken
+  function setVariableDebtToken(address usdxlVariableDebtToken) external override onlyPoolAdmin {
+    require(address(_usdxlVariableDebtToken) == address(0), 'VARIABLE_DEBT_TOKEN_ALREADY_SET');
+    require(usdxlVariableDebtToken != address(0), 'ZERO_ADDRESS_NOT_VALID');
+    _usdxlVariableDebtToken = UsdxlVariableDebtToken(usdxlVariableDebtToken);
+    emit VariableDebtTokenSet(usdxlVariableDebtToken);
   }
 
-  /// @inheritdoc IGhoAToken
+  /// @inheritdoc IUsdxlAToken
   function getVariableDebtToken() external view override returns (address) {
-    return address(_ghoVariableDebtToken);
+    return address(_usdxlVariableDebtToken);
   }
 
-  /// @inheritdoc IGhoFacilitator
-  function updateGhoTreasury(address newGhoTreasury) external override onlyPoolAdmin {
-    require(newGhoTreasury != address(0), 'ZERO_ADDRESS_NOT_VALID');
-    address oldGhoTreasury = _ghoTreasury;
-    _ghoTreasury = newGhoTreasury;
-    emit GhoTreasuryUpdated(oldGhoTreasury, newGhoTreasury);
+  /// @inheritdoc IUsdxlFacilitator
+  function updateUsdxlTreasury(address newUsdxlTreasury) external override onlyPoolAdmin {
+    require(newUsdxlTreasury != address(0), 'ZERO_ADDRESS_NOT_VALID');
+    address oldUsdxlTreasury = _usdxlTreasury;
+    _usdxlTreasury = newUsdxlTreasury;
+    emit UsdxlTreasuryUpdated(oldUsdxlTreasury, newUsdxlTreasury);
   }
 
-  /// @inheritdoc IGhoFacilitator
-  function getGhoTreasury() external view override returns (address) {
-    return _ghoTreasury;
+  /// @inheritdoc IUsdxlFacilitator
+  function getUsdxlTreasury() external view override returns (address) {
+    return _usdxlTreasury;
   }
 }

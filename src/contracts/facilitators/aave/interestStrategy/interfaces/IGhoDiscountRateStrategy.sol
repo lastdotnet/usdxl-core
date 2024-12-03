@@ -6,7 +6,7 @@ pragma solidity ^0.8.0;
  * @author Aave
  * @notice Defines the basic interface of the GhoDiscountRateStrategy
  */
-interface IGhoDiscountRateStrategy {
+interface IUsdxlDiscountRateStrategy {
   /**
    * @notice Calculates the discount rate depending on the debt and discount token balances
    * @param debtBalance The debt balance of the user

@@ -3,15 +3,15 @@ pragma solidity ^0.8.0;
 
 import {IERC3156FlashLender} from '@openzeppelin/contracts/interfaces/IERC3156FlashLender.sol';
 import {IPoolAddressesProvider} from '@aave/core-v3/contracts/interfaces/IPoolAddressesProvider.sol';
-import {IGhoFacilitator} from '../../../gho/interfaces/IGhoFacilitator.sol';
-import {IGhoToken} from '../../../gho/interfaces/IGhoToken.sol';
+import {IUsdxlFacilitator} from '../../../gho/interfaces/IGhoFacilitator.sol';
+import {IUsdxlToken} from '../../../gho/interfaces/IGhoToken.sol';
 
 /**
  * @title IGhoFlashMinter
  * @author Aave
  * @notice Defines the behavior of the GHO Flash Minter
  */
-interface IGhoFlashMinter is IERC3156FlashLender, IGhoFacilitator {
+interface IUsdxlFlashMinter is IERC3156FlashLender, IUsdxlFacilitator {
   /**
    * @dev Emitted when the percentage fee is updated
    * @param oldFee The old fee (in bps)
@@ -57,7 +57,7 @@ interface IGhoFlashMinter is IERC3156FlashLender, IGhoFacilitator {
    * @notice Returns the address of the GHO token contract
    * @return The address of the GhoToken
    */
-  function GHO_TOKEN() external view returns (IGhoToken);
+  function USDXL_TOKEN() external view returns (IUsdxlToken);
 
   /**
    * @notice Updates the percentage fee. It is the percentage of the flash-minted amount that needs to be repaid.

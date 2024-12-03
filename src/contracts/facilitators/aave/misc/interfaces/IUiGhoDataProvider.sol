@@ -6,35 +6,35 @@ pragma solidity ^0.8.10;
  * @author Aave
  * @notice Defines the basic interface of the UiGhoDataProvider
  */
-interface IUiGhoDataProvider {
-  struct GhoReserveData {
-    uint256 ghoBaseVariableBorrowRate;
-    uint256 ghoDiscountedPerToken;
-    uint256 ghoDiscountRate;
-    uint256 ghoMinDebtTokenBalanceForDiscount;
-    uint256 ghoMinDiscountTokenBalanceForDiscount;
-    uint40 ghoReserveLastUpdateTimestamp;
-    uint128 ghoCurrentBorrowIndex;
+interface IUiUsdxlDataProvider {
+  struct UsdxlReserveData {
+    uint256 usdxlBaseVariableBorrowRate;
+    uint256 usdxlDiscountedPerToken;
+    uint256 usdxlDiscountRate;
+    uint256 usdxlMinDebtTokenBalanceForDiscount;
+    uint256 usdxlMinDiscountTokenBalanceForDiscount;
+    uint40 usdxlReserveLastUpdateTimestamp;
+    uint128 usdxlCurrentBorrowIndex;
     uint256 aaveFacilitatorBucketLevel;
     uint256 aaveFacilitatorBucketMaxCapacity;
   }
 
-  struct GhoUserData {
-    uint256 userGhoDiscountPercent;
+  struct UsdxlUserData {
+    uint256 userUsdxlDiscountPercent;
     uint256 userDiscountTokenBalance;
-    uint256 userPreviousGhoBorrowIndex;
-    uint256 userGhoScaledBorrowBalance;
+    uint256 userPreviousUsdxlBorrowIndex;
+    uint256 userUsdxlScaledBorrowBalance;
   }
 
   /**
    * @notice Returns data of the GHO reserve and the Aave Facilitator
    * @return An object with information related to the GHO reserve and the Aave Facilitator
    */
-  function getGhoReserveData() external view returns (GhoReserveData memory);
+  function getUsdxlReserveData() external view returns (UsdxlReserveData memory);
 
   /**
    * @notice Returns data of the user's position on GHO
    * @return An object with information related to the user's position with regard to GHO
    */
-  function getGhoUserData(address user) external view returns (GhoUserData memory);
+  function getUsdxlUserData(address user) external view returns (UsdxlUserData memory);
 }

@@ -8,7 +8,7 @@ import {IAccessControl} from '@openzeppelin/contracts/access/IAccessControl.sol'
  * @title IGhoToken
  * @author Aave
  */
-interface IGhoToken is IERC20, IAccessControl {
+interface IUsdxlToken is IERC20, IAccessControl {
   struct Facilitator {
     uint128 bucketCapacity;
     uint128 bucketLevel;

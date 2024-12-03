@@ -2,14 +2,14 @@
 pragma solidity ^0.8.0;
 
 import {IAToken} from '@aave/core-v3/contracts/interfaces/IAToken.sol';
-import {IGhoFacilitator} from '../../../../gho/interfaces/IGhoFacilitator.sol';
+import {IUsdxlFacilitator} from '../../../../gho/interfaces/IGhoFacilitator.sol';
 
 /**
  * @title IGhoAToken
  * @author Aave
  * @notice Defines the basic interface of the GhoAToken
  */
-interface IGhoAToken is IAToken, IGhoFacilitator {
+interface IUsdxlAToken is IAToken, IUsdxlFacilitator {
   /**
    * @dev Emitted when variable debt contract is set
    * @param variableDebtToken The address of the GhoVariableDebtToken contract
@@ -18,9 +18,9 @@ interface IGhoAToken is IAToken, IGhoFacilitator {
 
   /**
    * @notice Sets a reference to the GHO variable debt token
-   * @param ghoVariableDebtToken The address of the GhoVariableDebtToken contract
+   * @param usdxlVariableDebtToken The address of the GhoVariableDebtToken contract
    */
-  function setVariableDebtToken(address ghoVariableDebtToken) external;
+  function setVariableDebtToken(address usdxlVariableDebtToken) external;
 
   /**
    * @notice Returns the address of the GHO variable debt token

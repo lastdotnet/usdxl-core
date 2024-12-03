@@ -9,14 +9,14 @@ contract TestGhoVariableDebtToken is TestGhoBase {
   }
 
   function testConstructor() public {
-    GhoVariableDebtToken debtToken = new GhoVariableDebtToken(IPool(address(POOL)));
+    UsdxlVariableDebtToken debtToken = new UsdxlVariableDebtToken(IPool(address(POOL)));
     assertEq(debtToken.name(), 'GHO_VARIABLE_DEBT_TOKEN_IMPL', 'Wrong default ERC20 name');
     assertEq(debtToken.symbol(), 'GHO_VARIABLE_DEBT_TOKEN_IMPL', 'Wrong default ERC20 symbol');
     assertEq(debtToken.decimals(), 0, 'Wrong default ERC20 decimals');
   }
 
   function testInitialize() public {
-    GhoVariableDebtToken debtToken = new GhoVariableDebtToken(IPool(address(POOL)));
+    UsdxlVariableDebtToken debtToken = new UsdxlVariableDebtToken(IPool(address(POOL)));
     string memory tokenName = 'Aave Variable Debt GHO';
     string memory tokenSymbol = 'variableDebtGHO';
     bytes memory empty;
@@ -40,7 +40,7 @@ contract TestGhoVariableDebtToken is TestGhoBase {
     string memory tokenSymbol = 'variableDebtGHO';
     bytes memory empty;
 
-    GhoVariableDebtToken debtToken = new GhoVariableDebtToken(IPool(address(POOL)));
+    UsdxlVariableDebtToken debtToken = new UsdxlVariableDebtToken(IPool(address(POOL)));
     vm.expectRevert(bytes(Errors.POOL_ADDRESSES_DO_NOT_MATCH));
     debtToken.initialize(
       IPool(address(0)),
@@ -508,7 +508,7 @@ contract TestGhoVariableDebtToken is TestGhoBase {
   }
 
   function testUnauthorizedSetAToken() public {
-    GhoVariableDebtToken debtToken = new GhoVariableDebtToken(IPool(address(POOL)));
+    UsdxlVariableDebtToken debtToken = new UsdxlVariableDebtToken(IPool(address(POOL)));
 
     vm.startPrank(ALICE);
     ACL_MANAGER.setState(false);
@@ -518,7 +518,7 @@ contract TestGhoVariableDebtToken is TestGhoBase {
   }
 
   function testSetAToken() public {
-    GhoVariableDebtToken debtToken = new GhoVariableDebtToken(IPool(address(POOL)));
+    UsdxlVariableDebtToken debtToken = new UsdxlVariableDebtToken(IPool(address(POOL)));
 
     vm.expectEmit(true, true, true, true, address(debtToken));
     emit ATokenSet(address(GHO_ATOKEN));
@@ -533,7 +533,7 @@ contract TestGhoVariableDebtToken is TestGhoBase {
   }
 
   function testZeroAToken() public {
-    GhoVariableDebtToken debtToken = new GhoVariableDebtToken(IPool(address(POOL)));
+    UsdxlVariableDebtToken debtToken = new UsdxlVariableDebtToken(IPool(address(POOL)));
 
     vm.startPrank(ALICE);
     vm.expectRevert(bytes('ZERO_ADDRESS_NOT_VALID'));
