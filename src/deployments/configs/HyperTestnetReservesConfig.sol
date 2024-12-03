@@ -5,6 +5,9 @@ import {IAaveOracle} from '@aave/core-v3/contracts/interfaces/IAaveOracle.sol';
 import {IPool} from '@aave/core-v3/contracts/interfaces/IPool.sol';
 import {IPoolConfigurator} from '@aave/core-v3/contracts/interfaces/IPoolConfigurator.sol';
 import {ConfiguratorInputTypes} from '@aave/core-v3/contracts/protocol/libraries/types/ConfiguratorInputTypes.sol';
+import {AaveV3SetupBatch} from '@aave/core-v3/deployments/projects/aave-v3-batched/batches/AaveV3SetupBatch.sol';
+import {MarketReport} from '@aave/core-v3/deployments/interfaces/IMarketReportTypes.sol';
+import {IDefaultInterestRateStrategyV2} from '@aave/core-v3/contracts/interfaces/IDefaultInterestRateStrategyV2.sol';
 
 import {IGhoToken} from 'src/contracts/gho/interfaces/IGhoToken.sol';
 import {GhoToken} from 'src/contracts/gho/GhoToken.sol';
@@ -16,10 +19,13 @@ import {GhoFlashMinter} from 'src/contracts/facilitators/flashMinter/GhoFlashMin
 
 import 'forge-std/console.sol';
 
-contract LastTestnetReservesConfig {
+contract HyperTestnetReservesConfig {
 
+  IGhoToken ghoToken;
   GhoAToken ghoAToken;
   GhoVariableDebtToken ghoVariableDebtToken;
+
+  AaveV3SetupBatch public constant MARKET_REPORT = AaveV3SetupBatch(0x114e4d85Db6E7082CC4366b849648ABE288b77eC);
   
   function _deployTestnetTokens(
     address deployer
@@ -38,6 +44,8 @@ contract LastTestnetReservesConfig {
 
     oracles[0] = address(new GhoOracle());
 
+    ghoToken = IGhoToken(tokens[0]);
+
     return (tokens, oracles);
   }
 
@@ -50,6 +58,8 @@ contract LastTestnetReservesConfig {
     )
   { 
     tokens  = new address[](1);
+
+    ghoToken = _getGhoToken();
     
     tokens[0] = address(_getGhoToken()); // GHO
 
@@ -81,25 +91,29 @@ function _setGhoOracle(
       _getPoolInstance()
     );
 
-    GhoInterestRateStrategy ghoInterestRateStrategy = new GhoInterestRateStrategy(
-      0x270542372e5a73c39E4290291AB88e2901cCEF2D, // PoolAddressesProvider
-      15000000000000000000000000 // base variable borrow rate (1.5%)
-    );
+    MarketReport memory marketReport = _getMarketReport();
+
+    IDefaultInterestRateStrategyV2.InterestRateData memory rateData = IDefaultInterestRateStrategyV2.InterestRateData({
+      optimalUsageRatio: uint16(80_00),
+      baseVariableBorrowRate: uint32(1_00),
+      variableRateSlope1: uint32(4_00),
+      variableRateSlope2: uint32(60_00)
+    });
 
     inputs[0] = ConfiguratorInputTypes.InitReserveInput({
       aTokenImpl: address(ghoAToken), // Address of the aToken implementation
       variableDebtTokenImpl: address(ghoVariableDebtToken), // Address of the variable debt token implementation
       useVirtualBalance: false, // true for all normal assets and should be false only in special cases (ex. GHO) where an asset is minted instead of supplied.
-      interestRateStrategyAddress: address(ghoInterestRateStrategy), // Address of the interest rate strategy
-      underlyingAsset: address(tokens[0]), // GHO address
-      treasury: address(0xa2CCdD20525d5225b4AB08c10D1aFfb6de84D518), // Address of the treasury
-      incentivesController: address(0x21455b64CD8f992B2500a55243d2C179a77C83A1), // Address of the incentives controller
+      interestRateStrategyAddress: marketReport.defaultInterestRateStrategy, // Address of the interest rate strategy
+      underlyingAsset: tokens[0], // GHO address
+      treasury: marketReport.treasury, // Address of the treasury
+      incentivesController: marketReport.rewardsControllerProxy, // Address of the incentives controller
       aTokenName: 'USDXL Aave',
       aTokenSymbol: 'awUSDXL',
       variableDebtTokenName: 'Test USDXL Variable Debt Aave',
       variableDebtTokenSymbol: 'variableDebtTestUSDXL',
       params: bytes('0x10'), // Additional parameters for initialization
-      interestRateData: bytes('')
+      interestRateData: abi.encode(rateData)
     });
     
     // set reserves configs
@@ -117,9 +131,10 @@ function _setGhoOracle(
   function _addGhoATokenAsEntity()
     internal
   {
+    // pull aToken proxy from reserves config
     _getGhoToken().addFacilitator(
       address(_getGhoATokenProxy()),
-      'Aave V3 Last Testnet Market', // entity label
+      'Aave V3 Hyper Testnet Market', // entity label
       1e27 // entity mint limit (100mil)
     );
   }
@@ -129,11 +144,13 @@ function _setGhoOracle(
   )
     internal
   {
+    MarketReport memory marketReport = _getMarketReport();
+
     GhoFlashMinter ghoFlashMinter = new GhoFlashMinter(
-      tokens[0], // GHO token
-      0xa2CCdD20525d5225b4AB08c10D1aFfb6de84D518, // TreasuryProxy
+      address(_getGhoToken()), // GHO token
+      marketReport.treasury, // TreasuryProxy
       0, // fee in bips for flash-minting (covered on repay)
-      0x270542372e5a73c39E4290291AB88e2901cCEF2D // PoolAddressesProvider
+      marketReport.poolAddressesProvider // PoolAddressesProvider
     );
 
     GhoToken(tokens[0]).addFacilitator(
@@ -146,28 +163,14 @@ function _setGhoOracle(
   function _setGhoAddresses()
     internal
   {
-    // ghoAToken.updateGhoTreasury(0xa2CCdD20525d5225b4AB08c10D1aFfb6de84D518);
+    MarketReport memory marketReport = _getMarketReport();
 
-    // GhoAToken(_getGhoATokenProxy()).setVariableDebtToken(_getGhoVariableDebtToken());
+    ghoAToken.updateGhoTreasury(marketReport.treasury);
 
-    //deploy new impl
-    // GhoVariableDebtToken newDebtTokenImpl = new GhoVariableDebtToken(_getPoolInstance());
-
-    // upgrade debt token impl
-    // _getPoolConfigurator().updateVariableDebtToken(
-    //   ConfiguratorInputTypes.UpdateDebtTokenInput({
-    //     asset: address(_getGhoToken()),
-    //     incentivesController: address(0x21455b64CD8f992B2500a55243d2C179a77C83A1),
-    //     name: 'Test USDXL Variable Debt Aave',
-    //     symbol: 'variableDebtTestUSDXL',
-    //     implementation: address(0x0bb30e5523b9EDD240F81d498FfA24fEdbb4055f),
-    //     params: bytes('0x10')
-    //   })
-    // );
+    GhoAToken(_getGhoATokenProxy()).setVariableDebtToken(_getGhoVariableDebtToken());
 
     //set aToken
-    
-    GhoVariableDebtToken(_getGhoVariableDebtToken()).setAToken(address(0x43FF14af721DC22e891cA16A1504692aFcf0a06b));
+    GhoVariableDebtToken(_getGhoVariableDebtToken()).setAToken(_getGhoATokenProxy());
   }
 
   function _setDiscountTokenAndStrategy(
@@ -176,7 +179,7 @@ function _setGhoOracle(
   )
     internal
   {
-    ghoVariableDebtToken = GhoVariableDebtToken(0x9A29D4ad8fa79C328c4350BF771399fD2f991dC4);
+    ghoVariableDebtToken = GhoVariableDebtToken(_getGhoVariableDebtToken());
     if (discountRateStrategy != address(0))
       ghoVariableDebtToken.updateDiscountRateStrategy(discountRateStrategy);
     if (discountToken != address(0))
@@ -215,61 +218,74 @@ function _setGhoOracle(
 
   function _getAaveOracle()
     internal
-    pure
+    view
     returns (
       IAaveOracle
     )
   {
-    return IAaveOracle(0xE6C26ED28215f2bb33C3F97768d250eFC98586b4);
+    return IAaveOracle(_getMarketReport().aaveOracle);
   }
 
   function _getPoolConfigurator()
     internal
-    pure
+    view
     returns (
       IPoolConfigurator
     )
   {
-    return IPoolConfigurator(0x4c1E6019200329A039d5AD5b577838967250c0C3);
+    return IPoolConfigurator(_getMarketReport().poolConfiguratorProxy);
   }
 
   function _getPoolInstance()
     internal
-    pure
+    view
     returns (
       IPool
     )
   {
-    return IPool(0xBD2f32C02140641f497B0Db7B365122214f7c548);
+    return IPool(_getMarketReport().poolProxy);
+  }
+
+  function _getMarketReport()
+    internal
+    view
+    returns (
+      MarketReport memory
+    ) {
+      return AaveV3SetupBatch(MARKET_REPORT).getMarketReport();
   }
 
   function _getGhoToken()
     internal
-    pure
+    view
     returns (
       IGhoToken
     )
   {
-    return IGhoToken(0x17a44c591ac723D76050Fe6bf02B49A0CC8F3994);
+    if (address(ghoToken) != address(0))
+      return IGhoToken(address(ghoToken));
+    return IGhoToken(address(0));
   }
 
   function _getGhoATokenProxy()
     internal
-    pure
+    view
     returns (
       address
     )
   {
-    return 0x43FF14af721DC22e891cA16A1504692aFcf0a06b;
+    // read from reserves config
+    return _getPoolInstance().getReserveData(address(ghoToken)).aTokenAddress;
   }
 
   function _getGhoVariableDebtToken()
     internal
-    pure
+    view
     returns (
       address
     )
   {
-    return 0x9A29D4ad8fa79C328c4350BF771399fD2f991dC4;
+    // read from reserves config
+    return _getPoolInstance().getReserveData(address(ghoToken)).variableDebtTokenAddress;
   }
 }

@@ -4,9 +4,9 @@ pragma solidity ^0.8.0;
 import {Script, console2} from 'forge-std/Script.sol';
 import {ERC20} from 'lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol';
 import {ZeroDiscountRateStrategy} from 'src/contracts/facilitators/aave/interestStrategy/ZeroDiscountRateStrategy.sol';
-import {LastTestnetReservesConfig} from 'src/deployments/configs/LastTestnetReservesConfig.sol';
+import {HyperTestnetReservesConfig} from 'src/deployments/configs/HyperTestnetReservesConfig.sol';
 
-contract Default is LastTestnetReservesConfig, Script {
+contract Default is HyperTestnetReservesConfig, Script {
   function run() external {
     uint256 deployerPrivateKey = vm.envUint('PRIVATE_KEY');
     address deployerAddress = vm.addr(deployerPrivateKey);

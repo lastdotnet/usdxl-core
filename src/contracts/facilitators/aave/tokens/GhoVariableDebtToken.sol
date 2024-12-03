@@ -31,7 +31,7 @@ contract GhoVariableDebtToken is DebtTokenBase, ScaledBalanceTokenBase, IGhoVari
   using SafeCast for uint256;
   using PercentageMath for uint256;
 
-  uint256 public constant DEBT_TOKEN_REVISION = 0x1;
+  uint256 public constant DEBT_TOKEN_REVISION = 0x2;
 
   // Corresponding AToken to this DebtToken
   address internal _ghoAToken;
@@ -220,7 +220,6 @@ contract GhoVariableDebtToken is DebtTokenBase, ScaledBalanceTokenBase, IGhoVari
 
   /// @inheritdoc IGhoVariableDebtToken
   function setAToken(address ghoAToken) external override onlyPoolAdmin {
-    require(_ghoAToken == address(0), 'ATOKEN_ALREADY_SET');
     require(ghoAToken != address(0), 'ZERO_ADDRESS_NOT_VALID');
     _ghoAToken = ghoAToken;
     emit ATokenSet(ghoAToken);
