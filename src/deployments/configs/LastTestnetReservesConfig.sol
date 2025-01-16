@@ -51,7 +51,7 @@ contract LastTestnetReservesConfig {
   { 
     tokens  = new address[](1);
     
-    tokens[0] = address(_getUsdxlToken()); // GHO
+    tokens[0] = address(_getUsdxlToken()); // USDXL
 
     return tokens;
   }

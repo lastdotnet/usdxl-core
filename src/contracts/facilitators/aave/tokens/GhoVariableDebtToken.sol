@@ -220,6 +220,7 @@ contract UsdxlVariableDebtToken is DebtTokenBase, ScaledBalanceTokenBase, IUsdxl
 
   /// @inheritdoc IUsdxlVariableDebtToken
   function setAToken(address ghoAToken) external override onlyPoolAdmin {
+    require(_ghoAToken == address(0), 'ATOKEN_ALREADY_SET');
     require(ghoAToken != address(0), 'ZERO_ADDRESS_NOT_VALID');
     _ghoAToken = ghoAToken;
     emit ATokenSet(ghoAToken);

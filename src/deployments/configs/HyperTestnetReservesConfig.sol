@@ -8,6 +8,8 @@ import {ConfiguratorInputTypes} from '@aave/core-v3/contracts/protocol/libraries
 import {AaveV3SetupBatch} from '@aave/core-v3/deployments/projects/aave-v3-batched/batches/AaveV3SetupBatch.sol';
 import {MarketReport} from '@aave/core-v3/deployments/interfaces/IMarketReportTypes.sol';
 import {IDefaultInterestRateStrategyV2} from '@aave/core-v3/contracts/interfaces/IDefaultInterestRateStrategyV2.sol';
+import {AdminUpgradeabilityProxy} from '@aave/core-v3/contracts/dependencies/openzeppelin/upgradeability/AdminUpgradeabilityProxy.sol';
+import {Constants} from 'src/test/helpers/Constants.sol';
 
 import {IUsdxlToken} from 'src/contracts/gho/interfaces/IGhoToken.sol';
 import {UsdxlToken} from 'src/contracts/gho/GhoToken.sol';
@@ -17,9 +19,15 @@ import {UsdxlVariableDebtToken} from 'src/contracts/facilitators/aave/tokens/Gho
 import {UsdxlInterestRateStrategy} from 'src/contracts/facilitators/aave/interestStrategy/GhoInterestRateStrategy.sol';
 import {UsdxlFlashMinter} from 'src/contracts/facilitators/flashMinter/GhoFlashMinter.sol';
 
+import {Gsm} from 'src/contracts/facilitators/gsm/Gsm.sol';
+import {FixedFeeStrategy} from 'src/contracts/facilitators/gsm/feeStrategy/FixedFeeStrategy.sol';
+import {FixedPriceStrategy} from 'src/contracts/facilitators/gsm/priceStrategy/FixedPriceStrategy.sol';
+
+import {ERC20} from '@openzeppelin/contracts/token/ERC20/ERC20.sol';
+
 import 'forge-std/console.sol';
 
-contract HyperTestnetReservesConfig {
+contract HyperTestnetReservesConfig is Constants {
 
   IUsdxlToken usdxlToken;
   UsdxlAToken usdxlAToken;
@@ -216,6 +224,48 @@ function _setUsdxlOracle(
     );
   }
 
+  function _launchGsm(
+    address[] memory tokens,
+    address gsmOwner
+  )
+    internal
+  {
+    FixedPriceStrategy fixedPriceStrategy = new FixedPriceStrategy(
+      DEFAULT_FIXED_PRICE,
+      address(token),
+      ERC20(token).decimals()
+    );
+    FixedFeeStrategy fixedFeeStrategy = new FixedFeeStrategy(
+      0.02e4, // 2% for buys
+      0  // 0% for sells
+    );
+
+    Gsm gsm = new Gsm(
+      address(_getUsdxlToken()),
+      address(token),
+      address(fixedPriceStrategy)
+    );
+
+    AdminUpgradeabilityProxy gsmProxy = new AdminUpgradeabilityProxy(
+      address(gsm),
+      address(0), //TODO: set admin to timelock
+      ''
+    );
+
+    Gsm usdxlGsm = Gsm(address(gsmProxy));
+
+    MarketReport memory marketReport = _getMarketReport();
+
+    usdxlGsm.initialize(
+      gsmOwner,
+      marketReport.treasury,
+      uint128(
+        8_000_000 * 
+        (10 ** ERC20(token).decimals())
+      )
+    );
+  }
+
   function _getAaveOracle()
     internal
     view
@@ -264,7 +314,7 @@ function _setUsdxlOracle(
   {
     if (address(usdxlToken) != address(0))
       return IUsdxlToken(address(usdxlToken));
-    return IUsdxlToken(address(0));
+    return IUsdxlToken(address(0x9edA7E43821EedFb677A69066529F16DB3A2dD73));
   }
 
   function _getUsdxlATokenProxy()
