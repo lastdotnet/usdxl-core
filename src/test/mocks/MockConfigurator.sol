@@ -35,7 +35,7 @@ contract MockConfigurator {
     address asset,
     address newRateStrategyAddress
   ) external {
-    DataTypes.ReserveDataLegacy memory reserve = _pool.getReserveData(asset);
+    DataTypes.ReserveData memory reserve = _pool.getReserveData(asset);
     address oldRateStrategyAddress = reserve.interestRateStrategyAddress;
     _pool.setReserveInterestRateStrategyAddress(asset, newRateStrategyAddress);
     emit ReserveInterestRateStrategyChanged(asset, oldRateStrategyAddress, newRateStrategyAddress);
@@ -45,7 +45,7 @@ contract MockConfigurator {
     address asset,
     IDefaultInterestRateStrategy.InterestRateData calldata rateParams
   ) external {
-    DataTypes.ReserveDataLegacy memory reserve = _pool.getReserveData(asset);
+    DataTypes.ReserveData memory reserve = _pool.getReserveData(asset);
     address rateStrategyAddress = reserve.interestRateStrategyAddress;
     DefaultReserveInterestRateStrategyV2(rateStrategyAddress).setInterestRateParams(
       asset,

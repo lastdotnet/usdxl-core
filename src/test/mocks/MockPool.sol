@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {UsdxlVariableDebtToken} from '../../contracts/facilitators/aave/tokens/GhoVariableDebtToken.sol';
-import {UsdxlAToken} from '../../contracts/facilitators/aave/tokens/GhoAToken.sol';
-import {IUsdxlToken} from 'src/contracts/gho/interfaces/IGhoToken.sol';
-import {UsdxlDiscountRateStrategy} from '../../contracts/facilitators/aave/interestStrategy/GhoDiscountRateStrategy.sol';
-import {UsdxlInterestRateStrategy} from '../../contracts/facilitators/aave/interestStrategy/GhoInterestRateStrategy.sol';
+import {UsdxlVariableDebtToken} from '../../contracts/facilitators/hyfi/tokens/UsdxlVariableDebtToken.sol';
+import {UsdxlAToken} from '../../contracts/facilitators/hyfi/tokens/UsdxlAToken.sol';
+import {IUsdxlToken} from 'src/contracts/usdxl/interfaces/IUsdxlToken.sol';
+import {UsdxlDiscountRateStrategy} from '../../contracts/facilitators/hyfi/interestStrategy/UsdxlDiscountRateStrategy.sol';
+import {UsdxlInterestRateStrategy} from '../../contracts/facilitators/hyfi/interestStrategy/UsdxlInterestRateStrategy.sol';
 import {IPool} from '@aave/core-v3/contracts/interfaces/IPool.sol';
 import {IPoolAddressesProvider} from '@aave/core-v3/contracts/interfaces/IPoolAddressesProvider.sol';
 import {IAaveIncentivesController} from '@aave/core-v3/contracts/interfaces/IAaveIncentivesController.sol';
@@ -50,6 +50,7 @@ contract MockPool is Pool {
     _reserves[GHO].init(
       address(ATOKEN),
       address(DEBT_TOKEN),
+      address(DEBT_TOKEN), // stable debt token - just a mock pool so should have no impact
       address(new UsdxlInterestRateStrategy(address(0), 2e25))
     );
   }
@@ -74,7 +75,7 @@ contract MockPool is Pool {
 
     DEBT_TOKEN.mint(msg.sender, onBehalfOf, amount, reserveCache.nextVariableBorrowIndex);
 
-    reserve.updateInterestRatesAndVirtualBalance(reserveCache, GHO, 0, amount);
+    reserve.updateInterestRates(reserveCache, GHO, 0, amount);
 
     ATOKEN.transferUnderlyingTo(onBehalfOf, amount);
   }
@@ -97,7 +98,7 @@ contract MockPool is Pool {
 
     DEBT_TOKEN.burn(onBehalfOf, paybackAmount, reserveCache.nextVariableBorrowIndex);
 
-    reserve.updateInterestRatesAndVirtualBalance(reserveCache, GHO, 0, amount);
+    reserve.updateInterestRates(reserveCache, GHO, 0, amount);
 
     IERC20(GHO).transferFrom(msg.sender, reserveCache.aTokenAddress, paybackAmount);
 

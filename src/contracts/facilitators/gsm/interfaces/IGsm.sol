@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import {IAccessControl} from '@openzeppelin/contracts/access/IAccessControl.sol';
-import {IUsdxlFacilitator} from '../../../gho/interfaces/IGhoFacilitator.sol';
+import {IUsdxlFacilitator} from '../../../usdxl/interfaces/IUsdxlFacilitator.sol';
 
 /**
  * @title IGsm

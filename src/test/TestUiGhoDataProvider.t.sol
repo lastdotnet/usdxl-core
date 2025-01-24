@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import './TestGhoBase.t.sol';
 
-import {UiUsdxlDataProvider, IUiUsdxlDataProvider} from '../contracts/facilitators/aave/misc/UiGhoDataProvider.sol';
+import {UiUsdxlDataProvider, IUiUsdxlDataProvider} from '../contracts/facilitators/hyfi/misc/UiUsdxlDataProvider.sol';
 
 contract TestUiGhoDataProvider is TestGhoBase {
   UiUsdxlDataProvider dataProvider;
@@ -13,7 +13,7 @@ contract TestUiGhoDataProvider is TestGhoBase {
   }
 
   function testGhoReserveData() public {
-    DataTypes.ReserveDataLegacy memory baseData = POOL.getReserveData(address(GHO_TOKEN));
+    DataTypes.ReserveData memory baseData = POOL.getReserveData(address(GHO_TOKEN));
     (uint256 bucketCapacity, uint256 bucketLevel) = GHO_TOKEN.getFacilitatorBucket(
       baseData.aTokenAddress
     );

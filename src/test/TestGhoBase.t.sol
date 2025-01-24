@@ -30,7 +30,7 @@ import {MockERC4626} from './mocks/MockERC4626.sol';
 import {MockUpgradeable} from './mocks/MockUpgradeable.sol';
 import {PriceOracle} from '@aave/core-v3/contracts/mocks/oracle/PriceOracle.sol';
 import {TestnetERC20} from 'src/contracts/mocks/testnet-helpers/TestnetERC20.sol';
-import {WETH9Mocked} from '@aave/core-v3/contracts/mocks/tokens/WETH9Mocked.sol';
+import {WETH9Mock} from '@aave/periphery-v3/contracts/mocks/WETH9Mock.sol';
 import {MockRedemption} from './mocks/MockRedemption.sol';
 import {MockRedemptionFailedIssuedAssetAmount} from './mocks/MockRedemptionFailedIssuedAssetAmount.sol';
 import {MockRedemptionFailed} from './mocks/MockRedemptionFailed.sol';
@@ -46,7 +46,7 @@ import {IERC20} from '@aave/core-v3/contracts/dependencies/openzeppelin/contract
 import {IERC3156FlashBorrower} from '@openzeppelin/contracts/interfaces/IERC3156FlashBorrower.sol';
 import {IERC3156FlashLender} from '@openzeppelin/contracts/interfaces/IERC3156FlashLender.sol';
 import {IERC4626} from '@openzeppelin/contracts/interfaces/IERC4626.sol';
-import {IUsdxlToken} from '../contracts/gho/interfaces/IGhoToken.sol';
+import {IUsdxlToken} from '../contracts/usdxl/interfaces/IUsdxlToken.sol';
 import {IPool} from '@aave/core-v3/contracts/interfaces/IPool.sol';
 import {IPoolAddressesProvider} from '@aave/core-v3/contracts/interfaces/IPoolAddressesProvider.sol';
 
@@ -57,17 +57,17 @@ import {ReserveConfiguration} from '@aave/core-v3/contracts/protocol/libraries/c
 import {TransparentUpgradeableProxy} from 'solidity-utils/contracts/transparent-proxy/TransparentUpgradeableProxy.sol';
 
 // GHO contracts
-import {UsdxlAToken} from '../contracts/facilitators/aave/tokens/GhoAToken.sol';
-import {UsdxlDiscountRateStrategy} from '../contracts/facilitators/aave/interestStrategy/GhoDiscountRateStrategy.sol';
-import {UsdxlFlashMinter} from '../contracts/facilitators/flashMinter/GhoFlashMinter.sol';
-import {UsdxlInterestRateStrategy} from '../contracts/facilitators/aave/interestStrategy/GhoInterestRateStrategy.sol';
+import {UsdxlAToken} from '../contracts/facilitators/hyfi/tokens/UsdxlAToken.sol';
+import {UsdxlDiscountRateStrategy} from '../contracts/facilitators/hyfi/interestStrategy/UsdxlDiscountRateStrategy.sol';
+import {UsdxlFlashMinter} from '../contracts/facilitators/flashMinter/UsdxlFlashMinter.sol';
+import {UsdxlInterestRateStrategy} from '../contracts/facilitators/hyfi/interestStrategy/UsdxlInterestRateStrategy.sol';
 import {IGhoAaveSteward} from '../contracts/misc/interfaces/IGhoAaveSteward.sol';
 import {GhoAaveSteward} from '../contracts/misc/GhoAaveSteward.sol';
-import {UsdxlOracle} from '../contracts/facilitators/aave/oracle/GhoOracle.sol';
-import {UsdxlToken} from '../contracts/gho/GhoToken.sol';
-import {UpgradeableGhoToken} from '../contracts/gho/UpgradeableGhoToken.sol';
-import {UsdxlVariableDebtToken} from '../contracts/facilitators/aave/tokens/GhoVariableDebtToken.sol';
-import {FixedRateStrategyFactory} from '../contracts/facilitators/aave/interestStrategy/FixedRateStrategyFactory.sol';
+import {UsdxlOracle} from '../contracts/facilitators/hyfi/oracle/UsdxlOracle.sol';
+import {UsdxlToken} from '../contracts/usdxl/UsdxlToken.sol';
+import {UpgradeableUsdxlToken} from '../contracts/usdxl/UpgradeableUsdxlToken.sol';
+import {UsdxlVariableDebtToken} from '../contracts/facilitators/hyfi/tokens/UsdxlVariableDebtToken.sol';
+import {FixedRateStrategyFactory} from '../contracts/facilitators/hyfi/interestStrategy/FixedRateStrategyFactory.sol';
 
 // GSM contracts
 import {IGsm} from '../contracts/facilitators/gsm/interfaces/IGsm.sol';
@@ -95,7 +95,7 @@ import {GsmConverter} from '../contracts/facilitators/gsm/converter/GsmConverter
 // STK contracts
 import {IStakedAaveV3} from '@aave/stk-v1-5/interfaces/IStakedAaveV3.sol';
 import {StakedAaveV3} from '@aave/stk-v1-5/StakedAaveV3.sol';
-import {IGhoVariableDebtTokenTransferHook} from '@aave/stk-v1-5/interfaces/IGhoVariableDebtTokenTransferHook.sol';
+import {IUsdxlVariableDebtTokenTransferHook} from '@aave/stk-v1-5/interfaces/IUsdxlVariableDebtTokenTransferHook.sol';
 
 contract TestGhoBase is Test, Constants, Events {
   using WadRayMath for uint256;
@@ -133,7 +133,7 @@ contract TestGhoBase is Test, Constants, Events {
   MockBUIDLSubscriptionFailed BUIDL_USDC_ISSUANCE_FAILED;
   MockBUIDLSubscriptionFailedInvalidUSDCAccepted BUIDL_USDC_ISSUANCE_FAILED_INVALID_USDC;
   PriceOracle PRICE_ORACLE;
-  WETH9Mocked WETH;
+  WETH9Mock WETH;
   UsdxlVariableDebtToken GHO_DEBT_TOKEN;
   UsdxlAToken GHO_ATOKEN;
   UsdxlFlashMinter GHO_FLASH_MINTER;
@@ -216,7 +216,7 @@ contract TestGhoBase is Test, Constants, Events {
     );
     USDC_4626_TOKEN = new MockERC4626('USD Coin 4626', '4626', address(USDC_TOKEN));
     IPool iPool = IPool(address(POOL));
-    WETH = new WETH9Mocked('Wrapped Ether', 'WETH', FAUCET);
+    WETH = new WETH9Mock('Wrapped Ether', 'WETH', FAUCET);
     GHO_DEBT_TOKEN = new UsdxlVariableDebtToken(iPool);
     GHO_ATOKEN = new UsdxlAToken(iPool);
     GHO_DEBT_TOKEN.initialize(
@@ -245,7 +245,7 @@ contract TestGhoBase is Test, Constants, Events {
     GHO_DEBT_TOKEN.setAToken(address(GHO_ATOKEN));
     GHO_ATOKEN.setVariableDebtToken(address(GHO_DEBT_TOKEN));
     vm.prank(SHORT_EXECUTOR);
-    STK_TOKEN.setGHODebtToken(IGhoVariableDebtTokenTransferHook(address(GHO_DEBT_TOKEN)));
+    STK_TOKEN.setUSDXLDebtToken(IUsdxlVariableDebtTokenTransferHook(address(GHO_DEBT_TOKEN)));
     GHO_TOKEN.addFacilitator(address(GHO_ATOKEN), 'Aave V3 Pool', DEFAULT_CAPACITY);
     POOL.setGhoTokens(GHO_DEBT_TOKEN, GHO_ATOKEN);
 

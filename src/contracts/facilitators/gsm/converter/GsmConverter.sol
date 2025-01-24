@@ -6,7 +6,7 @@ import {IERC20} from '@aave/core-v3/contracts/dependencies/openzeppelin/contract
 import {EIP712} from '@openzeppelin/contracts/utils/cryptography/EIP712.sol';
 import {SignatureChecker} from '@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol';
 import {Ownable} from '@openzeppelin/contracts/access/Ownable.sol';
-import {IUsdxlToken} from '../../../gho/interfaces/IGhoToken.sol';
+import {IUsdxlToken} from '../../../usdxl/interfaces/IUsdxlToken.sol';
 import {IGsm} from '../interfaces/IGsm.sol';
 import {IGsmConverter} from './interfaces/IGsmConverter.sol';
 import {IRedemption} from '../dependencies/circle/IRedemption.sol';
@@ -71,7 +71,7 @@ contract GsmConverter is Ownable, EIP712, IGsmConverter {
     address issuanceReceiverContract,
     address issuedAsset,
     address redeemedAsset
-  ) EIP712('GSMConverter', '1') Ownable(admin) {
+  ) EIP712('GSMConverter', '1') Ownable() {
     require(admin != address(0), 'ZERO_ADDRESS_NOT_VALID');
     require(gsm != address(0), 'ZERO_ADDRESS_NOT_VALID');
     require(redemptionContract != address(0), 'ZERO_ADDRESS_NOT_VALID');

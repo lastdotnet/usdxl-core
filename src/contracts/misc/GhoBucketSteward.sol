@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import {Ownable} from '@openzeppelin/contracts/access/Ownable.sol';
+import {Ownable} from '@aave/v3-core/contracts/dependencies/openzeppelin/contracts/Ownable.sol';
 import {EnumerableSet} from '@openzeppelin/contracts/utils/structs/EnumerableSet.sol';
-import {IUsdxlToken} from '../gho/interfaces/IGhoToken.sol';
+import {IUsdxlToken} from '../usdxl/interfaces/IUsdxlToken.sol';
 import {RiskCouncilControlled} from './RiskCouncilControlled.sol';
 import {IGhoBucketSteward} from './interfaces/IGhoBucketSteward.sol';
 
@@ -46,13 +46,13 @@ contract GhoBucketSteward is Ownable, RiskCouncilControlled, IGhoBucketSteward {
     address owner,
     address ghoToken,
     address riskCouncil
-  ) RiskCouncilControlled(riskCouncil) Ownable(owner) {
+  ) RiskCouncilControlled(riskCouncil) Ownable() {
     require(owner != address(0), 'INVALID_OWNER');
     require(ghoToken != address(0), 'INVALID_GHO_TOKEN');
 
     GHO_TOKEN = ghoToken;
 
-    _transferOwnership(owner);
+    transferOwnership(owner);
   }
 
   /// @inheritdoc IGhoBucketSteward

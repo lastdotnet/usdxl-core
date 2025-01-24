@@ -14,7 +14,7 @@ import {ReserveConfiguration} from '@aave/core-v3/contracts/protocol/libraries/c
 import {FixedFeeStrategyFactory} from '../contracts/facilitators/gsm/feeStrategy/FixedFeeStrategyFactory.sol';
 import {IGsmFeeStrategy} from '../contracts/facilitators/gsm/feeStrategy/interfaces/IGsmFeeStrategy.sol';
 import {Gsm} from '../contracts/facilitators/gsm/Gsm.sol';
-import {UsdxlToken} from '../contracts/gho/GhoToken.sol';
+import {UsdxlToken} from '../contracts/usdxl/UsdxlToken.sol';
 import {IGhoAaveSteward} from '../contracts/misc/interfaces/IGhoAaveSteward.sol';
 import {GhoAaveSteward} from '../contracts/misc/GhoAaveSteward.sol';
 import {GhoBucketSteward} from '../contracts/misc/GhoBucketSteward.sol';

@@ -10,7 +10,7 @@ import {IGsm} from '../interfaces/IGsm.sol';
  * @notice Minimal Swap Freezer that can serve as sample contract
  */
 contract SampleSwapFreezer is Ownable {
-  constructor() Ownable(msg.sender) {}
+  constructor() Ownable() {}
 
   /**
    * @notice Triggers freezing of a GSM

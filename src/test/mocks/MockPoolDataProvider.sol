@@ -20,7 +20,7 @@ contract MockPoolDataProvider is IPoolDataProvider {
   }
 
   function getInterestRateStrategyAddress(address asset) external view returns (address) {
-    DataTypes.ReserveDataLegacy memory reserveData = IPool(
+    DataTypes.ReserveData memory reserveData = IPool(
       IPoolAddressesProvider(POOL_ADDRESSES_PROVIDER).getPool()
     ).getReserveData(asset);
     return reserveData.interestRateStrategyAddress;

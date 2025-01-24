@@ -1,5 +1,6 @@
 @aave/v3-core/=lib/hypurrfi-deployments/lib/aave-v3-core/
 @aave/core-v3/=lib/hypurrfi-deployments/lib/aave-v3-core/
+@aave/v3-periphery/=lib/hypurrfi-deployments/lib/aave-v3-periphery/
 @aave/stk-v1-5/=lib/hypurrfi-deployments/src/contracts/staking/v1-5/
 ds-test/=lib/hypurrfi-deployments/lib/forge-std/lib/ds-test/src/
 eth-gas-reporter/=node_modules/eth-gas-reporter/
@@ -8,6 +9,7 @@ hardhat-deploy/=node_modules/hardhat-deploy/
 hardhat/=node_modules/hardhat/
 aave-address-book/=src/deployments/addresses/
 erc4626-tests/=lib/openzeppelin-contracts/lib/erc4626-tests/
-solidity-utils/=lib/hypurrfi-deployments/lib/solidity-utils/src/
+solidity-utils/=lib/hypurrfi-deployments/lib/aave-helpers/lib/solidity-utils/src/
 openzeppelin-contracts/=lib/openzeppelin-contracts/contracts/
 @openzeppelin/=lib/openzeppelin-contracts/
+@hypurrfi/deployments/=lib/hypurrfi-deployments/src/deployments/

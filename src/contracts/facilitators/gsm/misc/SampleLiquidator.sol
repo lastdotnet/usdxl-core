@@ -3,7 +3,7 @@ pragma solidity ^0.8.10;
 
 import {Ownable} from '@openzeppelin/contracts/access/Ownable.sol';
 import {IERC20} from '@aave/core-v3/contracts/dependencies/openzeppelin/contracts/IERC20.sol';
-import {IUsdxlToken} from '../../../gho/interfaces/IGhoToken.sol';
+import {IUsdxlToken} from '../../../usdxl/interfaces/IUsdxlToken.sol';
 import {IGsm} from '../interfaces/IGsm.sol';
 
 /**
@@ -12,7 +12,7 @@ import {IGsm} from '../interfaces/IGsm.sol';
  * @notice Minimal Liquidator that can serve as sample contract
  */
 contract SampleLiquidator is Ownable {
-  constructor() Ownable(msg.sender) {}
+  constructor() Ownable() {}
 
   /**
    * @notice Triggers seizure of a GSM, sending seized funds to the Treasury
