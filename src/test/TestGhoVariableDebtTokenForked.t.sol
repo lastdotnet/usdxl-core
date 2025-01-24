@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {InitializableImmutableAdminUpgradeabilityProxy} from '@aave/core-v3/contracts/misc/aave-upgradeability/InitializableImmutableAdminUpgradeabilityProxy.sol';
+import {InitializableImmutableAdminUpgradeabilityProxy} from '@aave/core-v3/contracts/protocol/libraries/aave-upgradeability/InitializableImmutableAdminUpgradeabilityProxy.sol';
 import './TestGhoBase.t.sol';
 
 contract TestGhoVariableDebtTokenForked is TestGhoBase {

@@ -5,9 +5,7 @@ import {IAaveOracle} from '@aave/core-v3/contracts/interfaces/IAaveOracle.sol';
 import {IPool} from '@aave/core-v3/contracts/interfaces/IPool.sol';
 import {IPoolConfigurator} from '@aave/core-v3/contracts/interfaces/IPoolConfigurator.sol';
 import {ConfiguratorInputTypes} from '@aave/core-v3/contracts/protocol/libraries/types/ConfiguratorInputTypes.sol';
-import {AaveV3SetupBatch} from '@aave/core-v3/deployments/projects/aave-v3-batched/batches/AaveV3SetupBatch.sol';
-import {MarketReport} from '@aave/core-v3/deployments/interfaces/IMarketReportTypes.sol';
-import {IDefaultInterestRateStrategyV2} from '@aave/core-v3/contracts/interfaces/IDefaultInterestRateStrategyV2.sol';
+import {IDefaultInterestRateStrategy} from '@aave/core-v3/contracts/interfaces/IDefaultInterestRateStrategy.sol';
 import {AdminUpgradeabilityProxy} from '@aave/core-v3/contracts/dependencies/openzeppelin/upgradeability/AdminUpgradeabilityProxy.sol';
 import {Constants} from 'src/test/helpers/Constants.sol';
 
@@ -32,8 +30,6 @@ contract HyperTestnetReservesConfig is Constants {
   IUsdxlToken usdxlToken;
   UsdxlAToken usdxlAToken;
   UsdxlVariableDebtToken usdxlVariableDebtToken;
-
-  AaveV3SetupBatch public constant MARKET_REPORT = AaveV3SetupBatch(0xD276bca6f14cd153B8473D65600D59BB641660D7);
   
   function _deployTestnetTokens(
     address deployer
@@ -101,7 +97,7 @@ function _setUsdxlOracle(
 
     MarketReport memory marketReport = _getMarketReport();
 
-    IDefaultInterestRateStrategyV2.InterestRateData memory rateData = IDefaultInterestRateStrategyV2.InterestRateData({
+    IDefaultInterestRateStrategy.InterestRateData memory rateData = IDefaultInterestRateStrategy.InterestRateData({
       optimalUsageRatio: uint16(80_00),
       baseVariableBorrowRate: uint32(1_00),
       variableRateSlope1: uint32(4_00),

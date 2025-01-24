@@ -29,8 +29,8 @@ import {MockAddressesProvider} from './mocks/MockAddressesProvider.sol';
 import {MockERC4626} from './mocks/MockERC4626.sol';
 import {MockUpgradeable} from './mocks/MockUpgradeable.sol';
 import {PriceOracle} from '@aave/core-v3/contracts/mocks/oracle/PriceOracle.sol';
-import {TestnetERC20} from '@aave/core-v3/contracts/mocks/testnet-helpers/TestnetERC20.sol';
-import {WETH9Mock} from '@aave/core-v3/contracts/mocks/WETH9Mock.sol';
+import {TestnetERC20} from 'src/contracts/mocks/testnet-helpers/TestnetERC20.sol';
+import {WETH9Mocked} from '@aave/core-v3/contracts/mocks/tokens/WETH9Mocked.sol';
 import {MockRedemption} from './mocks/MockRedemption.sol';
 import {MockRedemptionFailedIssuedAssetAmount} from './mocks/MockRedemptionFailedIssuedAssetAmount.sol';
 import {MockRedemptionFailed} from './mocks/MockRedemptionFailed.sol';
@@ -133,7 +133,7 @@ contract TestGhoBase is Test, Constants, Events {
   MockBUIDLSubscriptionFailed BUIDL_USDC_ISSUANCE_FAILED;
   MockBUIDLSubscriptionFailedInvalidUSDCAccepted BUIDL_USDC_ISSUANCE_FAILED_INVALID_USDC;
   PriceOracle PRICE_ORACLE;
-  WETH9Mock WETH;
+  WETH9Mocked WETH;
   UsdxlVariableDebtToken GHO_DEBT_TOKEN;
   UsdxlAToken GHO_ATOKEN;
   UsdxlFlashMinter GHO_FLASH_MINTER;
@@ -216,7 +216,7 @@ contract TestGhoBase is Test, Constants, Events {
     );
     USDC_4626_TOKEN = new MockERC4626('USD Coin 4626', '4626', address(USDC_TOKEN));
     IPool iPool = IPool(address(POOL));
-    WETH = new WETH9Mock('Wrapped Ether', 'WETH', FAUCET);
+    WETH = new WETH9Mocked('Wrapped Ether', 'WETH', FAUCET);
     GHO_DEBT_TOKEN = new UsdxlVariableDebtToken(iPool);
     GHO_ATOKEN = new UsdxlAToken(iPool);
     GHO_DEBT_TOKEN.initialize(

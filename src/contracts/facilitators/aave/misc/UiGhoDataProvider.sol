@@ -30,7 +30,7 @@ contract UiUsdxlDataProvider is IUiUsdxlDataProvider {
 
   /// @inheritdoc IUiUsdxlDataProvider
   function getUsdxlReserveData() public view override returns (UsdxlReserveData memory) {
-    DataTypes.ReserveDataLegacy memory baseData = POOL.getReserveData(address(USDXL));
+    DataTypes.ReserveData memory baseData = POOL.getReserveData(address(USDXL));
     IUsdxlVariableDebtToken debtToken = IUsdxlVariableDebtToken(baseData.variableDebtTokenAddress);
     UsdxlDiscountRateStrategy discountRateStrategy = UsdxlDiscountRateStrategy(
       debtToken.getDiscountRateStrategy()
@@ -56,7 +56,7 @@ contract UiUsdxlDataProvider is IUiUsdxlDataProvider {
 
   /// @inheritdoc IUiUsdxlDataProvider
   function getUsdxlUserData(address user) public view override returns (UsdxlUserData memory) {
-    DataTypes.ReserveDataLegacy memory baseData = POOL.getReserveData(address(USDXL));
+    DataTypes.ReserveData memory baseData = POOL.getReserveData(address(USDXL));
     IUsdxlVariableDebtToken debtToken = IUsdxlVariableDebtToken(baseData.variableDebtTokenAddress);
     address discountToken = debtToken.getDiscountToken();
 

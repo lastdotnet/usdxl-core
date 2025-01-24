@@ -21,7 +21,7 @@ import {GhoBucketSteward} from '../contracts/misc/GhoBucketSteward.sol';
 import {GhoCcipSteward} from '../contracts/misc/GhoCcipSteward.sol';
 import {GhoGsmSteward} from '../contracts/misc/GhoGsmSteward.sol';
 import {RateLimiter, IUpgradeableLockReleaseTokenPool} from '../contracts/misc/dependencies/Ccip.sol';
-import {IDefaultInterestRateStrategyV2} from '../contracts/misc/dependencies/AaveV3-1.sol';
+import {IDefaultInterestRateStrategy} from '../contracts/misc/dependencies/AaveV3-1.sol';
 import {MockPool} from './mocks/MockPool.sol';
 import {MockUpgradeableLockReleaseTokenPool} from './mocks/MockUpgradeableLockReleaseTokenPool.sol';
 
@@ -160,7 +160,7 @@ contract TestGhoStewardsForkEthereum is Test {
   }
 
   function testGhoAaveStewardUpdateGhoBorrowRate() public {
-    IDefaultInterestRateStrategyV2.InterestRateData memory currentRates = _getGhoBorrowRates();
+    IDefaultInterestRateStrategy.InterestRateData memory currentRates = _getGhoBorrowRates();
     vm.prank(RISK_COUNCIL);
     GHO_AAVE_STEWARD.updateGhoBorrowRate(
       currentRates.optimalUsageRatio - 1,
@@ -273,32 +273,32 @@ contract TestGhoStewardsForkEthereum is Test {
   }
 
   function _getOptimalUsageRatio() internal view returns (uint16) {
-    IDefaultInterestRateStrategyV2.InterestRateData memory currentRates = _getGhoBorrowRates();
+    IDefaultInterestRateStrategy.InterestRateData memory currentRates = _getGhoBorrowRates();
     return currentRates.optimalUsageRatio;
   }
 
   function _getBaseVariableBorrowRate() internal view returns (uint32) {
-    IDefaultInterestRateStrategyV2.InterestRateData memory currentRates = _getGhoBorrowRates();
+    IDefaultInterestRateStrategy.InterestRateData memory currentRates = _getGhoBorrowRates();
     return currentRates.baseVariableBorrowRate;
   }
 
   function _getVariableRateSlope1() internal view returns (uint32) {
-    IDefaultInterestRateStrategyV2.InterestRateData memory currentRates = _getGhoBorrowRates();
+    IDefaultInterestRateStrategy.InterestRateData memory currentRates = _getGhoBorrowRates();
     return currentRates.variableRateSlope1;
   }
 
   function _getVariableRateSlope2() internal view returns (uint32) {
-    IDefaultInterestRateStrategyV2.InterestRateData memory currentRates = _getGhoBorrowRates();
+    IDefaultInterestRateStrategy.InterestRateData memory currentRates = _getGhoBorrowRates();
     return currentRates.variableRateSlope2;
   }
 
   function _getGhoBorrowRates()
     internal
     view
-    returns (IDefaultInterestRateStrategyV2.InterestRateData memory)
+    returns (IDefaultInterestRateStrategy.InterestRateData memory)
   {
     address rateStrategyAddress = POOL_DATA_PROVIDER.getInterestRateStrategyAddress(GHO_TOKEN);
-    return IDefaultInterestRateStrategyV2(rateStrategyAddress).getInterestRateDataBps(GHO_TOKEN);
+    return IDefaultInterestRateStrategy(rateStrategyAddress).getInterestRateDataBps(GHO_TOKEN);
   }
 
   function _isControlledFacilitator(address target) internal view returns (bool) {

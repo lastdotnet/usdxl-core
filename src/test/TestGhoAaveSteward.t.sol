@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import './TestGhoBase.t.sol';
 import {Constants} from './helpers/Constants.sol';
 import {IGhoAaveSteward} from '../contracts/misc/interfaces/IGhoAaveSteward.sol';
-import {IDefaultInterestRateStrategyV2, DefaultReserveInterestRateStrategyV2} from '../contracts/misc/dependencies/AaveV3-1.sol';
+import {IDefaultInterestRateStrategy, DefaultReserveInterestRateStrategyV2} from '../contracts/misc/dependencies/AaveV3-1.sol';
 
 contract TestGhoAaveSteward is TestGhoBase {
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
@@ -16,8 +16,8 @@ contract TestGhoAaveSteward is TestGhoBase {
       variableRateSlope1MaxChange: 5_00,
       variableRateSlope2MaxChange: 5_00
     });
-  IDefaultInterestRateStrategyV2.InterestRateData public defaultRateParams =
-    IDefaultInterestRateStrategyV2.InterestRateData({
+  IDefaultInterestRateStrategy.InterestRateData public defaultRateParams =
+    IDefaultInterestRateStrategy.InterestRateData({
       optimalUsageRatio: 1_00,
       baseVariableBorrowRate: 0.20e4,
       variableRateSlope1: 0,
@@ -751,8 +751,8 @@ contract TestGhoAaveSteward is TestGhoBase {
   }
 
   function _setGhoBorrowRateViaConfigurator(uint32 newBorrowRate) internal {
-    IDefaultInterestRateStrategyV2.InterestRateData
-      memory rateParams = IDefaultInterestRateStrategyV2.InterestRateData({
+    IDefaultInterestRateStrategy.InterestRateData memory rateParams = IDefaultInterestRateStrategy
+      .InterestRateData({
         optimalUsageRatio: 1_00,
         baseVariableBorrowRate: newBorrowRate,
         variableRateSlope1: 0,
@@ -769,7 +769,7 @@ contract TestGhoAaveSteward is TestGhoBase {
     );
     return
       uint32(
-        IDefaultInterestRateStrategyV2(currentInterestRateStrategy).getBaseVariableBorrowRate(
+        IDefaultInterestRateStrategy(currentInterestRateStrategy).getBaseVariableBorrowRate(
           address(GHO_TOKEN)
         ) / 1e23
       ); // Convert to bps
@@ -781,7 +781,7 @@ contract TestGhoAaveSteward is TestGhoBase {
     );
     return
       uint16(
-        IDefaultInterestRateStrategyV2(currentInterestRateStrategy).getOptimalUsageRatio(
+        IDefaultInterestRateStrategy(currentInterestRateStrategy).getOptimalUsageRatio(
           address(GHO_TOKEN)
         ) / 1e23
       ); // Convert to bps
@@ -793,7 +793,7 @@ contract TestGhoAaveSteward is TestGhoBase {
     );
     return
       uint32(
-        IDefaultInterestRateStrategyV2(currentInterestRateStrategy).getVariableRateSlope1(
+        IDefaultInterestRateStrategy(currentInterestRateStrategy).getVariableRateSlope1(
           address(GHO_TOKEN)
         ) / 1e23
       ); // Convert to bps
@@ -805,7 +805,7 @@ contract TestGhoAaveSteward is TestGhoBase {
     );
     return
       uint32(
-        IDefaultInterestRateStrategyV2(currentInterestRateStrategy).getVariableRateSlope2(
+        IDefaultInterestRateStrategy(currentInterestRateStrategy).getVariableRateSlope2(
           address(GHO_TOKEN)
         ) / 1e23
       ); // Convert to bps

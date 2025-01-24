@@ -2,7 +2,7 @@
 pragma solidity ^0.8.10;
 
 import {IDefaultInterestRateStrategy} from '@aave/core-v3/contracts/interfaces/IDefaultInterestRateStrategy.sol';
-import {VersionedInitializable} from '@aave/core-v3/contracts/misc/aave-upgradeability/VersionedInitializable.sol';
+import {VersionedInitializable} from '@aave/core-v3/contracts/protocol/libraries/aave-upgradeability/VersionedInitializable.sol';
 import {IFixedRateStrategyFactory} from './interfaces/IFixedRateStrategyFactory.sol';
 import {UsdxlInterestRateStrategy} from './GhoInterestRateStrategy.sol';
 

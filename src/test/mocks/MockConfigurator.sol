@@ -5,7 +5,7 @@ import {IPool} from '@aave/core-v3/contracts/interfaces/IPool.sol';
 import {DataTypes} from '@aave/core-v3/contracts/protocol/libraries/types/DataTypes.sol';
 import {ReserveConfiguration} from '@aave/core-v3/contracts/protocol/libraries/configuration/ReserveConfiguration.sol';
 import {DefaultReserveInterestRateStrategyV2} from '../../contracts/misc/dependencies/AaveV3-1.sol';
-import {IDefaultInterestRateStrategyV2} from '../../contracts/misc/dependencies/AaveV3-1.sol';
+import {IDefaultInterestRateStrategy} from '../../contracts/misc/dependencies/AaveV3-1.sol';
 
 contract MockConfigurator {
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
@@ -43,7 +43,7 @@ contract MockConfigurator {
 
   function setReserveInterestRateParams(
     address asset,
-    IDefaultInterestRateStrategyV2.InterestRateData calldata rateParams
+    IDefaultInterestRateStrategy.InterestRateData calldata rateParams
   ) external {
     DataTypes.ReserveDataLegacy memory reserve = _pool.getReserveData(asset);
     address rateStrategyAddress = reserve.interestRateStrategyAddress;
@@ -56,7 +56,7 @@ contract MockConfigurator {
   function setReserveInterestRateData(address asset, bytes calldata rateData) external {
     this.setReserveInterestRateParams(
       asset,
-      abi.decode(rateData, (IDefaultInterestRateStrategyV2.InterestRateData))
+      abi.decode(rateData, (IDefaultInterestRateStrategy.InterestRateData))
     );
   }
 
@@ -68,7 +68,7 @@ contract MockConfigurator {
     this.setReserveInterestRateStrategyAddress(asset, rateStrategyAddress);
     this.setReserveInterestRateParams(
       asset,
-      abi.decode(rateData, (IDefaultInterestRateStrategyV2.InterestRateData))
+      abi.decode(rateData, (IDefaultInterestRateStrategy.InterestRateData))
     );
   }
 

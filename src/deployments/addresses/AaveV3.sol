@@ -12,7 +12,7 @@ import {IPriceOracleGetter} from '@aave/core-v3/contracts/interfaces/IPriceOracl
 import {IAaveOracle} from '@aave/core-v3/contracts/interfaces/IAaveOracle.sol';
 import {IACLManager as BasicIACLManager} from '@aave/core-v3/contracts/interfaces/IACLManager.sol';
 import {IPoolDataProvider} from '@aave/core-v3/contracts/interfaces/IPoolDataProvider.sol';
-import {IDefaultInterestRateStrategyV2} from '@aave/core-v3/contracts/interfaces/IDefaultInterestRateStrategyV2.sol';
+import {IDefaultInterestRateStrategy} from '@aave/core-v3/contracts/interfaces/IDefaultInterestRateStrategy.sol';
 import {IReserveInterestRateStrategy} from '@aave/core-v3/contracts/interfaces/IReserveInterestRateStrategy.sol';
 import {IPoolDataProvider as IAaveProtocolDataProvider} from '@aave/core-v3/contracts/interfaces/IPoolDataProvider.sol';
 import {AggregatorInterface} from '@aave/core-v3/contracts/dependencies/chainlink/AggregatorInterface.sol';
