@@ -10,7 +10,7 @@ import {AdminUpgradeabilityProxy} from '@aave/core-v3/contracts/dependencies/ope
 import {Constants} from 'src/test/helpers/Constants.sol';
 
 import {IUsdxlToken} from 'src/contracts/usdxl/interfaces/IUsdxlToken.sol';
-import {UsdxlToken} from 'src/contracts/usdxl/UsdxlToken.sol';
+import {UpgradeableUsdxlToken} from 'src/contracts/usdxl/UpgradeableUsdxlToken.sol';
 import {UsdxlOracle} from 'src/contracts/facilitators/hyfi/oracle/UsdxlOracle.sol';
 import {UsdxlAToken} from 'src/contracts/facilitators/hyfi/tokens/UsdxlAToken.sol';
 import {UsdxlVariableDebtToken} from 'src/contracts/facilitators/hyfi/tokens/UsdxlVariableDebtToken.sol';
@@ -23,8 +23,10 @@ import {FixedPriceStrategy} from 'src/contracts/facilitators/gsm/priceStrategy/F
 
 import {ERC20} from '@openzeppelin/contracts/token/ERC20/ERC20.sol';
 import {IERC20Metadata} from '@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol';
+import {TransparentUpgradeableProxy} from 'solidity-utils/contracts/transparent-proxy/TransparentUpgradeableProxy.sol';
 
 import {HyperTestnetReservesConfigs} from '@hypurrfi/deployments/configs/HyperTestnetReservesConfigs.sol';
+import {DeployUtils} from 'src/deployments/utils/DeployUtils.sol';
 
 import 'forge-std/console.sol';
 
@@ -32,10 +34,13 @@ contract HyperTestnetUsdxlConfigs is HyperTestnetReservesConfigs, Constants {
 
   IUsdxlToken usdxlToken;
   UsdxlAToken usdxlAToken;
+  address usdxlTokenProxy;
   UsdxlVariableDebtToken usdxlVariableDebtToken;
+  string instanceIdInternal = "hypurrfi-testnet";
   
   function _deployTestnetTokens(
-    address deployer
+    address deployer,
+    address proxyAdmin
   )
     internal
     returns (
@@ -45,13 +50,32 @@ contract HyperTestnetUsdxlConfigs is HyperTestnetReservesConfigs, Constants {
   { 
     tokens  = new address[](1);
 
-    tokens[0] = address(new UsdxlToken(deployer));
+    UpgradeableUsdxlToken usdxlTokenImpl = new UpgradeableUsdxlToken();
 
+    // proxy deploy and init
+    bytes memory usdxlTokenImplParams = abi.encodeWithSignature(
+      'initialize(address)',
+      deployer
+    );
+    usdxlTokenProxy = address(new TransparentUpgradeableProxy(
+      address(usdxlTokenImpl),
+      proxyAdmin,
+      usdxlTokenImplParams
+    ));
+
+    tokens[0] = address(usdxlTokenProxy);
+  
     oracles = new address[](1);
 
     oracles[0] = address(new UsdxlOracle());
 
     usdxlToken = IUsdxlToken(tokens[0]);
+
+    DeployUtils.exportContract(instanceIdInternal, "usdxlTokenImpl", address(usdxlTokenImpl));
+
+    DeployUtils.exportContract(instanceIdInternal, "usdxlTokenProxy", address(usdxlTokenProxy));
+
+    DeployUtils.exportContract(instanceIdInternal, "usdxlOracle", address(oracles[0]));
 
     return (tokens, oracles);
   }
@@ -73,6 +97,28 @@ contract HyperTestnetUsdxlConfigs is HyperTestnetReservesConfigs, Constants {
     return tokens;
   }
 
+  function _grantFacilitatorManagerRole(
+    address deployer
+  )
+    internal
+  {
+    UpgradeableUsdxlToken(address(usdxlTokenProxy)).grantRole(
+        UpgradeableUsdxlToken(address(usdxlTokenProxy)).FACILITATOR_MANAGER_ROLE(),
+        deployer
+    );
+  }
+
+    function _revokeFacilitatorManagerRole(
+    address deployer
+  )
+    internal
+  {
+    UpgradeableUsdxlToken(address(usdxlTokenProxy)).revokeRole(
+        UpgradeableUsdxlToken(address(usdxlTokenProxy)).FACILITATOR_MANAGER_ROLE(),
+        deployer
+    );
+  }
+
 function _setUsdxlOracle(
     address[] memory tokens,
     address[] memory oracles
@@ -81,6 +127,17 @@ function _setUsdxlOracle(
   { 
     // set oracles
     _getAaveOracle().setAssetSources(tokens, oracles);
+  }
+
+  function _updateUsdxlInterestRateStrategy()
+    internal
+  {
+    UsdxlInterestRateStrategy interestRateStrategy = new UsdxlInterestRateStrategy(
+      address(deployRegistry.poolAddressesProvider),
+      0.02e27
+    );
+
+    _getPoolConfigurator().setReserveInterestRateStrategyAddress(address(_getUsdxlToken()), address(interestRateStrategy));
   }
 
   function _initializeUsdxlReserve(
@@ -97,29 +154,9 @@ function _setUsdxlOracle(
     usdxlVariableDebtToken = new UsdxlVariableDebtToken(
       _getPoolInstance()
     );
-
-    // IDefaultInterestRateStrategy.InterestRateData memory rateData = IDefaultInterestRateStrategy.InterestRateData({
-    //   optimalUsageRatio: uint16(80_00),
-    //   baseVariableBorrowRate: uint32(1_00),
-    //   variableRateSlope1: uint32(4_00),
-    //   variableRateSlope2: uint32(60_00)
-    // });
-
-    // inputs[0] = ConfiguratorInputTypes.InitReserveInput({
-    //   aTokenImpl: address(usdxlAToken), // Address of the aToken implementation
-    //   variableDebtTokenImpl: address(usdxlVariableDebtToken), // Address of the variable debt token implementation
-    //   useVirtualBalance: false, // true for all normal assets and should be false only in special cases (ex. USDXL) where an asset is minted instead of supplied.
-    //   interestRateStrategyAddress: deployRegistry.defaultInterestRateStrategy, // Address of the interest rate strategy
-    //   underlyingAsset: usdxlToken, // USDXL address
-    //   treasury: deployRegistry.treasury, // Address of the treasury
-    //   incentivesController: deployRegistry.rewardsControllerProxy, // Address of the incentives controller
-    //   aTokenName: 'USDXL ',
-    //   aTokenSymbol: 'awUSDXL',
-    //   variableDebtTokenName: 'Test USDXL Variable Debt Aave',
-    //   variableDebtTokenSymbol: 'variableDebtTestUSDXL',
-    //   params: bytes('0x10'), // Additional parameters for initialization
-    //   interestRateData: abi.encode(rateData)
-    // });
+    
+    DeployUtils.exportContract(instanceIdInternal, "usdxlATokenImpl", address(usdxlAToken));
+    DeployUtils.exportContract(instanceIdInternal, "usdxlVariableDebtTokenImpl", address(usdxlVariableDebtToken));
 
     IERC20Metadata tokenMetadata = IERC20Metadata(token);
 
@@ -143,6 +180,10 @@ function _setUsdxlOracle(
     
     // set reserves configs
     _getPoolConfigurator().initReserves(inputs);
+
+    // export contract addresses
+    DeployUtils.exportContract(instanceIdInternal, "usdxlATokenProxy", _getUsdxlATokenProxy());
+    DeployUtils.exportContract(instanceIdInternal, "usdxlVariableDebtTokenProxy", _getUsdxlVariableDebtTokenProxy());
   }
 
   function _enableUsdxlBorrowing(
@@ -159,7 +200,7 @@ function _setUsdxlOracle(
     // pull aToken proxy from reserves config
     _getUsdxlToken().addFacilitator(
       address(_getUsdxlATokenProxy()),
-      'Aave V3 Hyper Testnet Market', // entity label
+      'HypurrFi Testnet Market Loans', // entity label
       1e27 // entity mint limit (100mil)
     );
   }
@@ -176,9 +217,11 @@ function _setUsdxlOracle(
       deployRegistry.poolAddressesProvider // PoolAddressesProvider
     );
 
-    UsdxlToken(tokens[0]).addFacilitator(
+    DeployUtils.exportContract(instanceIdInternal, "usdxlFlashMinterImpl", address(usdxlFlashMinter));
+
+    IUsdxlToken(tokens[0]).addFacilitator(
       address(usdxlFlashMinter),
-      'Aave V3 Last Testnet Market', // entity label
+      'HypurrFi Testnet Market Flash Loans', // entity label
       1e27 // entity mint limit (100mil)
     );
   }
@@ -186,12 +229,20 @@ function _setUsdxlOracle(
   function _setUsdxlAddresses()
     internal
   {
+    usdxlToken = IUsdxlToken(_getUsdxlToken());
+    usdxlAToken = UsdxlAToken(_getUsdxlATokenProxy());
     usdxlAToken.updateUsdxlTreasury(deployRegistry.treasury);
 
-    UsdxlAToken(_getUsdxlATokenProxy()).setVariableDebtToken(_getUsdxlVariableDebtToken());
+    UsdxlAToken(_getUsdxlATokenProxy()).setVariableDebtToken(_getUsdxlVariableDebtTokenProxy());
 
-    //set aToken
-    UsdxlVariableDebtToken(_getUsdxlVariableDebtToken()).setAToken(_getUsdxlATokenProxy());
+    // set aToken
+    UsdxlVariableDebtToken(_getUsdxlVariableDebtTokenProxy()).setAToken(_getUsdxlATokenProxy());
+
+    console.log("UsdxlVariableDebtToken AToken: ", UsdxlVariableDebtToken(_getUsdxlVariableDebtTokenProxy()).getAToken());
+    console.log("UsdxlAToken VariableDebtToken: ", UsdxlAToken(_getUsdxlATokenProxy()).getVariableDebtToken());
+
+    console.log("UsdxlAToken Proxy: ", _getUsdxlATokenProxy());
+    console.log("UsdxlVariableDebtToken Proxy: ", _getUsdxlVariableDebtTokenProxy());
   }
 
   function _setDiscountTokenAndStrategy(
@@ -200,7 +251,7 @@ function _setUsdxlOracle(
   )
     internal
   {
-    usdxlVariableDebtToken = UsdxlVariableDebtToken(_getUsdxlVariableDebtToken());
+    usdxlVariableDebtToken = UsdxlVariableDebtToken(_getUsdxlVariableDebtTokenProxy());
     if (discountRateStrategy != address(0))
       usdxlVariableDebtToken.updateDiscountRateStrategy(discountRateStrategy);
     if (discountToken != address(0))
@@ -253,6 +304,9 @@ function _setUsdxlOracle(
       0  // 0% for sells
     );
 
+    DeployUtils.exportContract(instanceIdInternal, "gsmFixedPriceStrategyImpl", address(fixedPriceStrategy));
+    DeployUtils.exportContract(instanceIdInternal, "gsmFixedFeeStrategyImpl", address(fixedFeeStrategy));
+
     Gsm gsm = new Gsm(
       address(_getUsdxlToken()),
       address(token),
@@ -264,6 +318,9 @@ function _setUsdxlOracle(
       address(0), //TODO: set admin to timelock
       ''
     );
+
+    DeployUtils.exportContract(instanceIdInternal, "gsmImpl", address(gsm));
+    DeployUtils.exportContract(instanceIdInternal, "gsmProxy", address(gsmProxy));
 
     Gsm usdxlGsm = Gsm(address(gsmProxy));
 
@@ -284,9 +341,7 @@ function _setUsdxlOracle(
       IUsdxlToken
     )
   {
-    if (address(usdxlToken) != address(0))
-      return IUsdxlToken(address(usdxlToken));
-    return IUsdxlToken(address(0x9edA7E43821EedFb677A69066529F16DB3A2dD73));
+    return IUsdxlToken(usdxlTokenProxy);
   }
 
   function _getUsdxlATokenProxy()
@@ -300,7 +355,7 @@ function _setUsdxlOracle(
     return _getPoolInstance().getReserveData(address(usdxlToken)).aTokenAddress;
   }
 
-  function _getUsdxlVariableDebtToken()
+  function _getUsdxlVariableDebtTokenProxy()
     internal
     view
     returns (

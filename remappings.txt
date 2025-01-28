@@ -13,3 +13,4 @@ solidity-utils/=lib/hypurrfi-deployments/lib/aave-helpers/lib/solidity-utils/src
 openzeppelin-contracts/=lib/openzeppelin-contracts/contracts/
 @openzeppelin/=lib/openzeppelin-contracts/
 @hypurrfi/deployments/=lib/hypurrfi-deployments/src/deployments/
+@hypurrfi/contracts/=lib/hypurrfi-deployments/src/contracts/

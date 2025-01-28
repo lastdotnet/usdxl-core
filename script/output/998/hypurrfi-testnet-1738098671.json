@@ -1,0 +1,10 @@
+{
+  "usdxlATokenImpl": "0xA602d3f20ad1167f1Eb306087101878cF9323735",
+  "usdxlATokenProxy": "0x5cD597D3d992e2982A461baCd261fC98BDc82f1d",
+  "usdxlFlashMinterImpl": "0xA495f1EAC134b8A7A63Bc5A892C1dE1d0D8e065f",
+  "usdxlOracle": "0x5462FEA4B386867cA6A28F1C270420bfD488bE13",
+  "usdxlTokenImpl": "0xe2a12EaD8F29ea7E16D80f4727efeeECDdCf0FC9",
+  "usdxlTokenProxy": "0xb3Cf17E2A602143DDAb2Ddd2ccC5Ea7b9B4b0443",
+  "usdxlVariableDebtTokenImpl": "0x3330C5b6e7BFe6981Edf9CA8E21c8a13CD712811",
+  "usdxlVariableDebtTokenProxy": "0xEc55d783c9B30dCE6cdDAc744e61D1642Eb3c178"
+}

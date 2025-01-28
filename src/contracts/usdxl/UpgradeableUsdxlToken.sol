@@ -35,7 +35,7 @@ contract UpgradeableUsdxlToken is Initializable, UpgradeableERC20, AccessControl
    * @param admin This is the initial holder of the default admin role
    */
   function initialize(address admin) public virtual initializer {
-    _ERC20_init('Usdxl Token', 'USDXL');
+    _ERC20_init('Last USD', 'USDXL');
 
     _grantRole(DEFAULT_ADMIN_ROLE, admin);
   }
