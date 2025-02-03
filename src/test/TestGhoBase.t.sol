@@ -96,6 +96,7 @@ import {GsmConverter} from '../contracts/facilitators/gsm/converter/GsmConverter
 import {IStakedAaveV3} from '@aave/stk-v1-5/interfaces/IStakedAaveV3.sol';
 import {StakedAaveV3} from '@aave/stk-v1-5/StakedAaveV3.sol';
 import {IUsdxlVariableDebtTokenTransferHook} from '@aave/stk-v1-5/interfaces/IUsdxlVariableDebtTokenTransferHook.sol';
+import {DisabledStableDebtToken} from '@hypurrfi/core/contracts/protocol/tokenization/DisabledStableDebtToken.sol';
 
 contract TestGhoBase is Test, Constants, Events {
   using WadRayMath for uint256;
@@ -135,6 +136,7 @@ contract TestGhoBase is Test, Constants, Events {
   PriceOracle PRICE_ORACLE;
   WETH9Mock WETH;
   UsdxlVariableDebtToken GHO_DEBT_TOKEN;
+  DisabledStableDebtToken DISABLED_STABLE_DEBT_TOKEN;
   UsdxlAToken GHO_ATOKEN;
   UsdxlFlashMinter GHO_FLASH_MINTER;
   UsdxlDiscountRateStrategy GHO_DISCOUNT_STRATEGY;
@@ -219,6 +221,7 @@ contract TestGhoBase is Test, Constants, Events {
     WETH = new WETH9Mock('Wrapped Ether', 'WETH', FAUCET);
     GHO_DEBT_TOKEN = new UsdxlVariableDebtToken(iPool);
     GHO_ATOKEN = new UsdxlAToken(iPool);
+    DISABLED_STABLE_DEBT_TOKEN = new DisabledStableDebtToken(iPool);
     GHO_DEBT_TOKEN.initialize(
       iPool,
       address(GHO_TOKEN),
@@ -238,6 +241,15 @@ contract TestGhoBase is Test, Constants, Events {
       'aGHO',
       empty
     );
+    DISABLED_STABLE_DEBT_TOKEN.initialize(
+      iPool,
+      address(0),
+      IAaveIncentivesController(address(0)),
+      0,
+      'STABLE_DEBT_TOKEN_IMPL',
+      'STABLE_DEBT_TOKEN_IMPL',
+      ''
+    );
     GHO_ATOKEN.updateUsdxlTreasury(TREASURY);
     GHO_DEBT_TOKEN.updateDiscountToken(address(STK_TOKEN));
     GHO_DISCOUNT_STRATEGY = new UsdxlDiscountRateStrategy();
@@ -247,7 +259,7 @@ contract TestGhoBase is Test, Constants, Events {
     vm.prank(SHORT_EXECUTOR);
     STK_TOKEN.setUSDXLDebtToken(IUsdxlVariableDebtTokenTransferHook(address(GHO_DEBT_TOKEN)));
     GHO_TOKEN.addFacilitator(address(GHO_ATOKEN), 'Aave V3 Pool', DEFAULT_CAPACITY);
-    POOL.setGhoTokens(GHO_DEBT_TOKEN, GHO_ATOKEN);
+    POOL.setGhoTokens(GHO_DEBT_TOKEN, GHO_ATOKEN, DISABLED_STABLE_DEBT_TOKEN);
 
     GHO_FLASH_MINTER = new UsdxlFlashMinter(
       address(GHO_TOKEN),

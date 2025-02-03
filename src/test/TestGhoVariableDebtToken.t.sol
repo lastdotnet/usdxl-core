@@ -10,8 +10,8 @@ contract TestGhoVariableDebtToken is TestGhoBase {
 
   function testConstructor() public {
     UsdxlVariableDebtToken debtToken = new UsdxlVariableDebtToken(IPool(address(POOL)));
-    assertEq(debtToken.name(), 'GHO_VARIABLE_DEBT_TOKEN_IMPL', 'Wrong default ERC20 name');
-    assertEq(debtToken.symbol(), 'GHO_VARIABLE_DEBT_TOKEN_IMPL', 'Wrong default ERC20 symbol');
+    assertEq(debtToken.name(), 'USDXL_VARIABLE_DEBT_TOKEN_IMPL', 'Wrong default ERC20 name');
+    assertEq(debtToken.symbol(), 'USDXL_VARIABLE_DEBT_TOKEN_IMPL', 'Wrong default ERC20 symbol');
     assertEq(debtToken.decimals(), 0, 'Wrong default ERC20 decimals');
   }
 

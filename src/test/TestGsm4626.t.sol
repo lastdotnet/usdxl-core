@@ -703,7 +703,7 @@ contract TestGsm4626 is TestGhoBase {
 
   function testUpdateGhoTreasury() public {
     vm.expectEmit(true, true, true, true, address(GHO_GSM_4626));
-    emit GhoTreasuryUpdated(TREASURY, ALICE);
+    emit UsdxlTreasuryUpdated(TREASURY, ALICE);
     GHO_GSM_4626.updateUsdxlTreasury(ALICE);
 
     assertEq(GHO_GSM_4626.getUsdxlTreasury(), ALICE);
@@ -770,7 +770,7 @@ contract TestGsm4626 is TestGhoBase {
       'Unexpected GSM GHO balance before'
     );
 
-    vm.expectRevert('INSUFFICIENT_GHO_TO_RESCUE');
+    vm.expectRevert('INSUFFICIENT_USDXL_TO_RESCUE');
     GHO_GSM_4626.rescueTokens(address(GHO_TOKEN), BOB, fee);
 
     vm.expectEmit(true, true, true, true, address(GHO_GSM_4626));
@@ -784,7 +784,7 @@ contract TestGsm4626 is TestGhoBase {
   function testRevertRescueGhoTokens() public {
     GHO_GSM_4626.grantRole(GSM_TOKEN_RESCUER_ROLE, address(this));
 
-    vm.expectRevert('INSUFFICIENT_GHO_TO_RESCUE');
+    vm.expectRevert('INSUFFICIENT_USDXL_TO_RESCUE');
     GHO_GSM_4626.rescueTokens(address(GHO_TOKEN), ALICE, 1);
   }
 

@@ -108,7 +108,7 @@ contract HyperTestnetUsdxlConfigs is HyperTestnetReservesConfigs, Constants {
     );
   }
 
-    function _revokeFacilitatorManagerRole(
+  function _revokeFacilitatorManagerRole(
     address deployer
   )
     internal
@@ -341,7 +341,7 @@ function _setUsdxlOracle(
       IUsdxlToken
     )
   {
-    return IUsdxlToken(usdxlTokenProxy);
+    return IUsdxlToken(0xfc446B60a054703A9DC096dd397a6e3cdd614275);
   }
 
   function _getUsdxlATokenProxy()

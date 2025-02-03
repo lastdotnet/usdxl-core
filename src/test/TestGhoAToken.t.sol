@@ -6,8 +6,8 @@ import './TestGhoBase.t.sol';
 contract TestGhoAToken is TestGhoBase {
   function testConstructor() public {
     UsdxlAToken aToken = new UsdxlAToken(IPool(address(POOL)));
-    assertEq(aToken.name(), 'GHO_ATOKEN_IMPL', 'Wrong default ERC20 name');
-    assertEq(aToken.symbol(), 'GHO_ATOKEN_IMPL', 'Wrong default ERC20 symbol');
+    assertEq(aToken.name(), 'USDXL_ATOKEN_IMPL', 'Wrong default ERC20 name');
+    assertEq(aToken.symbol(), 'USDXL_ATOKEN_IMPL', 'Wrong default ERC20 symbol');
     assertEq(aToken.decimals(), 0, 'Wrong default ERC20 decimals');
   }
 
@@ -195,8 +195,16 @@ contract TestGhoAToken is TestGhoBase {
 
     repayAction(CHARLES, GHO_DEBT_TOKEN.balanceOf(CHARLES));
 
+    console.log('hi');
+
     vm.expectEmit(true, true, true, true, address(GHO_ATOKEN));
     emit FeesDistributedToTreasury(
+      TREASURY,
+      address(GHO_TOKEN),
+      GHO_TOKEN.balanceOf(address(GHO_ATOKEN))
+    );
+    console.log(
+      'treasury check:',
       TREASURY,
       address(GHO_TOKEN),
       GHO_TOKEN.balanceOf(address(GHO_ATOKEN))
@@ -226,7 +234,7 @@ contract TestGhoAToken is TestGhoBase {
 
   function testUpdateGhoTreasury() public {
     vm.expectEmit(true, true, true, true, address(GHO_ATOKEN));
-    emit GhoTreasuryUpdated(TREASURY, ALICE);
+    emit UsdxlTreasuryUpdated(TREASURY, ALICE);
     GHO_ATOKEN.updateUsdxlTreasury(ALICE);
 
     assertEq(GHO_ATOKEN.getUsdxlTreasury(), ALICE);

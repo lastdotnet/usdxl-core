@@ -59,6 +59,9 @@ contract Default is HyperTestnetUsdxlConfigs, Script {
     // set reserve config
     _initializeUsdxlReserve(tokens[0]);
 
+    // disable stable debt
+    _disableStableDebt(tokens);
+
     // update interest rate strategy
     _updateUsdxlInterestRateStrategy();
 

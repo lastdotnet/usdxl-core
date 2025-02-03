@@ -53,7 +53,7 @@ contract TestGsm is TestGhoBase {
     vm.expectEmit(true, true, true, true);
     emit RoleGranted(DEFAULT_ADMIN_ROLE, address(this), address(this));
     vm.expectEmit(true, true, false, true);
-    emit GhoTreasuryUpdated(address(0), address(TREASURY));
+    emit UsdxlTreasuryUpdated(address(0), address(TREASURY));
     vm.expectEmit(true, true, false, true);
     emit ExposureCapUpdated(0, DEFAULT_GSM_USDC_EXPOSURE);
     gsm.initialize(address(this), TREASURY, DEFAULT_GSM_USDC_EXPOSURE);
@@ -1060,7 +1060,7 @@ contract TestGsm is TestGhoBase {
 
     address newGhoTreasury = address(GHO_GSM);
     vm.expectEmit(true, true, true, true, address(newGhoTreasury));
-    emit GhoTreasuryUpdated(TREASURY, newGhoTreasury);
+    emit UsdxlTreasuryUpdated(TREASURY, newGhoTreasury);
     GHO_GSM.updateUsdxlTreasury(newGhoTreasury);
     assertEq(GHO_GSM.getUsdxlTreasury(), newGhoTreasury);
 
@@ -1107,7 +1107,7 @@ contract TestGsm is TestGhoBase {
 
   function testUpdateGhoTreasury() public {
     vm.expectEmit(true, true, true, true, address(GHO_GSM));
-    emit GhoTreasuryUpdated(TREASURY, ALICE);
+    emit UsdxlTreasuryUpdated(TREASURY, ALICE);
     GHO_GSM.updateUsdxlTreasury(ALICE);
 
     assertEq(GHO_GSM.getUsdxlTreasury(), ALICE);
@@ -1173,7 +1173,7 @@ contract TestGsm is TestGhoBase {
     assertEq(GHO_TOKEN.balanceOf(BOB), 0, 'Unexpected target GHO balance before');
     assertEq(GHO_TOKEN.balanceOf(address(GHO_GSM)), fee + 1, 'Unexpected GSM GHO balance before');
 
-    vm.expectRevert('INSUFFICIENT_GHO_TO_RESCUE');
+    vm.expectRevert('INSUFFICIENT_USDXL_TO_RESCUE');
     GHO_GSM.rescueTokens(address(GHO_TOKEN), BOB, fee);
 
     vm.expectEmit(true, true, true, true, address(GHO_GSM));
@@ -1187,7 +1187,7 @@ contract TestGsm is TestGhoBase {
   function testRevertRescueGhoTokens() public {
     GHO_GSM.grantRole(GSM_TOKEN_RESCUER_ROLE, address(this));
 
-    vm.expectRevert('INSUFFICIENT_GHO_TO_RESCUE');
+    vm.expectRevert('INSUFFICIENT_USDXL_TO_RESCUE');
     GHO_GSM.rescueTokens(address(GHO_TOKEN), ALICE, 1);
   }
 

@@ -9,8 +9,8 @@ contract TestGhoToken is TestGhoBase {
     vm.expectEmit(true, true, true, true, address(GHO_TOKEN));
     emit RoleGranted(DEFAULT_ADMIN_ROLE, msg.sender, address(this));
     GHO_TOKEN.grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-    assertEq(ghoToken.name(), 'Gho Token', 'Wrong default ERC20 name');
-    assertEq(ghoToken.symbol(), 'GHO', 'Wrong default ERC20 symbol');
+    assertEq(ghoToken.name(), 'Last USD', 'Wrong default ERC20 name');
+    assertEq(ghoToken.symbol(), 'USDXL', 'Wrong default ERC20 symbol');
     assertEq(ghoToken.decimals(), 18, 'Wrong default ERC20 decimals');
     assertEq(ghoToken.getFacilitatorsList().length, 0, 'Facilitator list not empty');
   }

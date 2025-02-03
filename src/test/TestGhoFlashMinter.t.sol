@@ -6,7 +6,7 @@ import './TestGhoBase.t.sol';
 contract TestGhoFlashMinter is TestGhoBase {
   function testConstructor() public {
     vm.expectEmit(true, true, false, false);
-    emit GhoTreasuryUpdated(address(0), TREASURY);
+    emit UsdxlTreasuryUpdated(address(0), TREASURY);
     vm.expectEmit(false, false, false, true);
     emit FeeUpdated(0, DEFAULT_FLASH_FEE);
     UsdxlFlashMinter flashMinter = new UsdxlFlashMinter(
@@ -173,7 +173,7 @@ contract TestGhoFlashMinter is TestGhoBase {
     assertEq(GHO_FLASH_MINTER.getUsdxlTreasury(), TREASURY, 'Flashminter non-default TREASURY');
     assertTrue(TREASURY != address(this));
     vm.expectEmit(true, true, false, false, address(GHO_FLASH_MINTER));
-    emit GhoTreasuryUpdated(TREASURY, address(this));
+    emit UsdxlTreasuryUpdated(TREASURY, address(this));
     GHO_FLASH_MINTER.updateUsdxlTreasury(address(this));
   }
 

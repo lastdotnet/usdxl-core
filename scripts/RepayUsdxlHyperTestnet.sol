@@ -2,9 +2,9 @@
 pragma solidity ^0.8.0;
 
 import {Script, console2} from 'forge-std/Script.sol';
-import {HyperTestnetReservesConfig} from 'src/deployments/configs/HyperTestnetReservesConfig.sol';
+import {HyperTestnetUsdxlConfigs} from 'src/deployments/configs/HyperTestnetUsdxlConfigs.sol';
 
-contract Default is HyperTestnetReservesConfig, Script {
+contract Default is HyperTestnetUsdxlConfigs, Script {
   function run() external {
     uint256 deployerPrivateKey = vm.envUint('PRIVATE_KEY');
     address deployerAddress = vm.addr(deployerPrivateKey);

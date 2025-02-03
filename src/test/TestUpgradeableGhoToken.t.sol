@@ -64,8 +64,8 @@ contract TestUpgradeableUsdxlToken is TestUpgradeableGhoTokenSetup {
     // Proxy asserts
     UpgradeableUsdxlToken token = UpgradeableUsdxlToken(address(ghoTokenProxy));
 
-    assertEq(token.name(), 'Gho Token', 'Wrong default ERC20 name');
-    assertEq(token.symbol(), 'GHO', 'Wrong default ERC20 symbol');
+    assertEq(token.name(), 'Last USD', 'Wrong default ERC20 name');
+    assertEq(token.symbol(), 'USDXL', 'Wrong default ERC20 symbol');
     assertEq(token.decimals(), 18, 'Wrong default ERC20 decimals');
     assertEq(token.getFacilitatorsList().length, 0, 'Facilitator list not empty');
   }
@@ -416,8 +416,8 @@ contract TestUpgradeableGhoTokenUpgrade is TestUpgradeableGhoTokenSetup {
     UpgradeableUsdxlToken(decodedImple).initialize(address(this));
 
     // Proxy
-    assertEq(ghoToken.name(), 'Gho Token', 'Wrong default ERC20 name');
-    assertEq(ghoToken.symbol(), 'GHO', 'Wrong default ERC20 symbol');
+    assertEq(ghoToken.name(), 'Last USD', 'Wrong default ERC20 name');
+    assertEq(ghoToken.symbol(), 'USDXL', 'Wrong default ERC20 symbol');
     assertEq(ghoToken.decimals(), 18, 'Wrong default ERC20 decimals');
     assertEq(ghoToken.totalSupply(), 0, 'Wrong total supply');
     assertEq(ghoToken.getFacilitatorsList().length, 0, 'Facilitator list not empty');

@@ -16,6 +16,7 @@ import {ReserveLogic} from '@aave/core-v3/contracts/protocol/libraries/logic/Res
 import {DataTypes} from '@aave/core-v3/contracts/protocol/libraries/types/DataTypes.sol';
 import {IERC20} from '@aave/core-v3/contracts/dependencies/openzeppelin/contracts/ERC20.sol';
 import {Errors} from '@aave/core-v3/contracts/protocol/libraries/helpers/Errors.sol';
+import {DisabledStableDebtToken} from '@hypurrfi/core/contracts/protocol/tokenization/DisabledStableDebtToken.sol';
 
 /**
  * @dev MockPool removes assets and users validations from Pool contract.
@@ -28,6 +29,7 @@ contract MockPool is Pool {
 
   UsdxlVariableDebtToken public DEBT_TOKEN;
   UsdxlAToken public ATOKEN;
+  DisabledStableDebtToken public DISABLED_STABLE_DEBT_TOKEN;
   address public GHO;
 
   constructor(IPoolAddressesProvider provider) Pool(provider) {}
@@ -43,14 +45,19 @@ contract MockPool is Pool {
     return 1;
   }
 
-  function setGhoTokens(UsdxlVariableDebtToken ghoDebtToken, UsdxlAToken ghoAToken) external {
-    DEBT_TOKEN = ghoDebtToken;
+  function setGhoTokens(
+    UsdxlVariableDebtToken ghoDebtToken,
+    UsdxlAToken ghoAToken,
+    DisabledStableDebtToken disabledStableDebtToken
+  ) external {
     ATOKEN = ghoAToken;
+    DEBT_TOKEN = ghoDebtToken;
+    DISABLED_STABLE_DEBT_TOKEN = disabledStableDebtToken;
     GHO = ghoAToken.UNDERLYING_ASSET_ADDRESS();
     _reserves[GHO].init(
       address(ATOKEN),
+      address(DISABLED_STABLE_DEBT_TOKEN), // disabled
       address(DEBT_TOKEN),
-      address(DEBT_TOKEN), // stable debt token - just a mock pool so should have no impact
       address(new UsdxlInterestRateStrategy(address(0), 2e25))
     );
   }
