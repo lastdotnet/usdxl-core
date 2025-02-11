@@ -19,7 +19,7 @@ contract TestGhoAaveSteward is TestGhoBase {
   IDefaultInterestRateStrategy.InterestRateData public defaultRateParams =
     IDefaultInterestRateStrategy.InterestRateData({
       optimalUsageRatio: 1_00,
-      baseVariableBorrowRate: 0.20e4,
+      baseVariableBorrowRate: 0.2e4,
       variableRateSlope1: 0,
       variableRateSlope2: 0
     });

@@ -11,6 +11,7 @@ contract MockPoolDataProvider is IPoolDataProvider {
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
 
   IPoolAddressesProvider public immutable POOL_ADDRESSES_PROVIDER;
+
   function ADDRESSES_PROVIDER() external view returns (IPoolAddressesProvider) {
     return POOL_ADDRESSES_PROVIDER;
   }

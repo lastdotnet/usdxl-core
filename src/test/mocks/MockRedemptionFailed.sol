@@ -15,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 pragma solidity ^0.8.10;
 
 import {IRedemption} from '../../contracts/facilitators/gsm/dependencies/circle/IRedemption.sol';

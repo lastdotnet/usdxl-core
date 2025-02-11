@@ -247,7 +247,6 @@ contract TestGsm4626Edge is TestGhoBase {
      * 2. ExchangeRate increases, so there is an excess of backing
      * 3. Distribute GHO fees to treasury, which redirect excess yield in form of GHO too
      */
-
     uint256 grossAmount = DEFAULT_GSM_GHO_AMOUNT;
     uint256 fee = grossAmount.percentMul(DEFAULT_GSM_SELL_FEE);
     uint256 ghoOut = grossAmount - fee;
@@ -364,7 +363,6 @@ contract TestGsm4626Edge is TestGhoBase {
      * 1. Alice sellAsset with 1:1 exchangeRate
      * 2. Distribute GHO fees to treasury, but there is no yield from excess backing
      */
-
     uint256 grossAmount = DEFAULT_GSM_GHO_AMOUNT;
     uint256 fee = grossAmount.percentMul(DEFAULT_GSM_SELL_FEE);
     uint256 ghoOut = grossAmount - fee;
@@ -421,7 +419,6 @@ contract TestGsm4626Edge is TestGhoBase {
      * 3. Distribute of GHO fees only
      * 4. Portion of minted GHO unbacked
      */
-
     uint256 grossAmount = DEFAULT_GSM_GHO_AMOUNT;
     uint256 fee = grossAmount.percentMul(DEFAULT_GSM_SELL_FEE);
     uint256 ghoOut = grossAmount - fee;
@@ -759,7 +756,6 @@ contract TestGsm4626Edge is TestGhoBase {
      * 2. Exchange rate increases, there is an excess of underlying backing GHO
      * 3. Alice buyAsset of the current exposure. There is a mint of GHO before the action so the level is updated.
      */
-
     (, uint256 ghoLevel) = GHO_TOKEN.getFacilitatorBucket(address(GHO_GSM_4626));
     assertEq(ghoLevel, 0);
     assertEq(USDC_4626_TOKEN.balanceOf(address(GHO_GSM_4626)), 0);
@@ -837,7 +833,6 @@ contract TestGsm4626Edge is TestGhoBase {
      * 3. Alice buyAsset of the current exposure
      * 4. Exposure is 0 but level is not 0, so there is unbacked GHO
      */
-
     (, uint256 ghoLevel) = GHO_TOKEN.getFacilitatorBucket(address(GHO_GSM_4626));
     assertEq(ghoLevel, 0);
     assertEq(USDC_4626_TOKEN.balanceOf(address(GHO_GSM_4626)), 0);

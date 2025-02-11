@@ -42,6 +42,6 @@ contract Default is HyperTestnetUsdxlConfigs, Script {
     _setDeployRegistry(deployedContracts);
 
     // call borrow for USDXL
-    _borrowUsdxl(1e18, vm.envAddress('PUBLIC_KEY'));
+    // _borrowUsdxl(1e18, vm.envAddress('PUBLIC_KEY'));
   }
 }

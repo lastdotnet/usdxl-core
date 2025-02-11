@@ -8,6 +8,7 @@ libs = ['node_modules', 'lib']
 evm_version = 'shanghai'
 
 fs_permissions = [
+    { access = "read", path = "./script/input/"},
     { access = "read", path = "./lib/hypurrfi-deployments/out/"},
     { access = "read", path = "./lib/hypurrfi-deployments/script/input/"},
     { access = "read", path = "./lib/hypurrfi-deployments/script/output/"},

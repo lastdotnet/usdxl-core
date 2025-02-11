@@ -2010,7 +2010,7 @@ contract TestGsmConverter is TestGhoBase {
     );
   }
 
-  function testFuzzMinAmountBuyAssetWithSig(uint minAssetAmount) public {
+  function testFuzzMinAmountBuyAssetWithSig(uint256 minAssetAmount) public {
     minAssetAmount = bound(minAssetAmount, 1, DEFAULT_GSM_BUIDL_AMOUNT * 1000);
 
     (gsmConverterSignerAddr, gsmConverterSignerKey) = makeAddrAndKey('randomString');

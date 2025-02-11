@@ -5,7 +5,7 @@ import {stdJson} from "forge-std/StdJson.sol";
 import {VmSafe} from "forge-std/Vm.sol";
 import {IERC20Metadata} from "@hypurrfi/contracts/dependencies/openzeppelin/interfaces/IERC20Metadata.sol";
 
-library DeployUtils {
+library DeployUsdxlFileUtils {
     VmSafe private constant vm = VmSafe(address(uint160(uint256(keccak256("hevm cheat code")))));
     string internal constant EXPORT_JSON_KEY = "EXPORTS";
 
@@ -19,7 +19,18 @@ library DeployUtils {
     }
 
     function readInput(string memory root, string memory name) internal view returns (string memory) {
-        string memory chainInputFolder = string(abi.encodePacked("/lib/hypurrfi-deployments/script/input/", vm.toString(getRootChainId()), "/"));
+        string memory chainInputFolder =
+            string(abi.encodePacked("/lib/hypurrfi-deployments/script/input/", vm.toString(getRootChainId()), "/"));
+        return vm.readFile(string(abi.encodePacked(root, chainInputFolder, name, ".json")));
+    }
+
+    function readUsdxlInput(string memory name) internal view returns (string memory) {
+        string memory root = vm.projectRoot();
+        return readUsdxlInput(root, name);
+    }
+
+    function readUsdxlInput(string memory root, string memory name) internal view returns (string memory) {
+        string memory chainInputFolder = string(abi.encodePacked("/script/input/", vm.toString(getRootChainId()), "/"));
         return vm.readFile(string(abi.encodePacked(root, chainInputFolder, name, ".json")));
     }
 
@@ -40,8 +51,9 @@ library DeployUtils {
 
     function readTokenConfig(address token) internal view returns (string memory) {
         // Read JSON file from script/inputs/{chainId}/{tokenSymbol}.json
-        string memory chainInputFolder =
-            string(abi.encodePacked("./lib/hypurrfi-deployments/script/input/", vm.toString(getRootChainId()), "/assets/"));
+        string memory chainInputFolder = string(
+            abi.encodePacked("./lib/hypurrfi-deployments/script/input/", vm.toString(getRootChainId()), "/assets/")
+        );
         string memory tokenConfigPath =
             string(abi.encodePacked(chainInputFolder, IERC20Metadata(token).symbol(), ".json"));
         return vm.readFile(tokenConfigPath);

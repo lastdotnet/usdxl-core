@@ -103,14 +103,14 @@ contract TestGhoVariableDebtToken is TestGhoBase {
   }
 
   function testBorrowMultiple() public {
-    for (uint x; x < 100; ++x) {
+    for (uint256 x; x < 100; ++x) {
       borrowAction(ALICE, DEFAULT_BORROW_AMOUNT);
       vm.warp(block.timestamp + 2628000);
     }
   }
 
   function testBorrowMultipleWithDiscount() public {
-    for (uint x; x < 100; ++x) {
+    for (uint256 x; x < 100; ++x) {
       borrowAction(BOB, DEFAULT_BORROW_AMOUNT);
       vm.warp(block.timestamp + 2628000);
     }
@@ -120,7 +120,7 @@ contract TestGhoVariableDebtToken is TestGhoBase {
     vm.assume(fuzzAmount < 1000000000000000000000000);
     vm.assume(fuzzAmount > 0);
 
-    for (uint x; x < 10; ++x) {
+    for (uint256 x; x < 10; ++x) {
       borrowAction(ALICE, fuzzAmount);
       vm.warp(block.timestamp + 2628000);
     }
@@ -189,7 +189,7 @@ contract TestGhoVariableDebtToken is TestGhoBase {
 
     vm.warp(block.timestamp + 2628000);
 
-    for (uint x; x < 100; ++x) {
+    for (uint256 x; x < 100; ++x) {
       repayAction(ALICE, partialRepayAmount);
       vm.warp(block.timestamp + 2628000);
     }
@@ -203,7 +203,7 @@ contract TestGhoVariableDebtToken is TestGhoBase {
 
     vm.warp(block.timestamp + 2628000);
 
-    for (uint x; x < 4; ++x) {
+    for (uint256 x; x < 4; ++x) {
       repayAction(ALICE, partialRepayAmount);
       vm.warp(block.timestamp + 2628000);
     }

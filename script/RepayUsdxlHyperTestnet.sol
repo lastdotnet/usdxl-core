@@ -18,6 +18,6 @@ contract Default is HyperTestnetUsdxlConfigs, Script {
 
   function _deploy(address deployerAddress) internal {
     // call borrow for USDXL
-    _repayUsdxl(1e18, vm.envAddress('PUBLIC_KEY'));
+    // _repayUsdxl(1e18, vm.envAddress('PUBLIC_KEY'));
   }
 }
