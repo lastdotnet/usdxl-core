@@ -37,6 +37,10 @@ contract Default is DeployUsdxlUtils, Script {
 
     config = DeployUsdxlFileUtils.readInput(instanceId);
     usdxlConfig = DeployUsdxlFileUtils.readUsdxlInput(instanceId);
+
+    admin = config.readAddress('.admin');
+    deployer = msg.sender;
+
     if (instanceIdBlock > 0) {
       deployedContracts = DeployUsdxlFileUtils.readOutput(instanceId, instanceIdBlock);
     } else {
