@@ -9,7 +9,7 @@ import {HyperTestnetUsdxlConfigs} from 'src/deployments/configs/HyperTestnetUsdx
 import {DeployUsdxlUtils} from 'src/deployments/utils/DeployUsdxlUtils.sol';
 import {DeployUsdxlFileUtils} from 'src/deployments/utils/DeployUsdxlFileUtils.sol';
 
-contract Default is HyperTestnetUsdxlConfigs, DeployUsdxlUtils, Script {
+contract Default is DeployUsdxlUtils, Script {
   using stdJson for string;
 
   uint256 instanceIdBlock = 0;

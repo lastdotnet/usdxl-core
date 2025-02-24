@@ -33,6 +33,7 @@ import {ZeroDiscountRateStrategy} from 'src/contracts/facilitators/hyfi/interest
 
 abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes, IDeployConfigTypes {
     using DeployUsdxlFileUtils for string;
+    using stdJson for string;
 
     IUsdxlToken public usdxlToken;
     UsdxlAToken public usdxlAToken;
@@ -41,8 +42,10 @@ abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes, IDepl
     UsdxlOracle public usdxlOracle;
     UsdxlInterestRateStrategy public usdxlInterestRateStrategy;
     UsdxlFlashMinter public flashMinter;
+    UsdxlDeployRegistry public usdxlDeployRegistry;
+    HypurrDeployRegistry public hypurrDeployRegistry;
 
-    function _deployUsdxl(address proxyAdmin, IDeployConfigTypes.HypurrDeployRegistry memory deployRegistry) internal {
+    function _deployUsdxl(address proxyAdmin) internal {
         address[] memory tokens = new address[](1);
         address[] memory oracles = new address[](1);
         
@@ -64,53 +67,53 @@ abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes, IDepl
 
         // 3. Deploy USDXL Interest Rate Strategy
         usdxlInterestRateStrategy = new UsdxlInterestRateStrategy(
-            deployRegistry.poolAddressesProvider,
+            hypurrDeployRegistry.poolAddressesProvider,
             0.02e27 // 2% base rate
         );
 
         // 4. Deploy USDXL AToken and Variable Debt Token
-        usdxlAToken = new UsdxlAToken(IPool(IPoolAddressesProvider(deployRegistry.poolAddressesProvider).getPool()));
+        usdxlAToken = new UsdxlAToken(IPool(IPoolAddressesProvider(hypurrDeployRegistry.poolAddressesProvider).getPool()));
 
         usdxlVariableDebtToken =
-            new UsdxlVariableDebtToken(IPool(IPoolAddressesProvider(deployRegistry.poolAddressesProvider).getPool()));
+            new UsdxlVariableDebtToken(IPool(IPoolAddressesProvider(hypurrDeployRegistry.poolAddressesProvider).getPool()));
 
         // 5. Deploy Flash Minter
         flashMinter = new UsdxlFlashMinter(
             address(usdxlToken),
-            deployRegistry.treasury,
+            hypurrDeployRegistry.treasury,
             0, // no fee
-            deployRegistry.poolAddressesProvider
+            hypurrDeployRegistry.poolAddressesProvider
         );
 
         // 6. Grant facilitator manager role
         _grantFacilitatorManagerRole(deployer);
 
         // 7. Set USDXL Oracle
-        _setUsdxlOracle(tokens, oracles, deployRegistry);
+        _setUsdxlOracle(tokens, oracles);
 
         // 8. Set reserve config
-        _initializeUsdxlReserve(tokens[0], deployRegistry);
+        _initializeUsdxlReserve(tokens[0]);
 
         // 9. Disable stable debt
-        _disableStableDebt(tokens, deployRegistry);
+        _disableStableDebt(tokens);
 
         // 10. Update interest rate strategy
-        _updateUsdxlInterestRateStrategy(deployRegistry);
+        _updateUsdxlInterestRateStrategy();
 
         // 11. Enable USDXL borrowing
-        _enableUsdxlBorrowing(deployRegistry);
+        _enableUsdxlBorrowing();
 
         // 12. Add USDXL as entity
-        _addUsdxlATokenAsEntity(deployRegistry);
+        _addUsdxlATokenAsEntity();
 
         // 13. Add USDXL flashminter as entity
-        _addUsdxlFlashMinterAsEntity(deployRegistry);
+        _addUsdxlFlashMinterAsEntity();
 
         // 14. Revoke facilitator manager role
         _revokeFacilitatorManagerRole(deployer);
 
         // 15. Set USDXL addresses
-        _setUsdxlAddresses(deployRegistry);
+        _setUsdxlAddresses();
 
         ERC20 nonMintableErc20;
 
@@ -135,11 +138,39 @@ abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes, IDepl
         DeployUsdxlFileUtils.exportContract(instanceId, "usdxlFlashMinterImpl", address(flashMinter));
     }
 
+    function _setDeployRegistry(string memory deployedContracts) internal {
+        hypurrDeployRegistry = IDeployConfigTypes.HypurrDeployRegistry({
+            hyTokenImpl: deployedContracts.readAddress(".hyTokenImpl"),
+            hyFiOracle: deployedContracts.readAddress(".hyFiOracle"),
+            aclManager: deployedContracts.readAddress(".aclManager"),
+            admin: deployedContracts.readAddress(".admin"),
+            defaultInterestRateStrategy: deployedContracts.readAddress(".defaultInterestRateStrategy"),
+            deployer: deployedContracts.readAddress(".deployer"),
+            emissionManager: deployedContracts.readAddress(".emissionManager"),
+            incentives: deployedContracts.readAddress(".incentives"),
+            incentivesImpl: deployedContracts.readAddress(".incentivesImpl"),
+            pool: deployedContracts.readAddress(".pool"),
+            poolAddressesProvider: deployedContracts.readAddress(".poolAddressesProvider"),
+            poolAddressesProviderRegistry: deployedContracts.readAddress(".poolAddressesProviderRegistry"),
+            poolConfigurator: deployedContracts.readAddress(".poolConfigurator"),
+            poolConfiguratorImpl: deployedContracts.readAddress(".poolConfiguratorImpl"),
+            poolImpl: deployedContracts.readAddress(".poolImpl"),
+            protocolDataProvider: deployedContracts.readAddress(".protocolDataProvider"),
+            disabledStableDebtTokenImpl: deployedContracts.readAddress(".disabledStableDebtTokenImpl"),
+            treasury: deployedContracts.readAddress(".treasury"),
+            treasuryImpl: deployedContracts.readAddress(".treasuryImpl"),
+            uiIncentiveDataProvider: deployedContracts.readAddress(".uiIncentiveDataProvider"),
+            uiPoolDataProvider: deployedContracts.readAddress(".uiPoolDataProvider"),
+            variableDebtTokenImpl: deployedContracts.readAddress(".variableDebtTokenImpl"),
+            walletBalanceProvider: deployedContracts.readAddress(".walletBalanceProvider"),
+            wrappedHypeGateway: deployedContracts.readAddress(".wrappedHypeGateway")
+        });
+    }
+    
     function _deployGsm(
         address token,
         address gsmOwner,
-        uint256 maxCapacity,
-        IDeployConfigTypes.HypurrDeployRegistry memory deployRegistry
+        uint256 maxCapacity
     ) internal returns (address gsmProxy) {
         // Deploy price and fee strategies
         FixedPriceStrategy fixedPriceStrategy = new FixedPriceStrategy(
@@ -163,7 +194,7 @@ abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes, IDepl
             ""
         );
 
-        Gsm(address(proxy)).initialize(gsmOwner, deployRegistry.treasury, uint128(maxCapacity));
+        Gsm(address(proxy)).initialize(gsmOwner, hypurrDeployRegistry.treasury, uint128(maxCapacity));
 
         // Export contracts
         DeployUsdxlFileUtils.exportContract(instanceId, "gsmImpl", address(gsmImpl));
@@ -189,29 +220,27 @@ abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes, IDepl
 
     function _setUsdxlOracle(
         address[] memory tokens,
-        address[] memory oracles,
-        IDeployConfigTypes.HypurrDeployRegistry memory deployRegistry
+        address[] memory oracles
     )
         internal
     {
         // set oracles
-        _getHyFiOracle(deployRegistry).setAssetSources(tokens, oracles);
+        _getHyFiOracle().setAssetSources(tokens, oracles);
     }
 
       function _initializeUsdxlReserve(
-        address token,
-        IDeployConfigTypes.HypurrDeployRegistry memory deployRegistry
+        address token
       )
         internal
       {
         ConfiguratorInputTypes.InitReserveInput[] memory inputs = new ConfiguratorInputTypes.InitReserveInput[](1);
 
         usdxlAToken = new UsdxlAToken(
-          _getPoolInstance(deployRegistry)
+          _getPoolInstance()
         );
 
         usdxlVariableDebtToken = new UsdxlVariableDebtToken(
-          _getPoolInstance(deployRegistry)
+          _getPoolInstance()
         );
 
         DeployUsdxlFileUtils.exportContract(instanceId, "usdxlATokenImpl", address(usdxlAToken));
@@ -221,13 +250,13 @@ abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes, IDepl
 
         inputs[0] = ConfiguratorInputTypes.InitReserveInput({
           aTokenImpl: address(usdxlAToken), // Address of the aToken implementation
-          stableDebtTokenImpl: address(deployRegistry.disabledStableDebtTokenImpl), // Disabled - not using stable debt in this implementation
+          stableDebtTokenImpl: address(hypurrDeployRegistry.disabledStableDebtTokenImpl), // Disabled - not using stable debt in this implementation
           variableDebtTokenImpl: address(usdxlVariableDebtToken), // Address of the variable debt token implementation
           underlyingAssetDecimals: tokenMetadata.decimals(),
-          interestRateStrategyAddress: deployRegistry.defaultInterestRateStrategy, // Address of the interest rate strategy
+          interestRateStrategyAddress: hypurrDeployRegistry.defaultInterestRateStrategy, // Address of the interest rate strategy
           underlyingAsset: address(token), // Address of the underlying asset
-          treasury: deployRegistry.treasury, // Address of the treasury
-          incentivesController: deployRegistry.incentives, // Address of the incentives controller
+          treasury: hypurrDeployRegistry.treasury, // Address of the treasury
+          incentivesController: hypurrDeployRegistry.incentives, // Address of the incentives controller
           aTokenName: string(abi.encodePacked(tokenMetadata.symbol(), " Hypurr")),
           aTokenSymbol: string(abi.encodePacked("hy", tokenMetadata.symbol())),
           variableDebtTokenName: string(abi.encodePacked(tokenMetadata.symbol(), " Variable Debt Hypurr")),
@@ -238,41 +267,41 @@ abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes, IDepl
         });
 
         // set reserves configs
-        _getPoolConfigurator(deployRegistry).initReserves(inputs);
+        _getPoolConfigurator().initReserves(inputs);
 
         // export contract addresses
         DeployUsdxlFileUtils.exportContract(instanceId, "usdxlATokenProxy", _getUsdxlATokenProxy());
         DeployUsdxlFileUtils.exportContract(instanceId, "usdxlVariableDebtTokenProxy", _getUsdxlVariableDebtTokenProxy());
     }
 
-    function _disableStableDebt(address[] memory tokens, IDeployConfigTypes.HypurrDeployRegistry memory deployRegistry) internal {
+    function _disableStableDebt(address[] memory tokens) internal {
         for (uint256 i; i < tokens.length;) {
             // Disable stable borrowing
-            _getPoolConfigurator(deployRegistry).setReserveStableRateBorrowing(tokens[i], false);
+            _getPoolConfigurator().setReserveStableRateBorrowing(tokens[i], false);
             unchecked {
                 i++;
             }
         }
     }
 
-    function _updateUsdxlInterestRateStrategy(IDeployConfigTypes.HypurrDeployRegistry memory deployRegistry)
+    function _updateUsdxlInterestRateStrategy()
         internal
     {
         UsdxlInterestRateStrategy interestRateStrategy = new UsdxlInterestRateStrategy(
-          address(deployRegistry.poolAddressesProvider),
+          address(hypurrDeployRegistry.poolAddressesProvider),
           0.02e27
         );
 
-        _getPoolConfigurator(deployRegistry).setReserveInterestRateStrategyAddress(address(_getUsdxlToken()), address(interestRateStrategy));
+        _getPoolConfigurator().setReserveInterestRateStrategyAddress(address(_getUsdxlToken()), address(interestRateStrategy));
     }
 
-    function _enableUsdxlBorrowing(IDeployConfigTypes.HypurrDeployRegistry memory deployRegistry)
+    function _enableUsdxlBorrowing()
         internal
     {
-        _getPoolConfigurator(deployRegistry).setReserveBorrowing(address(usdxlTokenProxy), true);
+        _getPoolConfigurator().setReserveBorrowing(address(usdxlTokenProxy), true);
     }
 
-    function _addUsdxlATokenAsEntity(IDeployConfigTypes.HypurrDeployRegistry memory deployRegistry)
+    function _addUsdxlATokenAsEntity()
         internal
     {
         // pull aToken proxy from reserves config
@@ -283,7 +312,7 @@ abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes, IDepl
         );
     }
 
-    function _addUsdxlFlashMinterAsEntity(IDeployConfigTypes.HypurrDeployRegistry memory deployRegistry)
+    function _addUsdxlFlashMinterAsEntity()
         internal
     {
       _getUsdxlToken().addFacilitator(
@@ -293,10 +322,10 @@ abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes, IDepl
       );
     }
 
-    function _setUsdxlAddresses(IDeployConfigTypes.HypurrDeployRegistry memory deployRegistry)
+    function _setUsdxlAddresses()
         internal
     {
-      usdxlAToken.updateUsdxlTreasury(deployRegistry.treasury);
+      usdxlAToken.updateUsdxlTreasury(hypurrDeployRegistry.treasury);
 
       UsdxlAToken(_getUsdxlATokenProxy()).setVariableDebtToken(_getUsdxlVariableDebtTokenProxy());
 
@@ -322,26 +351,28 @@ abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes, IDepl
     }
 
     function _getUsdxlATokenProxy() internal view returns (address) {
-        return address(usdxlAToken);
+        // read from reserves config
+        return _getPoolInstance().getReserveData(address(usdxlToken)).aTokenAddress;
     }
 
     function _getUsdxlVariableDebtTokenProxy() internal view returns (address) {
-        return address(usdxlVariableDebtToken);
+        // read from reserves config
+        return _getPoolInstance().getReserveData(address(usdxlToken)).variableDebtTokenAddress;
     }
 
-    function _getHyFiOracle(IDeployConfigTypes.HypurrDeployRegistry memory deployRegistry) internal view returns (HyFiOracle) {
-        return HyFiOracle(deployRegistry.hyFiOracle);
+    function _getHyFiOracle() internal view returns (HyFiOracle) {
+        return HyFiOracle(hypurrDeployRegistry.hyFiOracle);
     }
 
-    function _getPoolConfigurator(IDeployConfigTypes.HypurrDeployRegistry memory deployRegistry) internal view returns (IPoolConfigurator) {
-        return IPoolConfigurator(deployRegistry.poolConfigurator);
+    function _getPoolConfigurator() internal view returns (IPoolConfigurator) {
+        return IPoolConfigurator(hypurrDeployRegistry.poolConfigurator);
     }
 
-    function _getPoolAddressesProvider(IDeployConfigTypes.HypurrDeployRegistry memory deployRegistry) internal view returns (IPoolAddressesProvider) {
-        return IPoolAddressesProvider(deployRegistry.poolAddressesProvider);
+    function _getPoolAddressesProvider() internal view returns (IPoolAddressesProvider) {
+        return IPoolAddressesProvider(hypurrDeployRegistry.poolAddressesProvider);
     }
 
-    function _getPoolInstance(IDeployConfigTypes.HypurrDeployRegistry memory deployRegistry) internal view returns (IPool) {
-        return IPool(deployRegistry.pool);
+    function _getPoolInstance() internal view returns (IPool) {
+        return IPool(hypurrDeployRegistry.pool);
     }
 }
