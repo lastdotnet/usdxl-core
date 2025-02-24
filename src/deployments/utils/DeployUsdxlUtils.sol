@@ -125,6 +125,12 @@ abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes, IDepl
 
         _setDiscountTokenAndStrategy(address(discountRateStrategy), address(nonMintableErc20));
 
+        // transfer ownership of usdxlToken to deployer
+        usdxlTokenProxy.grantRole(usdxlTokenProxy.DEFAULT_ADMIN_ROLE(), admin);
+        if (admin != deployer) {
+            usdxlTokenProxy.revokeRole(usdxlTokenProxy.DEFAULT_ADMIN_ROLE(), deployer);
+        }
+
         // Export contract addresses
         _exportContracts();
     }
