@@ -35,6 +35,8 @@ abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes, IDepl
     using DeployUsdxlFileUtils for string;
     using stdJson for string;
 
+    string usdxlConfig;
+
     IUsdxlToken public usdxlToken;
     UsdxlAToken public usdxlAToken;
     address public usdxlTokenProxy;
@@ -44,17 +46,21 @@ abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes, IDepl
     UsdxlFlashMinter public flashMinter;
     UsdxlDeployRegistry public usdxlDeployRegistry;
     HypurrDeployRegistry public hypurrDeployRegistry;
+    UpgradeableUsdxlToken public usdxlTokenImpl;
 
     function _deployUsdxl(address proxyAdmin) internal {
         address[] memory tokens = new address[](1);
         address[] memory oracles = new address[](1);
         
         // 1. Deploy USDXL token implementation and proxy
-        UpgradeableUsdxlToken usdxlTokenImpl = new UpgradeableUsdxlToken();
+        usdxlTokenImpl = new UpgradeableUsdxlToken();
 
-        bytes memory initParams = abi.encodeWithSignature("initialize(address)", deployer);
 
-        usdxlTokenProxy = address(new TransparentUpgradeableProxy(address(usdxlTokenImpl), proxyAdmin, initParams));
+        {
+            bytes memory initParams = abi.encodeWithSignature("initialize(address)", deployer);
+
+            usdxlTokenProxy = address(new TransparentUpgradeableProxy(address(usdxlTokenImpl), proxyAdmin, initParams));
+        }
 
         usdxlToken = IUsdxlToken(usdxlTokenProxy);
 

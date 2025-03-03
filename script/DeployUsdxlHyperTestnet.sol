@@ -3,9 +3,6 @@ pragma solidity ^0.8.0;
 
 import {Script, console2} from 'forge-std/Script.sol';
 import 'forge-std/StdJson.sol';
-import {ERC20} from 'lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol';
-import {ZeroDiscountRateStrategy} from 'src/contracts/facilitators/hyfi/interestStrategy/ZeroDiscountRateStrategy.sol';
-import {HyperTestnetUsdxlConfigs} from 'src/deployments/configs/HyperTestnetUsdxlConfigs.sol';
 import {DeployUsdxlUtils} from 'src/deployments/utils/DeployUsdxlUtils.sol';
 import {DeployUsdxlFileUtils} from 'src/deployments/utils/DeployUsdxlFileUtils.sol';
 
@@ -20,12 +17,10 @@ contract Default is DeployUsdxlUtils, Script {
   string deployedContracts;
 
   function run() external {
-    uint256 deployerPrivateKey = vm.envUint('PRIVATE_KEY');
-    deployer = vm.envAddress('PUBLIC_KEY');
-    console2.log('Deployer Address: ', deployer);
-    console2.log('Deployer Balance: ', address(deployer).balance);
-    console2.log('Block Number: ', block.number);
-    vm.startBroadcast(deployerPrivateKey);
+    // console2.log('Deployer Address: ', deployer);
+    // console2.log('Deployer Balance: ', address(deployer).balance);
+    // console2.log('Block Number: ', block.number);
+    vm.startBroadcast(vm.envUint('PRIVATE_KEY'));
     _deploy();
     vm.stopBroadcast();
   }
@@ -49,6 +44,6 @@ contract Default is DeployUsdxlUtils, Script {
 
     _setDeployRegistry(deployedContracts);
 
-    _deployUsdxl(usdxlConfig.readAddress('.usdxlAdmin'), deployRegistry);
+    _deployUsdxl(usdxlConfig.readAddress('.usdxlAdmin'));
   }
 }
