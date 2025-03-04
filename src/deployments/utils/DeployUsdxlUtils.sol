@@ -319,7 +319,7 @@ abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes {
         _getUsdxlToken().addFacilitator(
           address(_getUsdxlATokenProxy()),
           'HypurrFi Market Loans', // entity label
-          1e27 // entity mint limit (100mil)
+          1e27 // entity mint limit (1bil)
         );
     }
 
@@ -329,7 +329,7 @@ abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes {
       _getUsdxlToken().addFacilitator(
         address(flashMinter),
         'HypurrFi Market Flash Loans', // entity label
-        1e27 // entity mint limit (100mil)
+        1e27 // entity mint limit (1bil)
       );
     }
 

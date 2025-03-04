@@ -23,7 +23,7 @@ contract Default is DeployUsdxlUtils, Script {
   function _deploy() internal {
     vm.setEnv('FOUNDRY_ROOT_CHAINID', vm.toString(block.chainid));
 
-    instanceId = 'hypurrfi-testnet';
+    instanceId = vm.envString('INSTANCE_ID');
 
     config = DeployUsdxlFileUtils.readInput(instanceId);
     usdxlConfig = DeployUsdxlFileUtils.readUsdxlInput(instanceId);
