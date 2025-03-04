@@ -1,10 +1,10 @@
 {
-  "usdxlATokenImpl": "0x2F85Bc44cf0e9c107A99daEaaa0d24a79F8106b8",
-  "usdxlATokenProxy": "0x2F85Bc44cf0e9c107A99daEaaa0d24a79F8106b8",
-  "usdxlFlashMinterImpl": "0xC0368df40874Defd7ADFfF70700B1e12015aE654",
-  "usdxlOracle": "0x1bb17553be4b2492BF43448F2F70c54E57C0dbf2",
-  "usdxlTokenImpl": "0x3afe972eCdaBC2050490b2b97e23641b66513b7A",
-  "usdxlTokenProxy": "0x3afe972eCdaBC2050490b2b97e23641b66513b7A",
-  "usdxlVariableDebtTokenImpl": "0xc69350e9386B5A417340c8794925EB178d214967",
-  "usdxlVariableDebtTokenProxy": "0xc69350e9386B5A417340c8794925EB178d214967"
+  "usdxlATokenImpl": "0xfB00888650DDA326d2d372Ec13D323Af5c18358B",
+  "usdxlATokenProxy": "0xF45Fb9970d73aDD5Bfa21d946e845DB74b7A6B7b",
+  "usdxlFlashMinterImpl": "0x6396912A89ACf99dC7De7cB58B3bC46B84a79e58",
+  "usdxlOracle": "0x2F85Bc44cf0e9c107A99daEaaa0d24a79F8106b8",
+  "usdxlTokenImpl": "0xb5f3474c82D5c700c537a315f376C0e05CbC9D0f",
+  "usdxlTokenProxy": "0xb5f3474c82D5c700c537a315f376C0e05CbC9D0f",
+  "usdxlVariableDebtTokenImpl": "0xc46fdc99CbB1e3359297932Ba30706153e9AA571",
+  "usdxlVariableDebtTokenProxy": "0xc46fdc99CbB1e3359297932Ba30706153e9AA571"
 }

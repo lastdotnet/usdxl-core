@@ -14,12 +14,7 @@ contract Default is DeployUsdxlUtils, Script {
   uint256 forkBlock;
   uint256 initialReserveCount;
 
-  string deployedContracts;
-
   function run() external {
-    // console2.log('Deployer Address: ', deployer);
-    // console2.log('Deployer Balance: ', address(deployer).balance);
-    // console2.log('Block Number: ', block.number);
     vm.startBroadcast(vm.envUint('PRIVATE_KEY'));
     _deploy();
     vm.stopBroadcast();
@@ -34,7 +29,7 @@ contract Default is DeployUsdxlUtils, Script {
     usdxlConfig = DeployUsdxlFileUtils.readUsdxlInput(instanceId);
 
     admin = config.readAddress('.admin');
-    deployer = msg.sender;
+    deployer = vm.envAddress('PUBLIC_KEY');
 
     if (instanceIdBlock > 0) {
       deployedContracts = DeployUsdxlFileUtils.readOutput(instanceId, instanceIdBlock);
@@ -42,8 +37,12 @@ contract Default is DeployUsdxlUtils, Script {
       deployedContracts = DeployUsdxlFileUtils.readOutput(instanceId);
     }
 
+    console2.log('Deployer Address: ', deployer);
+    console2.log('Deployer Balance: ', address(deployer).balance);
+    console2.log('Block Number: ', block.number);
+
     _setDeployRegistry(deployedContracts);
 
-    _deployUsdxl(usdxlConfig.readAddress('.usdxlAdmin'));
+    _deployUsdxl();
   }
 }

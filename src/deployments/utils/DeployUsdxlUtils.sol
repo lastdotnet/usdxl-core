@@ -20,7 +20,7 @@ import {IUsdxlConfigsTypes} from "src/deployments/interfaces/IUsdxlConfigsTypes.
 import {TransparentUpgradeableProxy} from "solidity-utils/contracts/transparent-proxy/TransparentUpgradeableProxy.sol";
 import {AdminUpgradeabilityProxy} from
     "@aave/core-v3/contracts/dependencies/openzeppelin/upgradeability/AdminUpgradeabilityProxy.sol";
-import {IDeployConfigTypes} from "@hypurrfi/deployments/configs/HyperTestnetReservesConfigs.sol";
+import {IDeployConfigTypes} from "@hypurrfi/deployments/interfaces/IDeployConfigTypes.sol";
 import {DeployHyFiUtils} from "@hypurrfi/deployments/utils/DeployHyFiUtils.sol";
 import {IERC20Metadata} from "@hypurrfi/contracts/dependencies/openzeppelin/interfaces/IERC20Metadata.sol";
 import {IPoolAddressesProvider} from "@aave/core-v3/contracts/interfaces/IPoolAddressesProvider.sol";
@@ -31,7 +31,7 @@ import {ConfiguratorInputTypes} from "@aave/core-v3/contracts/protocol/libraries
 import {ERC20} from 'lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol';
 import {ZeroDiscountRateStrategy} from 'src/contracts/facilitators/hyfi/interestStrategy/ZeroDiscountRateStrategy.sol';
 
-abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes, IDeployConfigTypes {
+abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes {
     using DeployUsdxlFileUtils for string;
     using stdJson for string;
 
@@ -45,21 +45,20 @@ abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes, IDepl
     UsdxlInterestRateStrategy public usdxlInterestRateStrategy;
     UsdxlFlashMinter public flashMinter;
     UsdxlDeployRegistry public usdxlDeployRegistry;
-    HypurrDeployRegistry public hypurrDeployRegistry;
+    IDeployConfigTypes.HypurrDeployRegistry hypurrDeployRegistry;
     UpgradeableUsdxlToken public usdxlTokenImpl;
 
-    function _deployUsdxl(address proxyAdmin) internal {
+    function _deployUsdxl() internal {
         address[] memory tokens = new address[](1);
         address[] memory oracles = new address[](1);
         
         // 1. Deploy USDXL token implementation and proxy
         usdxlTokenImpl = new UpgradeableUsdxlToken();
 
-
         {
             bytes memory initParams = abi.encodeWithSignature("initialize(address)", deployer);
 
-            usdxlTokenProxy = address(new TransparentUpgradeableProxy(address(usdxlTokenImpl), proxyAdmin, initParams));
+            usdxlTokenProxy = address(new TransparentUpgradeableProxy(address(usdxlTokenImpl), usdxlConfig.readAddress('.usdxlAdmin'), initParams));
         }
 
         usdxlToken = IUsdxlToken(usdxlTokenProxy);
