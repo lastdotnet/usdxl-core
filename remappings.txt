@@ -15,3 +15,4 @@ openzeppelin-contracts/=lib/openzeppelin-contracts/contracts/
 @hypurrfi/deployments/=lib/hypurrfi-deployments/src/deployments/
 @hypurrfi/contracts/=lib/hypurrfi-deployments/src/contracts/
 @hypurrfi/core/=lib/hypurrfi-deployments/src/core/
+@hypurrfi/periphery/=lib/hypurrfi-deployments/src/periphery/
