@@ -138,6 +138,8 @@ abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes {
 
         // Export contract addresses
         _exportContracts();
+
+        _borrowUsdxl(0.0001e18, deployer);
     }
 
     function _exportContracts() internal {
@@ -244,15 +246,7 @@ abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes {
       )
         internal
       {
-        ConfiguratorInputTypes.InitReserveInput[] memory inputs = new ConfiguratorInputTypes.InitReserveInput[](1);
-
-        usdxlAToken = new UsdxlAToken(
-          _getPoolInstance()
-        );
-
-        usdxlVariableDebtToken = new UsdxlVariableDebtToken(
-          _getPoolInstance()
-        );
+        ConfiguratorInputTypes.InitReserveInput[] memory inputs = new ConfiguratorInputTypes.InitReserveInput[](1); 
 
         DeployUsdxlFileUtils.exportContract(instanceId, "usdxlATokenImpl", address(usdxlAToken));
         DeployUsdxlFileUtils.exportContract(instanceId, "usdxlVariableDebtTokenImpl", address(usdxlVariableDebtToken));
@@ -319,7 +313,7 @@ abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes {
         _getUsdxlToken().addFacilitator(
           address(_getUsdxlATokenProxy()),
           'HypurrFi Market Loans', // entity label
-          1e27 // entity mint limit (1bil)
+          1e24 // entity mint limit (1mil)
         );
     }
 
@@ -336,12 +330,13 @@ abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes {
     function _setUsdxlAddresses()
         internal
     {
-      usdxlAToken.updateUsdxlTreasury(hypurrDeployRegistry.treasury);
+        UsdxlAToken usdxlATokenProxy = UsdxlAToken(_getUsdxlATokenProxy());
+        usdxlATokenProxy.updateUsdxlTreasury(hypurrDeployRegistry.treasury);
 
-      UsdxlAToken(_getUsdxlATokenProxy()).setVariableDebtToken(_getUsdxlVariableDebtTokenProxy());
+        UsdxlAToken(_getUsdxlATokenProxy()).setVariableDebtToken(_getUsdxlVariableDebtTokenProxy());
 
-      // set aToken
-      UsdxlVariableDebtToken(_getUsdxlVariableDebtTokenProxy()).setAToken(_getUsdxlATokenProxy());
+        // set aToken
+        UsdxlVariableDebtToken(_getUsdxlVariableDebtTokenProxy()).setAToken(_getUsdxlATokenProxy());
     }
 
     function _setDiscountTokenAndStrategy(
@@ -355,6 +350,38 @@ abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes {
         usdxlVariableDebtToken.updateDiscountRateStrategy(discountRateStrategy);
       if (discountToken != address(0))
         usdxlVariableDebtToken.updateDiscountToken(discountToken);
+    }
+
+    function _borrowUsdxl(
+        uint256 amount,
+        address onBehalfOf
+    )
+        internal
+    {
+        _getPoolInstance().borrow(
+            address(_getUsdxlToken()),
+            amount,
+            2, // interest rate mode
+            0,
+            onBehalfOf
+        );
+    }
+
+    function _supplyCollateral(
+        address token,
+        address user,
+        uint256 amount
+    )
+        internal
+    {
+        ERC20(token).approve(address(_getPoolInstance()), amount);
+
+        _getPoolInstance().supply(
+            token,
+            amount,
+            user,
+            0
+        );
     }
 
     function _getUsdxlToken() internal view returns (IUsdxlToken) {
