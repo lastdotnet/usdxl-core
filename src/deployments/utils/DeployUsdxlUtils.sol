@@ -131,8 +131,8 @@ abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes {
         _setDiscountTokenAndStrategy(address(discountRateStrategy), address(nonMintableErc20));
 
         // transfer ownership of usdxlToken to deployer
-        UpgradeableUsdxlToken(usdxlTokenProxy).grantRole(UpgradeableUsdxlToken(usdxlTokenProxy).DEFAULT_ADMIN_ROLE(), admin);
-        if (admin != deployer) {
+        UpgradeableUsdxlToken(usdxlTokenProxy).grantRole(UpgradeableUsdxlToken(usdxlTokenProxy).DEFAULT_ADMIN_ROLE(), usdxlConfig.readAddress('.usdxlAdmin'));
+        if (usdxlConfig.readAddress('.usdxlAdmin') != deployer) {
             UpgradeableUsdxlToken(usdxlTokenProxy).revokeRole(UpgradeableUsdxlToken(usdxlTokenProxy).DEFAULT_ADMIN_ROLE(), deployer);
         }
 
