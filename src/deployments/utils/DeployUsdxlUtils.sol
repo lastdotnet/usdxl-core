@@ -109,22 +109,19 @@ abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes {
         // 9. Disable stable debt
         _disableStableDebt(tokens);
 
-        // 10. Update interest rate strategy
-        _updateUsdxlInterestRateStrategy();
-
-        // 11. Enable USDXL borrowing
+        // 10. Enable USDXL borrowing
         _enableUsdxlBorrowing();
 
-        // 12. Add USDXL as entity
+        // 11. Add USDXL as entity
         _addUsdxlATokenAsEntity();
 
-        // 13. Add USDXL flashminter as entity
+        // 12. Add USDXL flashminter as entity
         _addUsdxlFlashMinterAsEntity();
 
-        // 14. Revoke facilitator manager role
+        // 13. Revoke facilitator manager role
         _revokeFacilitatorManagerRole(deployer);
 
-        // 15. Set USDXL addresses
+        // 14. Set USDXL addresses
         _setUsdxlAddresses();
 
         ERC20 nonMintableErc20;
@@ -259,7 +256,7 @@ abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes {
             stableDebtTokenImpl: address(hypurrDeployRegistry.disabledStableDebtTokenImpl), // Disabled - not using stable debt in this implementation
             variableDebtTokenImpl: address(usdxlVariableDebtToken), // Address of the variable debt token implementation
             underlyingAssetDecimals: tokenMetadata.decimals(),
-            interestRateStrategyAddress: address(hypurrDeployRegistry.defaultInterestRateStrategy), // Address of the interest rate strategy
+            interestRateStrategyAddress: address(usdxlInterestRateStrategy), // Address of the interest rate strategy
             underlyingAsset: address(token), // Address of the underlying asset
             treasury: hypurrDeployRegistry.treasury, // Address of the treasury
             incentivesController: hypurrDeployRegistry.incentives, // Address of the incentives controller
