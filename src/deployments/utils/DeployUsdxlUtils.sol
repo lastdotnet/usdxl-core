@@ -291,7 +291,7 @@ abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes {
 
     function _updateUsdxlInterestRateStrategy() internal {
         UsdxlInterestRateStrategy interestRateStrategy =
-            new UsdxlInterestRateStrategy(address(hypurrDeployRegistry.poolAddressesProvider), 0.02e27);
+            new UsdxlInterestRateStrategy(address(hypurrDeployRegistry.poolAddressesProvider), usdxlConfig.readUint(".usdxlBorrowRate"));
 
         _getPoolConfigurator().setReserveInterestRateStrategyAddress(
             address(_getUsdxlToken()), address(interestRateStrategy)
