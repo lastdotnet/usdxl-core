@@ -28,8 +28,9 @@ import {IPool} from "@aave/core-v3/contracts/interfaces/IPool.sol";
 import {IPoolConfigurator} from "@aave/core-v3/contracts/interfaces/IPoolConfigurator.sol";
 import {HyFiOracle} from "@hypurrfi/core/contracts/misc/HyFiOracle.sol";
 import {ConfiguratorInputTypes} from "@aave/core-v3/contracts/protocol/libraries/types/ConfiguratorInputTypes.sol";
-import {ERC20} from 'lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol';
-import {ZeroDiscountRateStrategy} from 'src/contracts/facilitators/hyfi/interestStrategy/ZeroDiscountRateStrategy.sol';
+import {ERC20} from "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
+import {ZeroDiscountRateStrategy} from "src/contracts/facilitators/hyfi/interestStrategy/ZeroDiscountRateStrategy.sol";
+import {console2} from "forge-std/console2.sol";
 
 abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes {
     using DeployUsdxlFileUtils for string;
@@ -51,14 +52,18 @@ abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes {
     function _deployUsdxl() internal {
         address[] memory tokens = new address[](1);
         address[] memory oracles = new address[](1);
-        
+
         // 1. Deploy USDXL token implementation and proxy
         usdxlTokenImpl = new UpgradeableUsdxlToken();
 
         {
             bytes memory initParams = abi.encodeWithSignature("initialize(address)", deployer);
 
-            usdxlTokenProxy = address(new TransparentUpgradeableProxy(address(usdxlTokenImpl), usdxlConfig.readAddress('.usdxlAdmin'), initParams));
+            usdxlTokenProxy = address(
+                new TransparentUpgradeableProxy(
+                    address(usdxlTokenImpl), usdxlConfig.readAddress(".usdxlAdmin"), initParams
+                )
+            );
         }
 
         usdxlToken = IUsdxlToken(usdxlTokenProxy);
@@ -73,20 +78,22 @@ abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes {
         // 3. Deploy USDXL Interest Rate Strategy
         usdxlInterestRateStrategy = new UsdxlInterestRateStrategy(
             hypurrDeployRegistry.poolAddressesProvider,
-            0.02e27 // 2% base rate
+            usdxlConfig.readUint(".usdxlBorrowRate") // 0.02e27 is 2%
         );
 
         // 4. Deploy USDXL AToken and Variable Debt Token
-        usdxlAToken = new UsdxlAToken(IPool(IPoolAddressesProvider(hypurrDeployRegistry.poolAddressesProvider).getPool()));
+        usdxlAToken =
+            new UsdxlAToken(IPool(IPoolAddressesProvider(hypurrDeployRegistry.poolAddressesProvider).getPool()));
 
-        usdxlVariableDebtToken =
-            new UsdxlVariableDebtToken(IPool(IPoolAddressesProvider(hypurrDeployRegistry.poolAddressesProvider).getPool()));
+        usdxlVariableDebtToken = new UsdxlVariableDebtToken(
+            IPool(IPoolAddressesProvider(hypurrDeployRegistry.poolAddressesProvider).getPool())
+        );
 
         // 5. Deploy Flash Minter
         flashMinter = new UsdxlFlashMinter(
             address(usdxlToken),
             hypurrDeployRegistry.treasury,
-            0, // no fee
+            usdxlConfig.readUint(".usdxlFlashMinterFee"), // 100 is 1%
             hypurrDeployRegistry.poolAddressesProvider
         );
 
@@ -101,9 +108,6 @@ abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes {
 
         // 9. Disable stable debt
         _disableStableDebt(tokens);
-
-        // 10. Update interest rate strategy
-        _updateUsdxlInterestRateStrategy();
 
         // 11. Enable USDXL borrowing
         _enableUsdxlBorrowing();
@@ -122,7 +126,7 @@ abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes {
 
         ERC20 nonMintableErc20;
 
-        nonMintableErc20 = new ERC20('Discount Token', 'DSCNT');
+        nonMintableErc20 = new ERC20("Discount Token", "DSCNT");
 
         ZeroDiscountRateStrategy discountRateStrategy;
 
@@ -131,15 +135,23 @@ abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes {
         _setDiscountTokenAndStrategy(address(discountRateStrategy), address(nonMintableErc20));
 
         // transfer ownership of usdxlToken to deployer
-        UpgradeableUsdxlToken(usdxlTokenProxy).grantRole(UpgradeableUsdxlToken(usdxlTokenProxy).DEFAULT_ADMIN_ROLE(), usdxlConfig.readAddress('.usdxlAdmin'));
-        if (usdxlConfig.readAddress('.usdxlAdmin') != deployer) {
-            UpgradeableUsdxlToken(usdxlTokenProxy).revokeRole(UpgradeableUsdxlToken(usdxlTokenProxy).DEFAULT_ADMIN_ROLE(), deployer);
+        UpgradeableUsdxlToken(usdxlTokenProxy).grantRole(
+            UpgradeableUsdxlToken(usdxlTokenProxy).DEFAULT_ADMIN_ROLE(), usdxlConfig.readAddress(".usdxlAdmin")
+        );
+        if (usdxlConfig.readAddress(".usdxlAdmin") != deployer) {
+            UpgradeableUsdxlToken(usdxlTokenProxy).revokeRole(
+                UpgradeableUsdxlToken(usdxlTokenProxy).DEFAULT_ADMIN_ROLE(), deployer
+            );
         }
 
         // Export contract addresses
         _exportContracts();
 
         _borrowUsdxl(0.0001e18, deployer);
+
+        console2.log("usdxlToken balance: ", usdxlToken.balanceOf(deployer));
+
+        _repayUsdxl(0.0001e18, deployer);
     }
 
     function _exportContracts() internal {
@@ -179,12 +191,8 @@ abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes {
             wrappedHypeGateway: deployedContracts.readAddress(".wrappedHypeGateway")
         });
     }
-    
-    function _deployGsm(
-        address token,
-        address gsmOwner,
-        uint256 maxCapacity
-    ) internal returns (address gsmProxy) {
+
+    function _deployGsm(address token, address gsmOwner, uint256 maxCapacity) internal returns (address gsmProxy) {
         // Deploy price and fee strategies
         FixedPriceStrategy fixedPriceStrategy = new FixedPriceStrategy(
             1e8, // Default price of $1.00
@@ -226,27 +234,17 @@ abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes {
 
     function _revokeFacilitatorManagerRole(address deployer) internal {
         UpgradeableUsdxlToken(address(usdxlTokenProxy)).revokeRole(
-            UpgradeableUsdxlToken(address(usdxlTokenProxy)).FACILITATOR_MANAGER_ROLE(),
-            deployer
+            UpgradeableUsdxlToken(address(usdxlTokenProxy)).FACILITATOR_MANAGER_ROLE(), deployer
         );
     }
 
-    function _setUsdxlOracle(
-        address[] memory tokens,
-        address[] memory oracles
-    )
-        internal
-    {
+    function _setUsdxlOracle(address[] memory tokens, address[] memory oracles) internal {
         // set oracles
         _getHyFiOracle().setAssetSources(tokens, oracles);
     }
 
-      function _initializeUsdxlReserve(
-        address token
-      )
-        internal
-      {
-        ConfiguratorInputTypes.InitReserveInput[] memory inputs = new ConfiguratorInputTypes.InitReserveInput[](1); 
+    function _initializeUsdxlReserve(address token) internal {
+        ConfiguratorInputTypes.InitReserveInput[] memory inputs = new ConfiguratorInputTypes.InitReserveInput[](1);
 
         DeployUsdxlFileUtils.exportContract(instanceId, "usdxlATokenImpl", address(usdxlAToken));
         DeployUsdxlFileUtils.exportContract(instanceId, "usdxlVariableDebtTokenImpl", address(usdxlVariableDebtToken));
@@ -254,21 +252,21 @@ abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes {
         IERC20Metadata tokenMetadata = IERC20Metadata(token);
 
         inputs[0] = ConfiguratorInputTypes.InitReserveInput({
-          aTokenImpl: address(usdxlAToken), // Address of the aToken implementation
-          stableDebtTokenImpl: address(hypurrDeployRegistry.disabledStableDebtTokenImpl), // Disabled - not using stable debt in this implementation
-          variableDebtTokenImpl: address(usdxlVariableDebtToken), // Address of the variable debt token implementation
-          underlyingAssetDecimals: tokenMetadata.decimals(),
-          interestRateStrategyAddress: hypurrDeployRegistry.defaultInterestRateStrategy, // Address of the interest rate strategy
-          underlyingAsset: address(token), // Address of the underlying asset
-          treasury: hypurrDeployRegistry.treasury, // Address of the treasury
-          incentivesController: hypurrDeployRegistry.incentives, // Address of the incentives controller
-          aTokenName: string(abi.encodePacked(tokenMetadata.symbol(), " Hypurr")),
-          aTokenSymbol: string(abi.encodePacked("hy", tokenMetadata.symbol())),
-          variableDebtTokenName: string(abi.encodePacked(tokenMetadata.symbol(), " Variable Debt Hypurr")),
-          variableDebtTokenSymbol: string(abi.encodePacked("variableDebt", tokenMetadata.symbol())),
-          stableDebtTokenName: "", // Empty as stable debt is disabled
-          stableDebtTokenSymbol: "", // Empty as stable debt is disabled
-          params: bytes("") // Additional parameters for initialization
+            aTokenImpl: address(usdxlAToken), // Address of the aToken implementation
+            stableDebtTokenImpl: address(hypurrDeployRegistry.disabledStableDebtTokenImpl), // Disabled - not using stable debt in this implementation
+            variableDebtTokenImpl: address(usdxlVariableDebtToken), // Address of the variable debt token implementation
+            underlyingAssetDecimals: tokenMetadata.decimals(),
+            interestRateStrategyAddress: address(hypurrDeployRegistry.defaultInterestRateStrategy), // Address of the interest rate strategy
+            underlyingAsset: address(token), // Address of the underlying asset
+            treasury: hypurrDeployRegistry.treasury, // Address of the treasury
+            incentivesController: hypurrDeployRegistry.incentives, // Address of the incentives controller
+            aTokenName: string(abi.encodePacked(tokenMetadata.symbol(), " Hypurr")),
+            aTokenSymbol: string(abi.encodePacked("hy", tokenMetadata.symbol())),
+            variableDebtTokenName: string(abi.encodePacked(tokenMetadata.symbol(), " Variable Debt Hypurr")),
+            variableDebtTokenSymbol: string(abi.encodePacked("variableDebt", tokenMetadata.symbol())),
+            stableDebtTokenName: "", // Empty as stable debt is disabled
+            stableDebtTokenSymbol: "", // Empty as stable debt is disabled
+            params: bytes("") // Additional parameters for initialization
         });
 
         // set reserves configs
@@ -276,7 +274,9 @@ abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes {
 
         // export contract addresses
         DeployUsdxlFileUtils.exportContract(instanceId, "usdxlATokenProxy", _getUsdxlATokenProxy());
-        DeployUsdxlFileUtils.exportContract(instanceId, "usdxlVariableDebtTokenProxy", _getUsdxlVariableDebtTokenProxy());
+        DeployUsdxlFileUtils.exportContract(
+            instanceId, "usdxlVariableDebtTokenProxy", _getUsdxlVariableDebtTokenProxy()
+        );
     }
 
     function _disableStableDebt(address[] memory tokens) internal {
@@ -289,47 +289,37 @@ abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes {
         }
     }
 
-    function _updateUsdxlInterestRateStrategy()
-        internal
-    {
-        UsdxlInterestRateStrategy interestRateStrategy = new UsdxlInterestRateStrategy(
-          address(hypurrDeployRegistry.poolAddressesProvider),
-          0.02e27
-        );
+    function _updateUsdxlInterestRateStrategy() internal {
+        UsdxlInterestRateStrategy interestRateStrategy =
+            new UsdxlInterestRateStrategy(address(hypurrDeployRegistry.poolAddressesProvider), 0.02e27);
 
-        _getPoolConfigurator().setReserveInterestRateStrategyAddress(address(_getUsdxlToken()), address(interestRateStrategy));
+        _getPoolConfigurator().setReserveInterestRateStrategyAddress(
+            address(_getUsdxlToken()), address(interestRateStrategy)
+        );
     }
 
-    function _enableUsdxlBorrowing()
-        internal
-    {
+    function _enableUsdxlBorrowing() internal {
         _getPoolConfigurator().setReserveBorrowing(address(usdxlTokenProxy), true);
     }
 
-    function _addUsdxlATokenAsEntity()
-        internal
-    {
+    function _addUsdxlATokenAsEntity() internal {
         // pull aToken proxy from reserves config
         _getUsdxlToken().addFacilitator(
-          address(_getUsdxlATokenProxy()),
-          'HypurrFi Market Loans', // entity label
-          1e24 // entity mint limit (1mil)
+            address(_getUsdxlATokenProxy()),
+            "HypurrFi Market Loans", // entity label
+            1e24 // entity mint limit (1mil)
         );
     }
 
-    function _addUsdxlFlashMinterAsEntity()
-        internal
-    {
-      _getUsdxlToken().addFacilitator(
-        address(flashMinter),
-        'HypurrFi Market Flash Loans', // entity label
-        1e27 // entity mint limit (1bil)
-      );
+    function _addUsdxlFlashMinterAsEntity() internal {
+        _getUsdxlToken().addFacilitator(
+            address(flashMinter),
+            "HypurrFi Market Flash Loans", // entity label
+            1e27 // entity mint limit (1bil)
+        );
     }
 
-    function _setUsdxlAddresses()
-        internal
-    {
+    function _setUsdxlAddresses() internal {
         UsdxlAToken usdxlATokenProxy = UsdxlAToken(_getUsdxlATokenProxy());
         usdxlATokenProxy.updateUsdxlTreasury(hypurrDeployRegistry.treasury);
 
@@ -339,25 +329,17 @@ abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes {
         UsdxlVariableDebtToken(_getUsdxlVariableDebtTokenProxy()).setAToken(_getUsdxlATokenProxy());
     }
 
-    function _setDiscountTokenAndStrategy(
-      address discountRateStrategy,
-      address discountToken
-    )
-      internal
-    {
-      usdxlVariableDebtToken = UsdxlVariableDebtToken(_getUsdxlVariableDebtTokenProxy());
-      if (discountRateStrategy != address(0))
-        usdxlVariableDebtToken.updateDiscountRateStrategy(discountRateStrategy);
-      if (discountToken != address(0))
-        usdxlVariableDebtToken.updateDiscountToken(discountToken);
+    function _setDiscountTokenAndStrategy(address discountRateStrategy, address discountToken) internal {
+        usdxlVariableDebtToken = UsdxlVariableDebtToken(_getUsdxlVariableDebtTokenProxy());
+        if (discountRateStrategy != address(0)) {
+            usdxlVariableDebtToken.updateDiscountRateStrategy(discountRateStrategy);
+        }
+        if (discountToken != address(0)) {
+            usdxlVariableDebtToken.updateDiscountToken(discountToken);
+        }
     }
 
-    function _borrowUsdxl(
-        uint256 amount,
-        address onBehalfOf
-    )
-        internal
-    {
+    function _borrowUsdxl(uint256 amount, address onBehalfOf) internal {
         _getPoolInstance().borrow(
             address(_getUsdxlToken()),
             amount,
@@ -367,21 +349,20 @@ abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes {
         );
     }
 
-    function _supplyCollateral(
-        address token,
-        address user,
-        uint256 amount
-    )
-        internal
-    {
+    function _repayUsdxl(uint256 amount, address onBehalfOf) internal {
+        usdxlToken.approve(address(_getPoolInstance()), amount);
+        _getPoolInstance().repay(
+            address(_getUsdxlToken()),
+            amount,
+            2, // interest rate mode
+            onBehalfOf
+        );
+    }
+
+    function _supplyCollateral(address token, address user, uint256 amount) internal {
         ERC20(token).approve(address(_getPoolInstance()), amount);
 
-        _getPoolInstance().supply(
-            token,
-            amount,
-            user,
-            0
-        );
+        _getPoolInstance().supply(token, amount, user, 0);
     }
 
     function _getUsdxlToken() internal view returns (IUsdxlToken) {
