@@ -109,6 +109,9 @@ abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes {
         // 9. Disable stable debt
         _disableStableDebt(tokens);
 
+        // 10. Update interest rate strategy
+        _updateUsdxlInterestRateStrategy();
+
         // 11. Enable USDXL borrowing
         _enableUsdxlBorrowing();
 
