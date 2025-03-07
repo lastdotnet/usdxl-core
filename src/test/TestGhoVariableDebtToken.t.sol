@@ -23,7 +23,7 @@ contract TestGhoVariableDebtToken is TestGhoBase {
     debtToken.initialize(
       IPool(address(POOL)),
       address(GHO_TOKEN),
-      IAaveIncentivesController(address(0)),
+      IHyFiIncentivesController(address(0)),
       18,
       tokenName,
       tokenSymbol,
@@ -45,7 +45,7 @@ contract TestGhoVariableDebtToken is TestGhoBase {
     debtToken.initialize(
       IPool(address(0)),
       address(GHO_TOKEN),
-      IAaveIncentivesController(address(0)),
+      IHyFiIncentivesController(address(0)),
       18,
       tokenName,
       tokenSymbol,
@@ -62,7 +62,7 @@ contract TestGhoVariableDebtToken is TestGhoBase {
     GHO_DEBT_TOKEN.initialize(
       IPool(address(POOL)),
       address(GHO_TOKEN),
-      IAaveIncentivesController(address(0)),
+      IHyFiIncentivesController(address(0)),
       18,
       tokenName,
       tokenSymbol,

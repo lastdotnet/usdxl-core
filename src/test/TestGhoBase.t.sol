@@ -40,7 +40,7 @@ import {MockBUIDLSubscriptionFailedInvalidUSDCAccepted} from './mocks/MockBUIDLS
 import {MockPoolDataProvider} from './mocks/MockPoolDataProvider.sol';
 
 // interfaces
-import {IAaveIncentivesController} from '@aave/core-v3/contracts/interfaces/IAaveIncentivesController.sol';
+import {IHyFiIncentivesController} from '@hypurrfi/core/contracts/interfaces/IHyFiIncentivesController.sol';
 import {IAToken} from '@aave/core-v3/contracts/interfaces/IAToken.sol';
 import {IERC20} from '@aave/core-v3/contracts/dependencies/openzeppelin/contracts/IERC20.sol';
 import {IERC3156FlashBorrower} from '@openzeppelin/contracts/interfaces/IERC3156FlashBorrower.sol';
@@ -225,7 +225,7 @@ contract TestGhoBase is Test, Constants, Events {
     GHO_DEBT_TOKEN.initialize(
       iPool,
       address(GHO_TOKEN),
-      IAaveIncentivesController(address(0)),
+      IHyFiIncentivesController(address(0)),
       18,
       'Aave Variable Debt GHO',
       'variableDebtGHO',
@@ -235,7 +235,7 @@ contract TestGhoBase is Test, Constants, Events {
       iPool,
       TREASURY,
       address(GHO_TOKEN),
-      IAaveIncentivesController(address(0)),
+      IHyFiIncentivesController(address(0)),
       18,
       'Aave GHO',
       'aGHO',
@@ -244,7 +244,7 @@ contract TestGhoBase is Test, Constants, Events {
     DISABLED_STABLE_DEBT_TOKEN.initialize(
       iPool,
       address(0),
-      IAaveIncentivesController(address(0)),
+      IHyFiIncentivesController(address(0)),
       0,
       'STABLE_DEBT_TOKEN_IMPL',
       'STABLE_DEBT_TOKEN_IMPL',

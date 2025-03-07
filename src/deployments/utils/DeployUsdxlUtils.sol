@@ -16,7 +16,7 @@ import {Gsm} from "src/contracts/facilitators/gsm/Gsm.sol";
 import {FixedFeeStrategy} from "src/contracts/facilitators/gsm/feeStrategy/FixedFeeStrategy.sol";
 import {FixedPriceStrategy} from "src/contracts/facilitators/gsm/priceStrategy/FixedPriceStrategy.sol";
 import {IUsdxlConfigsTypes} from "src/deployments/interfaces/IUsdxlConfigsTypes.sol";
-
+import {IHyFiIncentivesController} from "@hypurrfi/core/contracts/interfaces/IHyFiIncentivesController.sol";
 import {TransparentUpgradeableProxy} from "solidity-utils/contracts/transparent-proxy/TransparentUpgradeableProxy.sol";
 import {AdminUpgradeabilityProxy} from
     "@aave/core-v3/contracts/dependencies/openzeppelin/upgradeability/AdminUpgradeabilityProxy.sol";
@@ -84,9 +84,28 @@ abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes {
         // 4. Deploy USDXL AToken and Variable Debt Token
         usdxlAToken =
             new UsdxlAToken(IPool(IPoolAddressesProvider(hypurrDeployRegistry.poolAddressesProvider).getPool()));
+        usdxlAToken.initialize(
+            IPool(IPoolAddressesProvider(hypurrDeployRegistry.poolAddressesProvider).getPool()),
+            address(0),
+            address(0),
+            IHyFiIncentivesController(address(0)),
+            0,
+            "USDXL_ATOKEN_IMPL",
+            "USDXL_ATOKEN_IMPL",
+            ""
+        );
 
         usdxlVariableDebtToken = new UsdxlVariableDebtToken(
             IPool(IPoolAddressesProvider(hypurrDeployRegistry.poolAddressesProvider).getPool())
+        );
+        usdxlVariableDebtToken.initialize(
+            IPool(IPoolAddressesProvider(hypurrDeployRegistry.poolAddressesProvider).getPool()),
+            address(0),
+            IHyFiIncentivesController(address(0)),
+            0,
+            "USDXL_VARIABLE_DEBT_TOKEN_IMPL",
+            "USDXL_VARIABLE_DEBT_TOKEN_IMPL",
+            ""
         );
 
         // 5. Deploy Flash Minter
@@ -290,8 +309,9 @@ abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes {
     }
 
     function _updateUsdxlInterestRateStrategy() internal {
-        UsdxlInterestRateStrategy interestRateStrategy =
-            new UsdxlInterestRateStrategy(address(hypurrDeployRegistry.poolAddressesProvider), usdxlConfig.readUint(".usdxlBorrowRate"));
+        UsdxlInterestRateStrategy interestRateStrategy = new UsdxlInterestRateStrategy(
+            address(hypurrDeployRegistry.poolAddressesProvider), usdxlConfig.readUint(".usdxlBorrowRate")
+        );
 
         _getPoolConfigurator().setReserveInterestRateStrategyAddress(
             address(_getUsdxlToken()), address(interestRateStrategy)
@@ -307,7 +327,7 @@ abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes {
         _getUsdxlToken().addFacilitator(
             address(_getUsdxlATokenProxy()),
             "HypurrFi Market Loans", // entity label
-            1e24 // entity mint limit (1mil)
+            uint128(usdxlConfig.readUint(".usdxlATokenMintLimit")) // entity mint limit (1mil)
         );
     }
 
@@ -315,7 +335,7 @@ abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes {
         _getUsdxlToken().addFacilitator(
             address(flashMinter),
             "HypurrFi Market Flash Loans", // entity label
-            1e27 // entity mint limit (1bil)
+            uint128(usdxlConfig.readUint(".usdxlFlashMinterMintLimit")) // entity mint limit (1mil)
         );
     }
 

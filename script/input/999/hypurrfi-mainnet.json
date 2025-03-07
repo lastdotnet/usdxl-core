@@ -1,3 +1,7 @@
 {
-    "usdxlAdmin": "0xC2b3075fB1AC9f5eCc1e2C07dA8bcCC43e7083fb"
+    "usdxlAdmin": "0xC2b3075fB1AC9f5eCc1e2C07dA8bcCC43e7083fb",
+    "usdxlBorrowRate": 0.02e27,
+    "usdxlFlashMinterFee": 0,
+    "usdxlFlashMinterMintLimit": 1e24,
+    "usdxlATokenMintLimit": 1e24
 }
