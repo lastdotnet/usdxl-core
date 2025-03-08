@@ -225,7 +225,7 @@ abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes {
         );
 
         // Deploy GSM implementation
-        Gsm gsmImpl = new Gsm(address(usdxlToken), address(token), address(fixedPriceStrategy));
+        Gsm gsmImpl = new Gsm(address(_getUsdxlToken()), address(token), address(fixedPriceStrategy));
 
         // Deploy and initialize GSM proxy
         AdminUpgradeabilityProxy proxy = new AdminUpgradeabilityProxy(
