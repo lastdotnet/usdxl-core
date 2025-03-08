@@ -230,7 +230,7 @@ abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes {
         // Deploy and initialize GSM proxy
         AdminUpgradeabilityProxy proxy = new AdminUpgradeabilityProxy(
             address(gsmImpl),
-            address(0), // TODO: set admin to timelock
+            usdxlConfig.readAddress(".usdxlAdmin"),
             ""
         );
 
