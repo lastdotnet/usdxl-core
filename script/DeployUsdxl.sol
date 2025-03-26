@@ -15,9 +15,7 @@ contract Default is DeployUsdxlUtils, Script {
   uint256 initialReserveCount;
 
   function run() external {
-    vm.startBroadcast(vm.envUint('PRIVATE_KEY'));
     _deploy();
-    vm.stopBroadcast();
   }
 
   function _deploy() internal {
@@ -43,6 +41,8 @@ contract Default is DeployUsdxlUtils, Script {
 
     _setDeployRegistry(deployedContracts);
 
+    vm.startBroadcast(vm.envUint('PRIVATE_KEY'));
     _deployUsdxl();
+    vm.stopBroadcast();
   }
 }

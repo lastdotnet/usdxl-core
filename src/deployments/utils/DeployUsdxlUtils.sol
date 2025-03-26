@@ -119,22 +119,22 @@ abstract contract DeployUsdxlUtils is DeployHyFiUtils, IUsdxlConfigsTypes {
         // 6. Grant facilitator manager role
         _grantFacilitatorManagerRole(deployer);
 
-        // 7. Set USDXL Oracle
+        // 7. Set USDXL Oracle; asset listing admin or pool admin
         _setUsdxlOracle(tokens, oracles);
 
-        // 8. Set reserve config
+        // 8. Set reserve config; asset listing admin or pool admin
         _initializeUsdxlReserve(tokens[0]);
 
-        // 9. Disable stable debt
+        // 9. Disable stable debt; risk admin or pool admin
         _disableStableDebt(tokens);
 
-        // 10. Enable USDXL borrowing
+        // 10. Enable USDXL borrowing; risk admin or pool admin
         _enableUsdxlBorrowing();
 
-        // 11. Add USDXL as entity
+        // 11. Add USDXL as entity; facilitator manager
         _addUsdxlATokenAsEntity();
 
-        // 12. Add USDXL flashminter as entity
+        // 12. Add USDXL flashminter as entity; facilitator manager
         _addUsdxlFlashMinterAsEntity();
 
         // 13. Revoke facilitator manager role
