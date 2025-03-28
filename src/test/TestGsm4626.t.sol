@@ -13,7 +13,7 @@ contract TestGsm4626 is TestGhoBase {
       address(USDC_4626_TOKEN),
       address(GHO_GSM_4626_FIXED_PRICE_STRATEGY)
     );
-    assertEq(gsm.GHO_TOKEN(), address(GHO_TOKEN), 'Unexpected GHO token address');
+    assertEq(gsm.USDXL_TOKEN(), address(GHO_TOKEN), 'Unexpected GHO token address');
     assertEq(
       gsm.UNDERLYING_ASSET(),
       address(USDC_4626_TOKEN),
@@ -698,21 +698,21 @@ contract TestGsm4626 is TestGhoBase {
 
   function testUpdateGhoTreasuryRevertIfZero() public {
     vm.expectRevert(bytes('ZERO_ADDRESS_NOT_VALID'));
-    GHO_GSM_4626.updateGhoTreasury(address(0));
+    GHO_GSM_4626.updateUsdxlTreasury(address(0));
   }
 
   function testUpdateGhoTreasury() public {
     vm.expectEmit(true, true, true, true, address(GHO_GSM_4626));
-    emit GhoTreasuryUpdated(TREASURY, ALICE);
-    GHO_GSM_4626.updateGhoTreasury(ALICE);
+    emit UsdxlTreasuryUpdated(TREASURY, ALICE);
+    GHO_GSM_4626.updateUsdxlTreasury(ALICE);
 
-    assertEq(GHO_GSM_4626.getGhoTreasury(), ALICE);
+    assertEq(GHO_GSM_4626.getUsdxlTreasury(), ALICE);
   }
 
   function testUnauthorizedUpdateGhoTreasuryRevert() public {
     vm.expectRevert(AccessControlErrorsLib.MISSING_ROLE(GSM_CONFIGURATOR_ROLE, ALICE));
     vm.prank(ALICE);
-    GHO_GSM_4626.updateGhoTreasury(ALICE);
+    GHO_GSM_4626.updateUsdxlTreasury(ALICE);
   }
 
   function testRescueTokens() public {
@@ -770,7 +770,7 @@ contract TestGsm4626 is TestGhoBase {
       'Unexpected GSM GHO balance before'
     );
 
-    vm.expectRevert('INSUFFICIENT_GHO_TO_RESCUE');
+    vm.expectRevert('INSUFFICIENT_USDXL_TO_RESCUE');
     GHO_GSM_4626.rescueTokens(address(GHO_TOKEN), BOB, fee);
 
     vm.expectEmit(true, true, true, true, address(GHO_GSM_4626));
@@ -784,7 +784,7 @@ contract TestGsm4626 is TestGhoBase {
   function testRevertRescueGhoTokens() public {
     GHO_GSM_4626.grantRole(GSM_TOKEN_RESCUER_ROLE, address(this));
 
-    vm.expectRevert('INSUFFICIENT_GHO_TO_RESCUE');
+    vm.expectRevert('INSUFFICIENT_USDXL_TO_RESCUE');
     GHO_GSM_4626.rescueTokens(address(GHO_TOKEN), ALICE, 1);
   }
 
@@ -1041,12 +1041,12 @@ contract TestGsm4626 is TestGhoBase {
     GHO_TOKEN.approve(address(GHO_GSM_4626), type(uint256).max);
 
     uint256 balanceBefore = GHO_TOKEN.balanceOf(address(this));
-    (, uint256 ghoLevelBefore) = IGhoToken(GHO_TOKEN).getFacilitatorBucket(address(GHO_GSM_4626));
+    (, uint256 ghoLevelBefore) = IUsdxlToken(GHO_TOKEN).getFacilitatorBucket(address(GHO_GSM_4626));
 
     uint256 ghoUsedForBacking = GHO_GSM_4626.backWithGho((DEFAULT_GSM_GHO_AMOUNT / 2) + 1);
 
     uint256 balanceAfter = GHO_TOKEN.balanceOf(address(this));
-    (, uint256 ghoLevelAfter) = IGhoToken(GHO_TOKEN).getFacilitatorBucket(address(GHO_GSM_4626));
+    (, uint256 ghoLevelAfter) = IUsdxlToken(GHO_TOKEN).getFacilitatorBucket(address(GHO_GSM_4626));
 
     assertEq(DEFAULT_GSM_GHO_AMOUNT / 2, ghoUsedForBacking);
     assertEq(balanceBefore - balanceAfter, ghoUsedForBacking);

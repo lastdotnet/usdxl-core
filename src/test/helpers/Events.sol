@@ -22,7 +22,7 @@ interface Events {
   // setter/updater methods
   event ATokenSet(address indexed);
   event VariableDebtTokenSet(address indexed variableDebtToken);
-  event GhoTreasuryUpdated(address indexed oldGhoTreasury, address indexed newGhoTreasury);
+  event UsdxlTreasuryUpdated(address indexed oldUsdxlTreasury, address indexed newUsdxlTreasury);
   event DiscountPercentUpdated(
     address indexed user,
     uint256 oldDiscountPercent,
@@ -104,11 +104,25 @@ interface Events {
     uint256 amountRescued
   );
 
-  // IGhoFacilitator events
+  // IUsdxlFacilitator events
   event FeesDistributedToTreasury(
     address indexed ghoTreasury,
     address indexed asset,
     uint256 amount
+  );
+
+  // GsmConverter events
+  event BuyAssetThroughRedemption(
+    address indexed originator,
+    address indexed receiver,
+    uint256 issuedAssetAmount,
+    uint256 ghoAmount
+  );
+  event SellAssetThroughSubscription(
+    address indexed originator,
+    address indexed receiver,
+    uint256 redeemedAssetAmount,
+    uint256 ghoAmount
   );
 
   // FixedRateStrategyFactory

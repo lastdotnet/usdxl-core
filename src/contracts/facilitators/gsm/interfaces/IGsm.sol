@@ -2,14 +2,14 @@
 pragma solidity ^0.8.0;
 
 import {IAccessControl} from '@openzeppelin/contracts/access/IAccessControl.sol';
-import {IGhoFacilitator} from '../../../gho/interfaces/IGhoFacilitator.sol';
+import {IUsdxlFacilitator} from '../../../usdxl/interfaces/IUsdxlFacilitator.sol';
 
 /**
  * @title IGsm
  * @author Aave
  * @notice Defines the behaviour of a GHO Stability Module
  */
-interface IGsm is IAccessControl, IGhoFacilitator {
+interface IGsm is IAccessControl, IUsdxlFacilitator {
   /**
    * @dev Emitted when a user buys an asset (selling GHO) in the GSM
    * @param originator The address of the buyer originating the request
@@ -313,7 +313,7 @@ interface IGsm is IAccessControl, IGhoFacilitator {
    * @notice Returns the address of the GHO token
    * @return The address of GHO token contract
    */
-  function GHO_TOKEN() external view returns (address);
+  function USDXL_TOKEN() external view returns (address);
 
   /**
    * @notice Returns the underlying asset of the GSM

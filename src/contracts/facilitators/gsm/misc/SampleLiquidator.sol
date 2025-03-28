@@ -3,7 +3,7 @@ pragma solidity ^0.8.10;
 
 import {Ownable} from '@openzeppelin/contracts/access/Ownable.sol';
 import {IERC20} from '@aave/core-v3/contracts/dependencies/openzeppelin/contracts/IERC20.sol';
-import {IGhoToken} from '../../../gho/interfaces/IGhoToken.sol';
+import {IUsdxlToken} from '../../../usdxl/interfaces/IUsdxlToken.sol';
 import {IGsm} from '../interfaces/IGsm.sol';
 
 /**
@@ -12,6 +12,8 @@ import {IGsm} from '../interfaces/IGsm.sol';
  * @notice Minimal Liquidator that can serve as sample contract
  */
 contract SampleLiquidator is Ownable {
+  constructor() Ownable() {}
+
   /**
    * @notice Triggers seizure of a GSM, sending seized funds to the Treasury
    * @param gsm Address of the GSM
@@ -28,8 +30,8 @@ contract SampleLiquidator is Ownable {
    * @return The amount of GHO burned
    */
   function triggerBurnAfterSeize(address gsm, uint256 amount) external onlyOwner returns (uint256) {
-    IERC20 ghoToken = IERC20(IGsm(gsm).GHO_TOKEN());
-    (, uint256 ghoMinted) = IGhoToken(address(ghoToken)).getFacilitatorBucket(gsm);
+    IERC20 ghoToken = IERC20(IGsm(gsm).USDXL_TOKEN());
+    (, uint256 ghoMinted) = IUsdxlToken(address(ghoToken)).getFacilitatorBucket(gsm);
     if (amount > ghoMinted) {
       amount = ghoMinted;
     }

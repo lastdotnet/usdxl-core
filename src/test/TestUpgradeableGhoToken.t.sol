@@ -6,10 +6,10 @@ import './TestGhoBase.t.sol';
 contract TestUpgradeableGhoTokenSetup is TestGhoBase {
   address internal PROXY_ADMIN = makeAddr('PROXY_ADMIN');
 
-  UpgradeableGhoToken internal ghoToken;
+  UpgradeableUsdxlToken internal ghoToken;
 
   function setUp() public virtual {
-    UpgradeableGhoToken ghoTokenImple = new UpgradeableGhoToken();
+    UpgradeableUsdxlToken ghoTokenImple = new UpgradeableUsdxlToken();
 
     // proxy deploy and init
     bytes memory ghoTokenImpleParams = abi.encodeWithSignature(
@@ -22,11 +22,11 @@ contract TestUpgradeableGhoTokenSetup is TestGhoBase {
       ghoTokenImpleParams
     );
 
-    ghoToken = UpgradeableGhoToken(address(ghoTokenProxy));
+    ghoToken = UpgradeableUsdxlToken(address(ghoTokenProxy));
   }
 }
 
-contract TestUpgradeableGhoToken is TestUpgradeableGhoTokenSetup {
+contract TestUpgradeableUsdxlToken is TestUpgradeableGhoTokenSetup {
   function setUp() public override {
     super.setUp();
 
@@ -41,7 +41,7 @@ contract TestUpgradeableGhoToken is TestUpgradeableGhoTokenSetup {
   }
 
   function testInit() public {
-    UpgradeableGhoToken ghoTokenImple = new UpgradeableGhoToken();
+    UpgradeableUsdxlToken ghoTokenImple = new UpgradeableUsdxlToken();
     // proxy deploy and init
     bytes memory ghoTokenImpleParams = abi.encodeWithSignature(
       'initialize(address)',
@@ -62,23 +62,23 @@ contract TestUpgradeableGhoToken is TestUpgradeableGhoTokenSetup {
     ghoTokenImple.initialize(address(this));
 
     // Proxy asserts
-    UpgradeableGhoToken token = UpgradeableGhoToken(address(ghoTokenProxy));
+    UpgradeableUsdxlToken token = UpgradeableUsdxlToken(address(ghoTokenProxy));
 
-    assertEq(token.name(), 'Gho Token', 'Wrong default ERC20 name');
-    assertEq(token.symbol(), 'GHO', 'Wrong default ERC20 symbol');
+    assertEq(token.name(), 'Last USD', 'Wrong default ERC20 name');
+    assertEq(token.symbol(), 'USDXL', 'Wrong default ERC20 symbol');
     assertEq(token.decimals(), 18, 'Wrong default ERC20 decimals');
     assertEq(token.getFacilitatorsList().length, 0, 'Facilitator list not empty');
   }
 
   function testGetFacilitatorData() public {
-    IGhoToken.Facilitator memory data = ghoToken.getFacilitator(address(GHO_ATOKEN));
+    IUsdxlToken.Facilitator memory data = ghoToken.getFacilitator(address(GHO_ATOKEN));
     assertEq(data.label, 'Aave V3 Pool', 'Unexpected facilitator label');
     assertEq(data.bucketCapacity, DEFAULT_CAPACITY, 'Unexpected bucket capacity');
     assertEq(data.bucketLevel, 0, 'Unexpected bucket level');
   }
 
   function testGetNonFacilitatorData() public {
-    IGhoToken.Facilitator memory data = ghoToken.getFacilitator(ALICE);
+    IUsdxlToken.Facilitator memory data = ghoToken.getFacilitator(ALICE);
     assertEq(data.label, '', 'Unexpected facilitator label');
     assertEq(data.bucketCapacity, 0, 'Unexpected bucket capacity');
     assertEq(data.bucketLevel, 0, 'Unexpected bucket level');
@@ -411,13 +411,13 @@ contract TestUpgradeableGhoTokenUpgrade is TestUpgradeableGhoTokenSetup {
       'proxy implementation is wrong'
     );
 
-    assertEq(UpgradeableGhoToken(decodedImple).decimals(), 18, 'Wrong default ERC20 decimals');
+    assertEq(UpgradeableUsdxlToken(decodedImple).decimals(), 18, 'Wrong default ERC20 decimals');
     vm.expectRevert('Initializable: contract is already initialized');
-    UpgradeableGhoToken(decodedImple).initialize(address(this));
+    UpgradeableUsdxlToken(decodedImple).initialize(address(this));
 
     // Proxy
-    assertEq(ghoToken.name(), 'Gho Token', 'Wrong default ERC20 name');
-    assertEq(ghoToken.symbol(), 'GHO', 'Wrong default ERC20 symbol');
+    assertEq(ghoToken.name(), 'Last USD', 'Wrong default ERC20 name');
+    assertEq(ghoToken.symbol(), 'USDXL', 'Wrong default ERC20 symbol');
     assertEq(ghoToken.decimals(), 18, 'Wrong default ERC20 decimals');
     assertEq(ghoToken.totalSupply(), 0, 'Wrong total supply');
     assertEq(ghoToken.getFacilitatorsList().length, 0, 'Facilitator list not empty');

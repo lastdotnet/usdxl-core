@@ -23,6 +23,7 @@ const hardhatConfig: HardhatUserConfig = {
     hardhat: hardhatNetworkSettings,
     goerli: getCommonNetworkConfig(eEthereumNetwork.goerli, 5),
     sepolia: getCommonNetworkConfig('sepolia', 11155111),
+    lastSepolia: getCommonNetworkConfig(eEthereumNetwork.lastSepolia, 11457),
     localhost: {
       url: 'http://127.0.0.1:8545',
       ...hardhatNetworkSettings,
@@ -35,7 +36,7 @@ const hardhatConfig: HardhatUserConfig = {
         settings: {
           optimizer: {
             enabled: true,
-            runs: 100000,
+            runs: 200,
           },
           evmVersion: 'london',
         },

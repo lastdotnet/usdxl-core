@@ -291,11 +291,11 @@ interface IReserveInterestRateStrategy {
 }
 
 /**
- * @title IDefaultInterestRateStrategyV2
+ * @title IDefaultInterestRateStrategy
  * @author BGD Labs
  * @notice Interface of the default interest rate strategy used by the Aave protocol
  */
-interface IDefaultInterestRateStrategyV2 is IReserveInterestRateStrategy {
+interface IDefaultInterestRateStrategy is IReserveInterestRateStrategy {
   struct CalcInterestRatesLocalVars {
     uint256 availableLiquidity;
     uint256 totalDebt;
@@ -455,20 +455,20 @@ interface IDefaultInterestRateStrategyV2 is IReserveInterestRateStrategy {
  *   due to the caching of the PoolAddressesProvider and the usage of underlying addresses as
  *   index of the _interestRateData
  */
-contract DefaultReserveInterestRateStrategyV2 is IDefaultInterestRateStrategyV2 {
+contract DefaultReserveInterestRateStrategyV2 is IDefaultInterestRateStrategy {
   using WadRayMath for uint256;
   using PercentageMath for uint256;
 
-  /// @inheritdoc IDefaultInterestRateStrategyV2
+  /// @inheritdoc IDefaultInterestRateStrategy
   IPoolAddressesProvider public immutable ADDRESSES_PROVIDER;
 
-  /// @inheritdoc IDefaultInterestRateStrategyV2
+  /// @inheritdoc IDefaultInterestRateStrategy
   uint256 public constant MAX_BORROW_RATE = 1000_00;
 
-  /// @inheritdoc IDefaultInterestRateStrategyV2
+  /// @inheritdoc IDefaultInterestRateStrategy
   uint256 public constant MIN_OPTIMAL_POINT = 1_00;
 
-  /// @inheritdoc IDefaultInterestRateStrategyV2
+  /// @inheritdoc IDefaultInterestRateStrategy
   uint256 public constant MAX_OPTIMAL_POINT = 99_00;
 
   /// @dev Map of reserves address and their interest rate data (reserveAddress => interestRateData)
@@ -499,7 +499,7 @@ contract DefaultReserveInterestRateStrategyV2 is IDefaultInterestRateStrategyV2 
     _setInterestRateParams(reserve, abi.decode(rateData, (InterestRateData)));
   }
 
-  /// @inheritdoc IDefaultInterestRateStrategyV2
+  /// @inheritdoc IDefaultInterestRateStrategy
   function setInterestRateParams(
     address reserve,
     InterestRateData calldata rateData
@@ -507,32 +507,32 @@ contract DefaultReserveInterestRateStrategyV2 is IDefaultInterestRateStrategyV2 
     _setInterestRateParams(reserve, rateData);
   }
 
-  /// @inheritdoc IDefaultInterestRateStrategyV2
+  /// @inheritdoc IDefaultInterestRateStrategy
   function getInterestRateDataBps(address reserve) external view returns (InterestRateData memory) {
     return _interestRateData[reserve];
   }
 
-  /// @inheritdoc IDefaultInterestRateStrategyV2
+  /// @inheritdoc IDefaultInterestRateStrategy
   function getOptimalUsageRatio(address reserve) external view returns (uint256) {
     return _bpsToRay(uint256(_interestRateData[reserve].optimalUsageRatio));
   }
 
-  /// @inheritdoc IDefaultInterestRateStrategyV2
+  /// @inheritdoc IDefaultInterestRateStrategy
   function getVariableRateSlope1(address reserve) external view returns (uint256) {
     return _bpsToRay(uint256(_interestRateData[reserve].variableRateSlope1));
   }
 
-  /// @inheritdoc IDefaultInterestRateStrategyV2
+  /// @inheritdoc IDefaultInterestRateStrategy
   function getVariableRateSlope2(address reserve) external view returns (uint256) {
     return _bpsToRay(uint256(_interestRateData[reserve].variableRateSlope2));
   }
 
-  /// @inheritdoc IDefaultInterestRateStrategyV2
+  /// @inheritdoc IDefaultInterestRateStrategy
   function getBaseVariableBorrowRate(address reserve) external view override returns (uint256) {
     return _bpsToRay(uint256(_interestRateData[reserve].baseVariableBorrowRate));
   }
 
-  /// @inheritdoc IDefaultInterestRateStrategyV2
+  /// @inheritdoc IDefaultInterestRateStrategy
   function getMaxVariableBorrowRate(address reserve) external view override returns (uint256) {
     return
       _bpsToRay(

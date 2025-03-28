@@ -11,7 +11,7 @@ contract TestGhoDiscountRateStrategy is TestGhoBase {
   function setUp() public {
     // Calculate actual maximum value for discountTokenBalance based on wadMul usage
     maxDiscountBalance =
-      (UINT256_MAX / GHO_DISCOUNT_STRATEGY.GHO_DISCOUNTED_PER_DISCOUNT_TOKEN()) -
+      (UINT256_MAX / GHO_DISCOUNT_STRATEGY.USDXL_DISCOUNTED_PER_DISCOUNT_TOKEN()) -
       WadRayMath.HALF_WAD;
   }
 
@@ -33,7 +33,7 @@ contract TestGhoDiscountRateStrategy is TestGhoBase {
 
   function testEqualDiscountedTokenThanDebtBalance() public {
     assertGe(
-      GHO_DISCOUNT_STRATEGY.GHO_DISCOUNTED_PER_DISCOUNT_TOKEN(),
+      GHO_DISCOUNT_STRATEGY.USDXL_DISCOUNTED_PER_DISCOUNT_TOKEN(),
       1e18,
       'Unexpected low value for discount token conversion'
     );
@@ -48,7 +48,7 @@ contract TestGhoDiscountRateStrategy is TestGhoBase {
       );
 
     uint256 minimumDiscountTokenBalance = (GHO_DISCOUNT_STRATEGY.MIN_DISCOUNT_TOKEN_BALANCE() *
-      ratio) / GHO_DISCOUNT_STRATEGY.GHO_DISCOUNTED_PER_DISCOUNT_TOKEN();
+      ratio) / GHO_DISCOUNT_STRATEGY.USDXL_DISCOUNTED_PER_DISCOUNT_TOKEN();
 
     uint256 result = GHO_DISCOUNT_STRATEGY.calculateDiscountRate(
       GHO_DISCOUNT_STRATEGY.MIN_DEBT_TOKEN_BALANCE(),
@@ -59,7 +59,7 @@ contract TestGhoDiscountRateStrategy is TestGhoBase {
 
   function testMoreDiscountedTokenThanDebtBalance() public {
     assertGe(
-      GHO_DISCOUNT_STRATEGY.GHO_DISCOUNTED_PER_DISCOUNT_TOKEN(),
+      GHO_DISCOUNT_STRATEGY.USDXL_DISCOUNTED_PER_DISCOUNT_TOKEN(),
       1e18,
       'Unexpected low value for discount token conversion'
     );
@@ -74,7 +74,7 @@ contract TestGhoDiscountRateStrategy is TestGhoBase {
       );
 
     uint256 minimumDiscountTokenBalance = (GHO_DISCOUNT_STRATEGY.MIN_DISCOUNT_TOKEN_BALANCE() *
-      ratio) / GHO_DISCOUNT_STRATEGY.GHO_DISCOUNTED_PER_DISCOUNT_TOKEN();
+      ratio) / GHO_DISCOUNT_STRATEGY.USDXL_DISCOUNTED_PER_DISCOUNT_TOKEN();
 
     uint256 result = GHO_DISCOUNT_STRATEGY.calculateDiscountRate(
       GHO_DISCOUNT_STRATEGY.MIN_DEBT_TOKEN_BALANCE(),

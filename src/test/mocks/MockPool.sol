@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {GhoVariableDebtToken} from '../../contracts/facilitators/aave/tokens/GhoVariableDebtToken.sol';
-import {GhoAToken} from '../../contracts/facilitators/aave/tokens/GhoAToken.sol';
-import {IGhoToken} from '../../contracts/gho/interfaces/IGhoToken.sol';
-import {GhoDiscountRateStrategy} from '../../contracts/facilitators/aave/interestStrategy/GhoDiscountRateStrategy.sol';
-import {GhoInterestRateStrategy} from '../../contracts/facilitators/aave/interestStrategy/GhoInterestRateStrategy.sol';
+import {UsdxlVariableDebtToken} from '../../contracts/facilitators/hyfi/tokens/UsdxlVariableDebtToken.sol';
+import {UsdxlAToken} from '../../contracts/facilitators/hyfi/tokens/UsdxlAToken.sol';
+import {IUsdxlToken} from 'src/contracts/usdxl/interfaces/IUsdxlToken.sol';
+import {UsdxlDiscountRateStrategy} from '../../contracts/facilitators/hyfi/interestStrategy/UsdxlDiscountRateStrategy.sol';
+import {UsdxlInterestRateStrategy} from '../../contracts/facilitators/hyfi/interestStrategy/UsdxlInterestRateStrategy.sol';
 import {IPool} from '@aave/core-v3/contracts/interfaces/IPool.sol';
 import {IPoolAddressesProvider} from '@aave/core-v3/contracts/interfaces/IPoolAddressesProvider.sol';
 import {IAaveIncentivesController} from '@aave/core-v3/contracts/interfaces/IAaveIncentivesController.sol';
@@ -13,11 +13,10 @@ import {Pool} from '@aave/core-v3/contracts/protocol/pool/Pool.sol';
 import {UserConfiguration} from '@aave/core-v3/contracts/protocol/libraries/configuration/UserConfiguration.sol';
 import {ReserveConfiguration} from '@aave/core-v3/contracts/protocol/libraries/configuration/ReserveConfiguration.sol';
 import {ReserveLogic} from '@aave/core-v3/contracts/protocol/libraries/logic/ReserveLogic.sol';
-import {Helpers} from '@aave/core-v3/contracts/protocol/libraries/helpers/Helpers.sol';
 import {DataTypes} from '@aave/core-v3/contracts/protocol/libraries/types/DataTypes.sol';
-import {StableDebtToken} from '@aave/core-v3/contracts/protocol/tokenization/StableDebtToken.sol';
 import {IERC20} from '@aave/core-v3/contracts/dependencies/openzeppelin/contracts/ERC20.sol';
 import {Errors} from '@aave/core-v3/contracts/protocol/libraries/helpers/Errors.sol';
+import {DisabledStableDebtToken} from '@hypurrfi/core/contracts/protocol/tokenization/DisabledStableDebtToken.sol';
 
 /**
  * @dev MockPool removes assets and users validations from Pool contract.
@@ -28,8 +27,9 @@ contract MockPool is Pool {
   using UserConfiguration for DataTypes.UserConfigurationMap;
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
 
-  GhoVariableDebtToken public DEBT_TOKEN;
-  GhoAToken public ATOKEN;
+  UsdxlVariableDebtToken public DEBT_TOKEN;
+  UsdxlAToken public ATOKEN;
+  DisabledStableDebtToken public DISABLED_STABLE_DEBT_TOKEN;
   address public GHO;
 
   constructor(IPoolAddressesProvider provider) Pool(provider) {}
@@ -39,15 +39,26 @@ contract MockPool is Pool {
     // Excludes contract from coverage.
   }
 
-  function setGhoTokens(GhoVariableDebtToken ghoDebtToken, GhoAToken ghoAToken) external {
-    DEBT_TOKEN = ghoDebtToken;
+  function initialize(IPoolAddressesProvider provider) external virtual override {}
+
+  function getRevision() internal pure virtual override returns (uint256) {
+    return 1;
+  }
+
+  function setGhoTokens(
+    UsdxlVariableDebtToken ghoDebtToken,
+    UsdxlAToken ghoAToken,
+    DisabledStableDebtToken disabledStableDebtToken
+  ) external {
     ATOKEN = ghoAToken;
+    DEBT_TOKEN = ghoDebtToken;
+    DISABLED_STABLE_DEBT_TOKEN = disabledStableDebtToken;
     GHO = ghoAToken.UNDERLYING_ASSET_ADDRESS();
     _reserves[GHO].init(
       address(ATOKEN),
-      address(new StableDebtToken(IPool(address(this)))),
+      address(DISABLED_STABLE_DEBT_TOKEN), // disabled
       address(DEBT_TOKEN),
-      address(new GhoInterestRateStrategy(address(0), 2e25))
+      address(new UsdxlInterestRateStrategy(address(0), 2e25))
     );
   }
 

@@ -2,5 +2,10 @@
   "solidity.formatter": "none",
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "prettier.configPath": ".prettierrc",
-  "editor.formatOnSave": true
+  "editor.formatOnSave": true,
+  "search.exclude": {
+    "**/node_modules": false,
+    "**/node_modules/**": true
+  },
+  "solidity.compileUsingRemoteVersion": "v0.8.20+commit.a1b79de6"
 }

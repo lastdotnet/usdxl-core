@@ -7,7 +7,7 @@ import {IPoolAddressesProvider} from '@aave/core-v3/contracts/interfaces/IPoolAd
 import {IPool} from '@aave/core-v3/contracts/interfaces/IPool.sol';
 import {DataTypes} from '@aave/core-v3/contracts/protocol/libraries/types/DataTypes.sol';
 import {ReserveConfiguration} from '@aave/core-v3/contracts/protocol/libraries/configuration/ReserveConfiguration.sol';
-import {IPoolConfigurator, IDefaultInterestRateStrategyV2} from './dependencies/AaveV3-1.sol';
+import {IPoolConfigurator, IDefaultInterestRateStrategy} from './dependencies/AaveV3-1.sol';
 import {IGhoAaveSteward} from './interfaces/IGhoAaveSteward.sol';
 import {RiskCouncilControlled} from './RiskCouncilControlled.sol';
 
@@ -66,7 +66,7 @@ contract GhoAaveSteward is Ownable, RiskCouncilControlled, IGhoAaveSteward {
     address ghoToken,
     address riskCouncil,
     BorrowRateConfig memory borrowRateConfig
-  ) RiskCouncilControlled(riskCouncil) {
+  ) RiskCouncilControlled(riskCouncil) Ownable() {
     require(owner != address(0), 'INVALID_OWNER');
     require(addressesProvider != address(0), 'INVALID_ADDRESSES_PROVIDER');
     require(poolDataProvider != address(0), 'INVALID_DATA_PROVIDER');
@@ -77,7 +77,7 @@ contract GhoAaveSteward is Ownable, RiskCouncilControlled, IGhoAaveSteward {
     GHO_TOKEN = ghoToken;
     _borrowRateConfig = borrowRateConfig;
 
-    _transferOwnership(owner);
+    transferOwnership(owner);
   }
 
   /// @inheritdoc IGhoAaveSteward
@@ -87,8 +87,8 @@ contract GhoAaveSteward is Ownable, RiskCouncilControlled, IGhoAaveSteward {
     uint32 variableRateSlope1,
     uint32 variableRateSlope2
   ) external onlyRiskCouncil notTimelocked(_ghoTimelocks.ghoBorrowRateLastUpdate) {
-    IDefaultInterestRateStrategyV2.InterestRateData
-      memory rateParams = IDefaultInterestRateStrategyV2.InterestRateData({
+    IDefaultInterestRateStrategy.InterestRateData memory rateParams = IDefaultInterestRateStrategy
+      .InterestRateData({
         optimalUsageRatio: optimalUsageRatio,
         baseVariableBorrowRate: baseVariableBorrowRate,
         variableRateSlope1: variableRateSlope1,
@@ -175,12 +175,12 @@ contract GhoAaveSteward is Ownable, RiskCouncilControlled, IGhoAaveSteward {
    * @param newRates The new interest rate data
    */
   function _validateRatesUpdate(
-    IDefaultInterestRateStrategyV2.InterestRateData memory newRates
+    IDefaultInterestRateStrategy.InterestRateData memory newRates
   ) internal view {
     address rateStrategyAddress = IPoolDataProvider(POOL_DATA_PROVIDER)
       .getInterestRateStrategyAddress(GHO_TOKEN);
-    IDefaultInterestRateStrategyV2.InterestRateData
-      memory currentRates = IDefaultInterestRateStrategyV2(rateStrategyAddress)
+    IDefaultInterestRateStrategy.InterestRateData
+      memory currentRates = IDefaultInterestRateStrategy(rateStrategyAddress)
         .getInterestRateDataBps(GHO_TOKEN);
 
     require(

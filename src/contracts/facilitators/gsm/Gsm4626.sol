@@ -4,8 +4,8 @@ pragma solidity ^0.8.10;
 import {IERC20} from '@aave/core-v3/contracts/dependencies/openzeppelin/contracts/IERC20.sol';
 import {GPv2SafeERC20} from '@aave/core-v3/contracts/dependencies/gnosis/contracts/GPv2SafeERC20.sol';
 import {SafeCast} from '@openzeppelin/contracts/utils/math/SafeCast.sol';
-import {IGhoFacilitator} from '../../gho/interfaces/IGhoFacilitator.sol';
-import {IGhoToken} from '../../gho/interfaces/IGhoToken.sol';
+import {IUsdxlFacilitator} from '../../usdxl/interfaces/IUsdxlFacilitator.sol';
+import {IUsdxlToken} from '../../usdxl/interfaces/IUsdxlToken.sol';
 import {IGsmPriceStrategy} from './priceStrategy/interfaces/IGsmPriceStrategy.sol';
 import {IGsm4626} from './interfaces/IGsm4626.sol';
 import {Gsm} from './Gsm.sol';
@@ -43,16 +43,16 @@ contract Gsm4626 is Gsm, IGsm4626 {
   ) external notSeized onlyRole(CONFIGURATOR_ROLE) returns (uint256) {
     require(amount > 0, 'INVALID_AMOUNT');
 
-    (, uint256 ghoMinted) = IGhoToken(GHO_TOKEN).getFacilitatorBucket(address(this));
+    (, uint256 ghoMinted) = IUsdxlToken(USDXL_TOKEN).getFacilitatorBucket(address(this));
     (, uint256 deficit) = _getCurrentBacking(ghoMinted);
     require(deficit > 0, 'NO_CURRENT_DEFICIT_BACKING');
 
     uint256 ghoToBack = amount > deficit ? deficit : amount;
 
-    IGhoToken(GHO_TOKEN).transferFrom(msg.sender, address(this), ghoToBack);
-    IGhoToken(GHO_TOKEN).burn(ghoToBack);
+    IUsdxlToken(USDXL_TOKEN).transferFrom(msg.sender, address(this), ghoToBack);
+    IUsdxlToken(USDXL_TOKEN).burn(ghoToBack);
 
-    emit BackingProvided(msg.sender, GHO_TOKEN, ghoToBack, ghoToBack, deficit - ghoToBack);
+    emit BackingProvided(msg.sender, USDXL_TOKEN, ghoToBack, ghoToBack, deficit - ghoToBack);
     return ghoToBack;
   }
 
@@ -62,7 +62,7 @@ contract Gsm4626 is Gsm, IGsm4626 {
   ) external notSeized onlyRole(CONFIGURATOR_ROLE) returns (uint256) {
     require(amount > 0, 'INVALID_AMOUNT');
 
-    (, uint256 ghoMinted) = IGhoToken(GHO_TOKEN).getFacilitatorBucket(address(this));
+    (, uint256 ghoMinted) = IUsdxlToken(USDXL_TOKEN).getFacilitatorBucket(address(this));
     (, uint256 deficit) = _getCurrentBacking(ghoMinted);
     require(deficit > 0, 'NO_CURRENT_DEFICIT_BACKING');
 
@@ -95,12 +95,12 @@ contract Gsm4626 is Gsm, IGsm4626 {
 
   /// @inheritdoc IGsm4626
   function getCurrentBacking() external view returns (uint256, uint256) {
-    (, uint256 ghoMinted) = IGhoToken(GHO_TOKEN).getFacilitatorBucket(address(this));
+    (, uint256 ghoMinted) = IUsdxlToken(USDXL_TOKEN).getFacilitatorBucket(address(this));
     return _getCurrentBacking(ghoMinted);
   }
 
-  /// @inheritdoc IGhoFacilitator
-  function distributeFeesToTreasury() public override(Gsm, IGhoFacilitator) {
+  /// @inheritdoc IUsdxlFacilitator
+  function distributeFeesToTreasury() public override(Gsm, IUsdxlFacilitator) {
     _cumulateYieldInGho();
     super.distributeFeesToTreasury();
   }
@@ -119,7 +119,7 @@ contract Gsm4626 is Gsm, IGsm4626 {
    * @dev If the GHO amount exceeds the amount available, it will mint up to the remaining capacity
    */
   function _cumulateYieldInGho() internal {
-    (uint256 ghoCapacity, uint256 ghoLevel) = IGhoToken(GHO_TOKEN).getFacilitatorBucket(
+    (uint256 ghoCapacity, uint256 ghoLevel) = IUsdxlToken(USDXL_TOKEN).getFacilitatorBucket(
       address(this)
     );
     uint256 ghoAvailableToMint = ghoCapacity > ghoLevel ? ghoCapacity - ghoLevel : 0;
@@ -127,7 +127,7 @@ contract Gsm4626 is Gsm, IGsm4626 {
     if (ghoExcess > 0 && ghoAvailableToMint > 0) {
       ghoExcess = ghoExcess > ghoAvailableToMint ? ghoAvailableToMint : ghoExcess;
       _accruedFees += uint128(ghoExcess);
-      IGhoToken(GHO_TOKEN).mint(address(this), ghoExcess);
+      IUsdxlToken(USDXL_TOKEN).mint(address(this), ghoExcess);
     }
   }
 

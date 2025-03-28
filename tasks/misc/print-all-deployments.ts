@@ -6,7 +6,7 @@ task(`print-all-deployments`).setAction(async (_, { deployments, getNamedAccount
 
   let formattedDeployments: { [k: string]: { address: string } } = {};
   let mintableTokens: { [k: string]: { address: string } } = {};
-
+  console.log('DEPLOYMENT COMPLETE');
   console.log('\nAccounts after deployment');
   console.log('========');
   console.table(await getWalletBalances());

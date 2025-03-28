@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import {Ownable} from '@openzeppelin/contracts/access/Ownable.sol';
+import {Ownable} from '@aave/v3-core/contracts/dependencies/openzeppelin/contracts/Ownable.sol';
 import {EnumerableSet} from '@openzeppelin/contracts/utils/structs/EnumerableSet.sol';
-import {IGhoToken} from '../gho/interfaces/IGhoToken.sol';
+import {IUsdxlToken} from '../usdxl/interfaces/IUsdxlToken.sol';
 import {RiskCouncilControlled} from './RiskCouncilControlled.sol';
 import {IGhoBucketSteward} from './interfaces/IGhoBucketSteward.sol';
 
@@ -46,13 +46,13 @@ contract GhoBucketSteward is Ownable, RiskCouncilControlled, IGhoBucketSteward {
     address owner,
     address ghoToken,
     address riskCouncil
-  ) RiskCouncilControlled(riskCouncil) {
+  ) RiskCouncilControlled(riskCouncil) Ownable() {
     require(owner != address(0), 'INVALID_OWNER');
     require(ghoToken != address(0), 'INVALID_GHO_TOKEN');
 
     GHO_TOKEN = ghoToken;
 
-    _transferOwnership(owner);
+    transferOwnership(owner);
   }
 
   /// @inheritdoc IGhoBucketSteward
@@ -61,7 +61,7 @@ contract GhoBucketSteward is Ownable, RiskCouncilControlled, IGhoBucketSteward {
     uint128 newBucketCapacity
   ) external onlyRiskCouncil notTimelocked(_facilitatorsBucketCapacityTimelocks[facilitator]) {
     require(_controlledFacilitatorsByAddress[facilitator], 'FACILITATOR_NOT_CONTROLLED');
-    (uint256 currentBucketCapacity, ) = IGhoToken(GHO_TOKEN).getFacilitatorBucket(facilitator);
+    (uint256 currentBucketCapacity, ) = IUsdxlToken(GHO_TOKEN).getFacilitatorBucket(facilitator);
     require(newBucketCapacity != currentBucketCapacity, 'NO_CHANGE_IN_BUCKET_CAPACITY');
     require(
       _isIncreaseLowerThanMax(currentBucketCapacity, newBucketCapacity, currentBucketCapacity),
@@ -70,7 +70,7 @@ contract GhoBucketSteward is Ownable, RiskCouncilControlled, IGhoBucketSteward {
 
     _facilitatorsBucketCapacityTimelocks[facilitator] = uint40(block.timestamp);
 
-    IGhoToken(GHO_TOKEN).setFacilitatorBucketCapacity(facilitator, newBucketCapacity);
+    IUsdxlToken(GHO_TOKEN).setFacilitatorBucketCapacity(facilitator, newBucketCapacity);
   }
 
   /// @inheritdoc IGhoBucketSteward

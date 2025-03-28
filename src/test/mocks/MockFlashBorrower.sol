@@ -4,7 +4,7 @@ pragma solidity ^0.8.10;
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {IERC3156FlashBorrower} from '@openzeppelin/contracts/interfaces/IERC3156FlashBorrower.sol';
 import {IERC3156FlashLender} from '@openzeppelin/contracts/interfaces/IERC3156FlashLender.sol';
-import {IGhoToken} from '../../contracts/gho/interfaces/IGhoToken.sol';
+import {IUsdxlToken} from '../../contracts/usdxl/interfaces/IUsdxlToken.sol';
 
 /**
  * @title MockFlashBorrower
@@ -55,12 +55,12 @@ contract MockFlashBorrower is IERC3156FlashBorrower {
         'FlashBorrower: Non-zero flashfee during capacity change test'
       );
 
-      (uint256 capacityBefore, ) = IGhoToken(token).getFacilitatorBucket(address(_lender));
+      (uint256 capacityBefore, ) = IUsdxlToken(token).getFacilitatorBucket(address(_lender));
       require(capacityBefore != 0, 'FlashBorrower: Zero bucket capacity before setting');
 
-      IGhoToken(token).setFacilitatorBucketCapacity(address(_lender), 0);
+      IUsdxlToken(token).setFacilitatorBucketCapacity(address(_lender), 0);
 
-      (uint256 capacityAfter, ) = IGhoToken(token).getFacilitatorBucket(address(_lender));
+      (uint256 capacityAfter, ) = IUsdxlToken(token).getFacilitatorBucket(address(_lender));
       require(capacityAfter == 0, 'FlashBorrower: Non-zero bucket capacity after setting');
 
       require(

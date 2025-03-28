@@ -5,7 +5,16 @@ test = 'src/test'
 script = 'src/script'
 cache_path  = 'cache_forge'
 libs = ['node_modules', 'lib']
+evm_version = 'shanghai'
 
+fs_permissions = [
+    { access = "read", path = "./script/input/"},
+    { access = "read", path = "./lib/hypurrfi-deployments/out/"},
+    { access = "read", path = "./lib/hypurrfi-deployments/script/input/"},
+    { access = "read", path = "./lib/hypurrfi-deployments/script/output/"},
+    { access = "read-write", path = "./script/output/"},
+    { access = "write", path = "./lib/hypurrfi-deployments/reports" }
+]
 
 solc_version = "0.8.10"
 extra_output_files = ["metadata"]

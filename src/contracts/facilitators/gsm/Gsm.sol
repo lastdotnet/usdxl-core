@@ -8,8 +8,8 @@ import {EIP712} from '@openzeppelin/contracts/utils/cryptography/EIP712.sol';
 import {SignatureChecker} from '@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol';
 import {SafeCast} from '@openzeppelin/contracts/utils/math/SafeCast.sol';
 import {AccessControl} from '@openzeppelin/contracts/access/AccessControl.sol';
-import {IGhoFacilitator} from '../../gho/interfaces/IGhoFacilitator.sol';
-import {IGhoToken} from '../../gho/interfaces/IGhoToken.sol';
+import {IUsdxlFacilitator} from '../../usdxl/interfaces/IUsdxlFacilitator.sol';
+import {IUsdxlToken} from '../../usdxl/interfaces/IUsdxlToken.sol';
 import {IGsmPriceStrategy} from './priceStrategy/interfaces/IGsmPriceStrategy.sol';
 import {IGsmFeeStrategy} from './feeStrategy/interfaces/IGsmFeeStrategy.sol';
 import {IGsm} from './interfaces/IGsm.sol';
@@ -49,7 +49,7 @@ contract Gsm is AccessControl, VersionedInitializable, EIP712, IGsm {
     );
 
   /// @inheritdoc IGsm
-  address public immutable GHO_TOKEN;
+  address public immutable USDXL_TOKEN;
 
   /// @inheritdoc IGsm
   address public immutable UNDERLYING_ASSET;
@@ -60,7 +60,7 @@ contract Gsm is AccessControl, VersionedInitializable, EIP712, IGsm {
   /// @inheritdoc IGsm
   mapping(address => uint256) public nonces;
 
-  address internal _ghoTreasury;
+  address internal _usdxlTreasury;
   address internal _feeStrategy;
   bool internal _isFrozen;
   bool internal _isSeized;
@@ -86,18 +86,22 @@ contract Gsm is AccessControl, VersionedInitializable, EIP712, IGsm {
 
   /**
    * @dev Constructor
-   * @param ghoToken The address of the GHO token contract
+   * @param usdxlToken The address of the GHO token contract
    * @param underlyingAsset The address of the collateral asset
    * @param priceStrategy The address of the price strategy
    */
-  constructor(address ghoToken, address underlyingAsset, address priceStrategy) EIP712('GSM', '1') {
-    require(ghoToken != address(0), 'ZERO_ADDRESS_NOT_VALID');
+  constructor(
+    address usdxlToken,
+    address underlyingAsset,
+    address priceStrategy
+  ) EIP712('GSM', '1') {
+    require(usdxlToken != address(0), 'ZERO_ADDRESS_NOT_VALID');
     require(underlyingAsset != address(0), 'ZERO_ADDRESS_NOT_VALID');
     require(
       IGsmPriceStrategy(priceStrategy).UNDERLYING_ASSET() == underlyingAsset,
       'INVALID_PRICE_STRATEGY'
     );
-    GHO_TOKEN = ghoToken;
+    USDXL_TOKEN = usdxlToken;
     UNDERLYING_ASSET = underlyingAsset;
     PRICE_STRATEGY = priceStrategy;
   }
@@ -105,18 +109,18 @@ contract Gsm is AccessControl, VersionedInitializable, EIP712, IGsm {
   /**
    * @notice GSM initializer
    * @param admin The address of the default admin role
-   * @param ghoTreasury The address of the GHO treasury
+   * @param usdxlTreasury The address of the GHO treasury
    * @param exposureCap Maximum amount of user-supplied underlying asset in GSM
    */
   function initialize(
     address admin,
-    address ghoTreasury,
+    address usdxlTreasury,
     uint128 exposureCap
   ) external initializer {
     require(admin != address(0), 'ZERO_ADDRESS_NOT_VALID');
     _grantRole(DEFAULT_ADMIN_ROLE, admin);
     _grantRole(CONFIGURATOR_ROLE, admin);
-    _updateGhoTreasury(ghoTreasury);
+    _updateUsdxlTreasury(usdxlTreasury);
     _updateExposureCap(exposureCap);
   }
 
@@ -193,9 +197,9 @@ contract Gsm is AccessControl, VersionedInitializable, EIP712, IGsm {
     uint256 amount
   ) external onlyRole(TOKEN_RESCUER_ROLE) {
     require(amount > 0, 'INVALID_AMOUNT');
-    if (token == GHO_TOKEN) {
+    if (token == USDXL_TOKEN) {
       uint256 rescuableBalance = IERC20(token).balanceOf(address(this)) - _accruedFees;
-      require(rescuableBalance >= amount, 'INSUFFICIENT_GHO_TO_RESCUE');
+      require(rescuableBalance >= amount, 'INSUFFICIENT_USDXL_TO_RESCUE');
     }
     if (token == UNDERLYING_ASSET) {
       uint256 rescuableBalance = IERC20(token).balanceOf(address(this)) - _currentExposure;
@@ -222,13 +226,13 @@ contract Gsm is AccessControl, VersionedInitializable, EIP712, IGsm {
     _currentExposure = 0;
     _updateExposureCap(0);
 
-    (, uint256 ghoMinted) = IGhoToken(GHO_TOKEN).getFacilitatorBucket(address(this));
+    (, uint256 ghoMinted) = IUsdxlToken(USDXL_TOKEN).getFacilitatorBucket(address(this));
     uint256 underlyingBalance = IERC20(UNDERLYING_ASSET).balanceOf(address(this));
     if (underlyingBalance > 0) {
-      IERC20(UNDERLYING_ASSET).safeTransfer(_ghoTreasury, underlyingBalance);
+      IERC20(UNDERLYING_ASSET).safeTransfer(_usdxlTreasury, underlyingBalance);
     }
 
-    emit Seized(msg.sender, _ghoTreasury, underlyingBalance, ghoMinted);
+    emit Seized(msg.sender, _usdxlTreasury, underlyingBalance, ghoMinted);
     return underlyingBalance;
   }
 
@@ -237,12 +241,12 @@ contract Gsm is AccessControl, VersionedInitializable, EIP712, IGsm {
     require(_isSeized, 'GSM_NOT_SEIZED');
     require(amount > 0, 'INVALID_AMOUNT');
 
-    (, uint256 ghoMinted) = IGhoToken(GHO_TOKEN).getFacilitatorBucket(address(this));
+    (, uint256 ghoMinted) = IUsdxlToken(USDXL_TOKEN).getFacilitatorBucket(address(this));
     if (amount > ghoMinted) {
       amount = ghoMinted;
     }
-    IGhoToken(GHO_TOKEN).transferFrom(msg.sender, address(this), amount);
-    IGhoToken(GHO_TOKEN).burn(amount);
+    IUsdxlToken(USDXL_TOKEN).transferFrom(msg.sender, address(this), amount);
+    IUsdxlToken(USDXL_TOKEN).burn(amount);
 
     emit BurnAfterSeize(msg.sender, amount, (ghoMinted - amount));
     return amount;
@@ -258,19 +262,21 @@ contract Gsm is AccessControl, VersionedInitializable, EIP712, IGsm {
     _updateExposureCap(exposureCap);
   }
 
-  /// @inheritdoc IGhoFacilitator
+  /// @inheritdoc IUsdxlFacilitator
   function distributeFeesToTreasury() public virtual override {
     uint256 accruedFees = _accruedFees;
     if (accruedFees > 0) {
       _accruedFees = 0;
-      IERC20(GHO_TOKEN).transfer(_ghoTreasury, accruedFees);
-      emit FeesDistributedToTreasury(_ghoTreasury, GHO_TOKEN, accruedFees);
+      IERC20(USDXL_TOKEN).transfer(_usdxlTreasury, accruedFees);
+      emit FeesDistributedToTreasury(_usdxlTreasury, USDXL_TOKEN, accruedFees);
     }
   }
 
-  /// @inheritdoc IGhoFacilitator
-  function updateGhoTreasury(address newGhoTreasury) external override onlyRole(CONFIGURATOR_ROLE) {
-    _updateGhoTreasury(newGhoTreasury);
+  /// @inheritdoc IUsdxlFacilitator
+  function updateUsdxlTreasury(
+    address newUsdxlTreasury
+  ) external override onlyRole(CONFIGURATOR_ROLE) {
+    _updateUsdxlTreasury(newUsdxlTreasury);
   }
 
   /// @inheritdoc IGsm
@@ -368,9 +374,9 @@ contract Gsm is AccessControl, VersionedInitializable, EIP712, IGsm {
     return !_isFrozen && !_isSeized;
   }
 
-  /// @inheritdoc IGhoFacilitator
-  function getGhoTreasury() external view override returns (address) {
-    return _ghoTreasury;
+  /// @inheritdoc IUsdxlFacilitator
+  function getUsdxlTreasury() external view override returns (address) {
+    return _usdxlTreasury;
   }
 
   /// @inheritdoc IGsm
@@ -405,8 +411,8 @@ contract Gsm is AccessControl, VersionedInitializable, EIP712, IGsm {
 
     _currentExposure -= uint128(assetAmount);
     _accruedFees += fee.toUint128();
-    IGhoToken(GHO_TOKEN).transferFrom(originator, address(this), ghoSold);
-    IGhoToken(GHO_TOKEN).burn(grossAmount);
+    IUsdxlToken(USDXL_TOKEN).transferFrom(originator, address(this), ghoSold);
+    IUsdxlToken(USDXL_TOKEN).burn(grossAmount);
     IERC20(UNDERLYING_ASSET).safeTransfer(receiver, assetAmount);
 
     emit BuyAsset(originator, receiver, assetAmount, ghoSold, fee);
@@ -451,8 +457,8 @@ contract Gsm is AccessControl, VersionedInitializable, EIP712, IGsm {
     _accruedFees += fee.toUint128();
     IERC20(UNDERLYING_ASSET).safeTransferFrom(originator, address(this), assetAmount);
 
-    IGhoToken(GHO_TOKEN).mint(address(this), grossAmount);
-    IGhoToken(GHO_TOKEN).transfer(receiver, ghoBought);
+    IUsdxlToken(USDXL_TOKEN).mint(address(this), grossAmount);
+    IUsdxlToken(USDXL_TOKEN).transfer(receiver, ghoBought);
 
     emit SellAsset(originator, receiver, assetAmount, grossAmount, fee);
     return (assetAmount, ghoBought);
@@ -549,13 +555,13 @@ contract Gsm is AccessControl, VersionedInitializable, EIP712, IGsm {
 
   /**
    * @dev Updates GHO Treasury Address
-   * @param newGhoTreasury The address of the new GHO Treasury
+   * @param newUsdxlTreasury The address of the new GHO Treasury
    */
-  function _updateGhoTreasury(address newGhoTreasury) internal {
-    require(newGhoTreasury != address(0), 'ZERO_ADDRESS_NOT_VALID');
-    address oldGhoTreasury = _ghoTreasury;
-    _ghoTreasury = newGhoTreasury;
-    emit GhoTreasuryUpdated(oldGhoTreasury, newGhoTreasury);
+  function _updateUsdxlTreasury(address newUsdxlTreasury) internal {
+    require(newUsdxlTreasury != address(0), 'ZERO_ADDRESS_NOT_VALID');
+    address oldUsdxlTreasury = _usdxlTreasury;
+    _usdxlTreasury = newUsdxlTreasury;
+    emit UsdxlTreasuryUpdated(oldUsdxlTreasury, newUsdxlTreasury);
   }
 
   /// @inheritdoc VersionedInitializable

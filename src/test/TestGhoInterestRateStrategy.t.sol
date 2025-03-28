@@ -9,7 +9,7 @@ contract TestGhoInterestRateStrategy is TestGhoBase {
     uint256 variableBorrowRate,
     DataTypes.CalculateInterestRatesParams memory params
   ) public {
-    GhoInterestRateStrategy ghoInterest = new GhoInterestRateStrategy(
+    UsdxlInterestRateStrategy ghoInterest = new UsdxlInterestRateStrategy(
       addressesProvider,
       variableBorrowRate
     );

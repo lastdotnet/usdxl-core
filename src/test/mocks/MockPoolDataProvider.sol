@@ -11,6 +11,7 @@ contract MockPoolDataProvider is IPoolDataProvider {
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
 
   IPoolAddressesProvider public immutable POOL_ADDRESSES_PROVIDER;
+
   function ADDRESSES_PROVIDER() external view returns (IPoolAddressesProvider) {
     return POOL_ADDRESSES_PROVIDER;
   }
@@ -54,9 +55,18 @@ contract MockPoolDataProvider is IPoolDataProvider {
     return 0;
   }
 
+  function getIsVirtualAccActive(address asset) external view returns (bool) {
+    return false;
+  }
+
+  function getVirtualUnderlyingBalance(address asset) external view returns (uint256) {
+    return 0;
+  }
+
   function getPaused(address asset) external view returns (bool isPaused) {
     return false;
   }
+
   function getReserveCaps(
     address asset
   ) external view returns (uint256 borrowCap, uint256 supplyCap) {

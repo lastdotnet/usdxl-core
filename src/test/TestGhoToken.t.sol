@@ -5,25 +5,25 @@ import './TestGhoBase.t.sol';
 
 contract TestGhoToken is TestGhoBase {
   function testConstructor() public {
-    GhoToken ghoToken = new GhoToken(address(this));
+    UsdxlToken ghoToken = new UsdxlToken(address(this));
     vm.expectEmit(true, true, true, true, address(GHO_TOKEN));
     emit RoleGranted(DEFAULT_ADMIN_ROLE, msg.sender, address(this));
     GHO_TOKEN.grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-    assertEq(ghoToken.name(), 'Gho Token', 'Wrong default ERC20 name');
-    assertEq(ghoToken.symbol(), 'GHO', 'Wrong default ERC20 symbol');
+    assertEq(ghoToken.name(), 'Last USD', 'Wrong default ERC20 name');
+    assertEq(ghoToken.symbol(), 'USDXL', 'Wrong default ERC20 symbol');
     assertEq(ghoToken.decimals(), 18, 'Wrong default ERC20 decimals');
     assertEq(ghoToken.getFacilitatorsList().length, 0, 'Facilitator list not empty');
   }
 
   function testGetFacilitatorData() public {
-    IGhoToken.Facilitator memory data = GHO_TOKEN.getFacilitator(address(GHO_ATOKEN));
+    IUsdxlToken.Facilitator memory data = GHO_TOKEN.getFacilitator(address(GHO_ATOKEN));
     assertEq(data.label, 'Aave V3 Pool', 'Unexpected facilitator label');
     assertEq(data.bucketCapacity, DEFAULT_CAPACITY, 'Unexpected bucket capacity');
     assertEq(data.bucketLevel, 0, 'Unexpected bucket level');
   }
 
   function testGetNonFacilitatorData() public {
-    IGhoToken.Facilitator memory data = GHO_TOKEN.getFacilitator(ALICE);
+    IUsdxlToken.Facilitator memory data = GHO_TOKEN.getFacilitator(ALICE);
     assertEq(data.label, '', 'Unexpected facilitator label');
     assertEq(data.bucketCapacity, 0, 'Unexpected bucket capacity');
     assertEq(data.bucketLevel, 0, 'Unexpected bucket level');
@@ -43,7 +43,7 @@ contract TestGhoToken is TestGhoBase {
 
   function testGetPopulatedFacilitatorsList() public {
     address[] memory facilitatorList = GHO_TOKEN.getFacilitatorsList();
-    assertEq(facilitatorList.length, 6, 'Unexpected number of facilitators');
+    assertEq(facilitatorList.length, 7, 'Unexpected number of facilitators');
     assertEq(facilitatorList[0], address(GHO_ATOKEN), 'Unexpected address for mock facilitator 1');
     assertEq(
       facilitatorList[1],
