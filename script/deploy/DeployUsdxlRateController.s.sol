@@ -14,13 +14,15 @@ contract DeployUsdxlInterestRateController is Script {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         address deployer = vm.addr(deployerPrivateKey);
         
-        // Configuration - these should be set as environment variables
-        address addressesProvider = vm.envAddress("ADDRESSES_PROVIDER");
-        address usdxlToken = vm.envAddress("USDXL_TOKEN");
-        address usdxlOracle = vm.envAddress("USDXL_ORACLE");
-        address usdxlReserve = vm.envAddress("USDXL_RESERVE");
-        uint256 initialRate = vm.envUint("INITIAL_RATE"); // Should be in ray (e.g., 0.08e27 for 8%)
-        
+        // Configuration
+        address addressesProvider = 0xA73ff12D177D8F1Ec938c3ba0e87D33524dD5594;
+        address usdxlToken = 0xca79db4B49f608eF54a5CB813FbEd3a6387bC645;
+        address usdxlOracle = 0xe52085B9BBc0beF8294ecD0546f8cb5158BB2eAA;
+        address usdxlReserve = 0xca79db4B49f608eF54a5CB813FbEd3a6387bC645;
+        uint256 initialRate = 0.1618e27; // 16.18% in ray
+        uint256 initialPerpetualLoanAmount = 0.01e18; // 0.01 USDXL
+        uint256 initialETHAmount = 0.1 ether; // 0.1 ETH for perpetual loan
+
         console2.log("Deploying USDXL Interest Rate Controller...");
         console2.log("Deployer:", deployer);
         console2.log("Addresses Provider:", addressesProvider);
@@ -28,25 +30,36 @@ contract DeployUsdxlInterestRateController is Script {
         console2.log("USDXL Oracle:", usdxlOracle);
         console2.log("USDXL Reserve:", usdxlReserve);
         console2.log("Initial Rate:", initialRate);
-        
+        console2.log("Initial Perpetual Loan Amount:", initialPerpetualLoanAmount);
+        console2.log("Initial ETH Amount:", initialETHAmount);
+
         vm.startBroadcast(deployerPrivateKey);
         
-        UsdxlInterestRateController rateController = new UsdxlInterestRateController(
+        UsdxlInterestRateController rateController = new UsdxlInterestRateController{value: initialETHAmount}(
             addressesProvider,
             usdxlToken,
             usdxlOracle,
             usdxlReserve,
-            initialRate
+            initialRate,
+            deployer,
+            initialPerpetualLoanAmount
         );
         
         vm.stopBroadcast();
         
         console2.log("USDXL Interest Rate Controller deployed at:", address(rateController));
+        console2.log("Initial ETH balance:", address(rateController).balance);
         
-        // Export the contract address
-        string memory deploymentData = vm.toString(address(rateController));
-        vm.writeFile("deployments/usdxl-interest-rate-controller.txt", deploymentData);
+        // Export the contract address and config as JSON
+        string memory json = string(
+            abi.encodePacked(
+                "{\n",
+                '  "rateController": "', vm.toString(address(rateController)), '",\n',
+                "}\n"
+            )
+        );
+        vm.writeFile("script/output/999/interest-rate-controller.json", json);
         
-        console2.log("Deployment data saved to: deployments/usdxl-interest-rate-controller.txt");
+        console2.log("Deployment data saved to: script/output/999/interest-rate-controller.json");
     }
 } 

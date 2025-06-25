@@ -22,19 +22,18 @@ import {UsdxlMutableInterestRateStrategy} from './UsdxlMutableInterestRateStrate
 contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
-    // Constants
-    uint256 public constant EXECUTION_INTERVAL = 8 hours; // 3 times per day
-    uint256 public constant PERPETUAL_LOAN_AMOUNT = 1000e18; // 1000 USDXL perpetual loan
-
     // Configurable parameters (can be updated by owner)
     uint256 public minRate = 0.06e27; // 6% minimum rate (in ray)
+    uint256 public maxRate = 0.50e27; // 50% maximum rate (in ray)
     uint256 public rateAdjustment = 0.0015e27; // 0.15% adjustment (in ray)
     uint256 public priceThreshold = 0.995e8; // 0.995 threshold for rate adjustments
     uint256 public targetPrice = 1e8; // $1 target price (8 decimals)
+    uint256 public perpetualLoanAmount; // Perpetual loan amount (in USDXL)
+    uint256 public executionInterval; // Execution interval in seconds
+    address public usdxlOracle; // USDXL oracle address
 
     // State variables
     IUsdxlToken public immutable USDXL_TOKEN;
-    address public immutable USDXL_ORACLE;
     address public immutable USDXL_RESERVE;
     
     uint256 public lastExecutionTime;
@@ -48,9 +47,15 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
     event PerpetualLoanRefreshed(uint256 amount, uint256 timestamp);
     event ExecutionSkipped(uint256 reason, uint256 timestamp);
     event PriceDataEmitted(uint256 offchainPrice, uint256 onchainPrice, uint256 timestamp);
+    event PerpetualLoanAmountUpdated(uint256 oldAmount, uint256 newAmount, uint256 timestamp);
+    event ExecutionIntervalUpdated(uint256 oldInterval, uint256 newInterval, uint256 timestamp);
+    event UsdxlOracleUpdated(address oldOracle, address newOracle, uint256 timestamp);
+    event MaxRateUpdated(uint256 oldMaxRate, uint256 newMaxRate, uint256 timestamp);
     event ParametersUpdated(
         uint256 oldMinRate, 
         uint256 newMinRate,
+        uint256 oldMaxRate,
+        uint256 newMaxRate,
         uint256 oldRateAdjustment, 
         uint256 newRateAdjustment,
         uint256 oldPriceThreshold, 
@@ -59,6 +64,8 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
         uint256 newTargetPrice,
         uint256 timestamp
     );
+    event HYPEReceived(address sender, uint256 amount);
+    event HYPEWithdrawn(address recipient, uint256 amount);
 
     // Errors
     error ExecutionTooEarly();
@@ -71,32 +78,73 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
      * @dev Constructor
      * @param addressesProvider The Aave V3 Pool Addresses Provider
      * @param usdxlToken The USDXL token address
-     * @param usdxlOracle The USDXL oracle address
+     * @param usdxlOracleAddress The USDXL oracle address
      * @param usdxlReserve The USDXL reserve address in the pool
      * @param initialRate The initial interest rate (in ray)
+     * @param owner The owner address
+     * @param initialPerpetualLoanAmount The initial perpetual loan amount (in USDXL)
      */
     constructor(
         address addressesProvider,
         address usdxlToken,
-        address usdxlOracle,
+        address usdxlOracleAddress,
         address usdxlReserve,
-        uint256 initialRate
-    ) UsdxlMutableInterestRateStrategy(addressesProvider, initialRate, address(this)) {
+        uint256 initialRate,
+        address owner,
+        uint256 initialPerpetualLoanAmount
+    ) UsdxlMutableInterestRateStrategy(addressesProvider, initialRate, owner) payable {
         require(usdxlToken != address(0), "Invalid USDXL token");
-        require(usdxlOracle != address(0), "Invalid USDXL oracle");
+        require(usdxlOracleAddress != address(0), "Invalid USDXL oracle");
         require(usdxlReserve != address(0), "Invalid USDXL reserve");
         require(initialRate >= minRate, "Rate below minimum");
+        require(initialRate <= maxRate, "Rate above maximum");
+        require(initialPerpetualLoanAmount > 0, "Invalid perpetual loan amount");
 
         USDXL_TOKEN = IUsdxlToken(usdxlToken);
-        USDXL_ORACLE = usdxlOracle;
         USDXL_RESERVE = usdxlReserve;
         currentRate = initialRate;
         lastExecutionTime = block.timestamp;
+        perpetualLoanAmount = initialPerpetualLoanAmount;
+        executionInterval = 8 hours; // Default execution interval
+        usdxlOracle = usdxlOracleAddress;
+
+        // If HYPE is sent on deployment, supply it to the WrappedHypeGateway if available
+        if (msg.value > 0) {
+            address wrappedHypeGateway = 0xd1EF87FeFA83154F83541b68BD09185e15463972; // Replace with actual gateway address
+            (bool success, ) = wrappedHypeGateway.call{value: msg.value}(
+                abi.encodeWithSignature(
+                    "depositHYPE(address,address,uint16)",
+                    address(this),
+                    address(this),
+                    0
+                )
+            );
+            require(success, "HYPE deposit to WrappedHypeGateway failed");
+        }
+    }
+
+    /**
+     * @notice Update maximum rate only
+     * @param newMaxRate The new maximum rate (in ray)
+     * @dev Only callable by owner
+     */
+    function updateMaxRate(uint256 newMaxRate) external onlyOwner {
+        require(newMaxRate > 0, "Max rate must be positive");
+        require(newMaxRate > minRate, "Max rate must exceed min rate");
+        if (currentRate > newMaxRate) {
+            currentRate = newMaxRate;
+        }
+
+        uint256 oldMaxRate = maxRate;
+        maxRate = newMaxRate;
+
+        emit MaxRateUpdated(oldMaxRate, newMaxRate, block.timestamp);
     }
 
     /**
      * @notice Update configurable parameters
      * @param newMinRate The new minimum rate (in ray)
+     * @param newMaxRate The new maximum rate (in ray)
      * @param newRateAdjustment The new rate adjustment amount (in ray)
      * @param newPriceThreshold The new price threshold (8 decimals)
      * @param newTargetPrice The new target price (8 decimals)
@@ -104,36 +152,45 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
      */
     function updateParameters(
         uint256 newMinRate,
+        uint256 newMaxRate,
         uint256 newRateAdjustment,
         uint256 newPriceThreshold,
         uint256 newTargetPrice
     ) external onlyOwner {
         // Validate parameters
         require(newMinRate > 0, "Min rate must be positive");
+        require(newMaxRate > 0, "Max rate must be positive");
+        require(newMaxRate > newMinRate, "Max rate must exceed min rate");
         require(newRateAdjustment > 0, "Rate adjustment must be positive");
         require(newPriceThreshold > 0, "Price threshold must be positive");
         require(newTargetPrice > 0, "Target price must be positive");
         require(newPriceThreshold <= newTargetPrice, "Threshold cannot exceed target");
         
-        // Ensure current rate doesn't go below new minimum
+        // Ensure current rate doesn't go outside new bounds
         if (currentRate < newMinRate) {
             revert("Current rate below new minimum");
+        }
+        if (currentRate > newMaxRate) {
+            currentRate = newMaxRate;
         }
 
         // Store old values for event
         uint256 oldMinRate = minRate;
+        uint256 oldMaxRate = maxRate;
         uint256 oldRateAdjustment = rateAdjustment;
         uint256 oldPriceThreshold = priceThreshold;
         uint256 oldTargetPrice = targetPrice;
 
         // Update parameters
         minRate = newMinRate;
+        maxRate = newMaxRate;
         rateAdjustment = newRateAdjustment;
         priceThreshold = newPriceThreshold;
         targetPrice = newTargetPrice;
 
         emit ParametersUpdated(
             oldMinRate, newMinRate,
+            oldMaxRate, newMaxRate,
             oldRateAdjustment, newRateAdjustment,
             oldPriceThreshold, newPriceThreshold,
             oldTargetPrice, newTargetPrice,
@@ -157,6 +214,7 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
 
         emit ParametersUpdated(
             oldMinRate, newMinRate,
+            maxRate, maxRate,
             rateAdjustment, rateAdjustment,
             priceThreshold, priceThreshold,
             targetPrice, targetPrice,
@@ -177,6 +235,7 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
 
         emit ParametersUpdated(
             minRate, minRate,
+            maxRate, maxRate,
             oldRateAdjustment, newRateAdjustment,
             priceThreshold, priceThreshold,
             targetPrice, targetPrice,
@@ -198,6 +257,7 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
 
         emit ParametersUpdated(
             minRate, minRate,
+            maxRate, maxRate,
             rateAdjustment, rateAdjustment,
             oldPriceThreshold, newPriceThreshold,
             targetPrice, targetPrice,
@@ -219,11 +279,48 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
 
         emit ParametersUpdated(
             minRate, minRate,
+            maxRate, maxRate,
             rateAdjustment, rateAdjustment,
             priceThreshold, priceThreshold,
             oldTargetPrice, newTargetPrice,
             block.timestamp
         );
+    }
+
+    /**
+     * @notice Update perpetual loan amount
+     * @param newAmount The new perpetual loan amount (in USDXL)
+     * @dev Only callable by owner
+     */
+    function updatePerpetualLoanAmount(uint256 newAmount) external onlyOwner {
+        require(newAmount > 0, "Invalid perpetual loan amount");
+        uint256 oldAmount = perpetualLoanAmount;
+        perpetualLoanAmount = newAmount;
+        emit PerpetualLoanAmountUpdated(oldAmount, newAmount, block.timestamp);
+    }
+
+    /**
+     * @notice Update execution interval
+     * @param newInterval The new execution interval in seconds
+     * @dev Only callable by owner
+     */
+    function updateExecutionInterval(uint256 newInterval) external onlyOwner {
+        require(newInterval > 0, "Execution interval must be positive");
+        uint256 oldInterval = executionInterval;
+        executionInterval = newInterval;
+        emit ExecutionIntervalUpdated(oldInterval, newInterval, block.timestamp);
+    }
+
+    /**
+     * @notice Update USDXL oracle
+     * @param newOracle The new USDXL oracle address
+     * @dev Only callable by owner
+     */
+    function updateUsdxlOracle(address newOracle) external onlyOwner {
+        require(newOracle != address(0), "Invalid USDXL oracle");
+        address oldOracle = usdxlOracle;
+        usdxlOracle = newOracle;
+        emit UsdxlOracleUpdated(oldOracle, newOracle, block.timestamp);
     }
 
     /**
@@ -233,7 +330,7 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
      */
     function execute(int256 offchainPrice) external nonReentrant {
         // Check if enough time has passed since last execution
-        if (block.timestamp < lastExecutionTime + EXECUTION_INTERVAL) {
+        if (block.timestamp < lastExecutionTime + executionInterval) {
             emit ExecutionSkipped(1, block.timestamp); // Reason 1: Too early
             return;
         }
@@ -280,6 +377,7 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
      */
     function emergencyUpdateRate(uint256 newRate) external onlyOwner {
         require(newRate >= minRate, "Rate below minimum");
+        require(newRate <= maxRate, "Rate above maximum");
         _updateInterestRate(newRate);
         currentRate = newRate;
         emit RateUpdated(currentRate, newRate, 0, block.timestamp);
@@ -312,7 +410,7 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
      * @return The timestamp when execute() can be called next
      */
     function getNextExecutionTime() external view returns (uint256) {
-        return lastExecutionTime + EXECUTION_INTERVAL;
+        return lastExecutionTime + executionInterval;
     }
 
     /**
@@ -320,23 +418,25 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
      * @return True if enough time has passed since last execution
      */
     function isExecutionDue() external view returns (bool) {
-        return block.timestamp >= lastExecutionTime + EXECUTION_INTERVAL;
+        return block.timestamp >= lastExecutionTime + executionInterval;
     }
 
     /**
      * @notice Get all current parameters
      * @return minRate_ The current minimum rate
+     * @return maxRate_ The current maximum rate
      * @return rateAdjustment_ The current rate adjustment
      * @return priceThreshold_ The current price threshold
      * @return targetPrice_ The current target price
      */
     function getParameters() external view returns (
         uint256 minRate_,
+        uint256 maxRate_,
         uint256 rateAdjustment_,
         uint256 priceThreshold_,
         uint256 targetPrice_
     ) {
-        return (minRate, rateAdjustment, priceThreshold, targetPrice);
+        return (minRate, maxRate, rateAdjustment, priceThreshold, targetPrice);
     }
 
     /**
@@ -358,7 +458,7 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
      */
     function _callOracle() external view returns (int256) {
         // Call the oracle's latestAnswer function
-        (bool success, bytes memory data) = USDXL_ORACLE.staticcall(
+        (bool success, bytes memory data) = usdxlOracle.staticcall(
             abi.encodeWithSignature("latestAnswer()")
         );
         
@@ -380,6 +480,10 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
         if (usdxlPrice < priceThreshold) {
             // USDXL price below threshold, increase rate
             newRate = currentRate + rateAdjustment;
+            // Ensure rate doesn't exceed maximum
+            if (newRate > maxRate) {
+                newRate = maxRate;
+            }
         } else if (usdxlPrice >= priceThreshold && currentRate > minRate) {
             // USDXL price at or above threshold and current rate above minimum, decrease rate
             newRate = currentRate - rateAdjustment;
@@ -414,17 +518,17 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
             // Create initial perpetual loan
             try pool.borrow(
                 USDXL_RESERVE,
-                PERPETUAL_LOAN_AMOUNT,
+                perpetualLoanAmount,
                 2, // Variable rate mode
                 0, // Referral code
                 address(this)
             ) {
                 perpetualLoanActive = true;
-                perpetualLoanDebt = PERPETUAL_LOAN_AMOUNT;
-                emit PerpetualLoanCreated(PERPETUAL_LOAN_AMOUNT, block.timestamp);
+                perpetualLoanDebt = perpetualLoanAmount;
+                emit PerpetualLoanCreated(perpetualLoanAmount, block.timestamp);
             } catch {
                 // If borrow fails, try with smaller amount
-                uint256 smallerAmount = PERPETUAL_LOAN_AMOUNT / 10;
+                uint256 smallerAmount = perpetualLoanAmount / 10;
                 try pool.borrow(
                     USDXL_RESERVE,
                     smallerAmount,
@@ -540,5 +644,29 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
      */
     function getCurrentInterestRate() external view returns (uint256) {
         return _baseVariableBorrowRate;
+    }
+
+    /**
+     * @notice Withdraw HYPE from the controller
+     * @param amount The amount to withdraw
+     * @param to The recipient address
+     * @dev Only callable by owner
+     */
+    function withdrawHYPE(uint256 amount, address payable to) external onlyOwner {
+        require(to != address(0), "Invalid recipient");
+        require(amount > 0, "Invalid amount");
+        require(address(this).balance >= amount, "Insufficient HYPE balance");
+        
+        (bool success, ) = to.call{value: amount}("");
+        require(success, "HYPE transfer failed");
+        
+        emit HYPEWithdrawn(to, amount);
+    }
+
+    /**
+     * @dev Fallback function to receive HYPE
+     */
+    receive() external payable {
+        emit HYPEReceived(msg.sender, msg.value);
     }
 } 
