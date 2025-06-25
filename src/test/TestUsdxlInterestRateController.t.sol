@@ -248,6 +248,7 @@ contract TestUsdxlInterestRateController is Test {
     event HYPESupplied(uint256 amount, uint256 timestamp);
     event HYPEWithdrawnFromPool(uint256 amount, address recipient, uint256 timestamp);
     event LoanClosed(uint256 timestamp);
+    event ExecutorUpdated(address executor, bool enabled, uint256 timestamp);
     event ParametersUpdated(
         uint256 oldMinRate, 
         uint256 newMinRate,
@@ -480,6 +481,7 @@ contract TestUsdxlInterestRateController is Test {
         // Fast forward multiple times to increase rate
         for (uint i = 0; i < 100; i++) {
             vm.warp(block.timestamp + 8 hours);
+            vm.prank(owner);
             rateController.execute(0.99e8);
         }
         
@@ -510,6 +512,7 @@ contract TestUsdxlInterestRateController is Test {
         emit ExecutionSkipped(1, block.timestamp);
         
         // Try to execute immediately after deployment with valid offchain price
+        vm.prank(owner);
         rateController.execute(1e8);
     }
     
@@ -518,6 +521,7 @@ contract TestUsdxlInterestRateController is Test {
         vm.warp(block.timestamp + 8 hours);
         
         // Execute rate control with valid offchain price
+        vm.prank(owner);
         rateController.execute(1e8);
         
         // Should create perpetual loan
@@ -533,6 +537,7 @@ contract TestUsdxlInterestRateController is Test {
         int256 offchainPrice = 0.98e8; // $0.98 (below threshold)
         
         // Execute rate control with offchain price
+        vm.prank(owner);
         rateController.execute(offchainPrice);
         
         // Should create perpetual loan
@@ -551,6 +556,7 @@ contract TestUsdxlInterestRateController is Test {
         int256 offchainPrice = 1.02e8; // $1.02 (above threshold)
         
         // Execute rate control with offchain price
+        vm.prank(owner);
         rateController.execute(offchainPrice);
         
         // Rate should have decreased due to price above threshold
@@ -562,6 +568,7 @@ contract TestUsdxlInterestRateController is Test {
         vm.warp(block.timestamp + 8 hours);
         
         // Execute rate control with invalid offchain price (0) - should revert
+        vm.prank(owner);
         vm.expectRevert("Offchain price is zero");
         rateController.execute(0);
     }
@@ -571,6 +578,7 @@ contract TestUsdxlInterestRateController is Test {
         vm.warp(block.timestamp + 8 hours);
         
         // Execute rate control with negative offchain price - should revert
+        vm.prank(owner);
         vm.expectRevert("Offchain price is zero");
         rateController.execute(-1e8);
     }
@@ -585,6 +593,7 @@ contract TestUsdxlInterestRateController is Test {
         uint256 oldRate = rateController.currentRate();
         
         // Execute rate control with offchain price below threshold
+        vm.prank(owner);
         rateController.execute(0.99e8);
         
         uint256 newRate = rateController.currentRate();
@@ -605,6 +614,7 @@ contract TestUsdxlInterestRateController is Test {
         uint256 oldRate = rateController.currentRate();
         
         // Execute rate control with offchain price at threshold
+        vm.prank(owner);
         rateController.execute(0.995e8);
         
         uint256 newRate = rateController.currentRate();
@@ -625,6 +635,7 @@ contract TestUsdxlInterestRateController is Test {
         uint256 oldRate = rateController.currentRate();
         
         // Execute rate control with offchain price above peg
+        vm.prank(owner);
         rateController.execute(1e8);
         
         uint256 newRate = rateController.currentRate();
@@ -642,6 +653,7 @@ contract TestUsdxlInterestRateController is Test {
         // Fast forward multiple times to decrease rate
         for (uint i = 0; i < 10; i++) {
             vm.warp(block.timestamp + 8 hours);
+            vm.prank(owner);
             rateController.execute(1e8);
         }
         
@@ -665,6 +677,7 @@ contract TestUsdxlInterestRateController is Test {
         // Execute enough times to reach minimum
         for (uint i = 0; i < iterationsNeeded + 1; i++) {
             vm.warp(block.timestamp + 8 hours);
+            vm.prank(owner);
             rateController.execute(1e8);
         }
         
@@ -676,6 +689,7 @@ contract TestUsdxlInterestRateController is Test {
         vm.warp(block.timestamp + 8 hours);
         
         uint256 rateBefore = rateController.currentRate();
+        vm.prank(owner);
         rateController.execute(1e8);
         uint256 rateAfter = rateController.currentRate();
         
@@ -696,6 +710,7 @@ contract TestUsdxlInterestRateController is Test {
         vm.warp(block.timestamp + 8 hours);
         
         uint256 oldRate = rateController.currentRate();
+        vm.prank(owner);
         rateController.execute(0.98e8);
         uint256 newRate = rateController.currentRate();
         
@@ -772,12 +787,14 @@ contract TestUsdxlInterestRateController is Test {
     function testPerpetualLoanRefresh() public {
         // Create initial perpetual loan
         vm.warp(block.timestamp + 8 hours);
+        vm.prank(owner);
         rateController.execute(1e8);
         
         // Fast forward another 8 hours
         vm.warp(block.timestamp + 8 hours);
         
         // Should refresh the loan
+        vm.prank(owner);
         rateController.execute(1e8);
         
         (bool active, uint256 debt) = rateController.getPerpetualLoanStatus();
@@ -788,6 +805,7 @@ contract TestUsdxlInterestRateController is Test {
     function testEmergencyRepayAll() public {
         // First, create a perpetual loan by executing the rate controller
         vm.warp(block.timestamp + 8 hours);
+        vm.prank(owner);
         rateController.execute(1e8);
         
         // Check that perpetual loan was created
@@ -1032,6 +1050,7 @@ contract TestUsdxlInterestRateController is Test {
     function testCloseLoanAndWithdrawAll() public {
         // First, create a perpetual loan by executing the rate controller
         vm.warp(block.timestamp + 8 hours);
+        vm.prank(owner);
         rateController.execute(1e8);
         
         // Check that perpetual loan was created
@@ -1080,5 +1099,206 @@ contract TestUsdxlInterestRateController is Test {
         // The HYPESupplied event should be emitted during deployment
         // This is tested implicitly by the constructor test
         assertEq(address(rateController).balance, 0); // All HYPE was supplied to gateway
+    }
+    
+    // Tests for executor whitelist functionality
+    
+    function testUpdateExecutor() public {
+        address executor = address(0x123);
+        
+        vm.prank(owner);
+        rateController.updateExecutor(executor, true);
+        
+        assertTrue(rateController.executors(executor));
+        assertTrue(rateController.isAuthorizedExecutor(executor));
+    }
+    
+    function testUpdateExecutorRevertsIfNotOwner() public {
+        address executor = address(0x123);
+        
+        vm.prank(user);
+        vm.expectRevert("Ownable: caller is not the owner");
+        rateController.updateExecutor(executor, true);
+    }
+    
+    function testUpdateExecutorRevertsIfInvalidAddress() public {
+        vm.prank(owner);
+        vm.expectRevert("Invalid executor address");
+        rateController.updateExecutor(address(0), true);
+    }
+    
+    function testRemoveExecutor() public {
+        address executor = address(0x123);
+        
+        // First add the executor
+        vm.prank(owner);
+        rateController.updateExecutor(executor, true);
+        assertTrue(rateController.executors(executor));
+        
+        // Then remove the executor
+        vm.prank(owner);
+        rateController.updateExecutor(executor, false);
+        
+        assertFalse(rateController.executors(executor));
+        assertFalse(rateController.isAuthorizedExecutor(executor));
+    }
+    
+    function testBatchUpdateExecutors() public {
+        address[] memory executors_ = new address[](3);
+        bool[] memory enabled = new bool[](3);
+        
+        executors_[0] = address(0x123);
+        executors_[1] = address(0x456);
+        executors_[2] = address(0x789);
+        
+        enabled[0] = true;
+        enabled[1] = true;
+        enabled[2] = false;
+        
+        vm.prank(owner);
+        rateController.batchUpdateExecutors(executors_, enabled);
+        
+        assertTrue(rateController.executors(address(0x123)));
+        assertTrue(rateController.executors(address(0x456)));
+        assertFalse(rateController.executors(address(0x789)));
+        
+        assertTrue(rateController.isAuthorizedExecutor(address(0x123)));
+        assertTrue(rateController.isAuthorizedExecutor(address(0x456)));
+        assertFalse(rateController.isAuthorizedExecutor(address(0x789)));
+    }
+    
+    function testBatchUpdateExecutorsRevertsIfNotOwner() public {
+        address[] memory executors_ = new address[](1);
+        bool[] memory enabled = new bool[](1);
+        
+        executors_[0] = address(0x123);
+        enabled[0] = true;
+        
+        vm.prank(user);
+        vm.expectRevert("Ownable: caller is not the owner");
+        rateController.batchUpdateExecutors(executors_, enabled);
+    }
+    
+    function testBatchUpdateExecutorsRevertsIfLengthMismatch() public {
+        address[] memory executors_ = new address[](2);
+        bool[] memory enabled = new bool[](1);
+        
+        executors_[0] = address(0x123);
+        executors_[1] = address(0x456);
+        enabled[0] = true;
+        
+        vm.prank(owner);
+        vm.expectRevert("Arrays length mismatch");
+        rateController.batchUpdateExecutors(executors_, enabled);
+    }
+    
+    function testBatchUpdateExecutorsRevertsIfEmptyArrays() public {
+        address[] memory executors_ = new address[](0);
+        bool[] memory enabled = new bool[](0);
+        
+        vm.prank(owner);
+        vm.expectRevert("Empty arrays");
+        rateController.batchUpdateExecutors(executors_, enabled);
+    }
+    
+    function testBatchUpdateExecutorsRevertsIfInvalidAddress() public {
+        address[] memory executors_ = new address[](1);
+        bool[] memory enabled = new bool[](1);
+        
+        executors_[0] = address(0);
+        enabled[0] = true;
+        
+        vm.prank(owner);
+        vm.expectRevert("Invalid executor address");
+        rateController.batchUpdateExecutors(executors_, enabled);
+    }
+    
+    function testIsAuthorizedExecutor() public {
+        // Owner should always be authorized
+        assertTrue(rateController.isAuthorizedExecutor(owner));
+        
+        // Random user should not be authorized
+        assertFalse(rateController.isAuthorizedExecutor(user));
+        
+        // Add an executor
+        address executor = address(0x123);
+        vm.prank(owner);
+        rateController.updateExecutor(executor, true);
+        
+        // Executor should now be authorized
+        assertTrue(rateController.isAuthorizedExecutor(executor));
+        
+        // Remove the executor
+        vm.prank(owner);
+        rateController.updateExecutor(executor, false);
+        
+        // Executor should no longer be authorized
+        assertFalse(rateController.isAuthorizedExecutor(executor));
+    }
+    
+    function testExecuteByOwner() public {
+        // Owner should be able to execute
+        vm.warp(block.timestamp + 8 hours);
+        vm.prank(owner);
+        rateController.execute(1e8);
+        
+        // Should have created perpetual loan
+        (bool active, uint256 debt) = rateController.getPerpetualLoanStatus();
+        assertTrue(active);
+        assertGt(debt, 0);
+    }
+    
+    function testExecuteByWhitelistedExecutor() public {
+        address executor = address(0x123);
+        
+        // Add executor to whitelist
+        vm.prank(owner);
+        rateController.updateExecutor(executor, true);
+        
+        // Executor should be able to execute
+        vm.warp(block.timestamp + 8 hours);
+        vm.prank(executor);
+        rateController.execute(1e8);
+        
+        // Should have created perpetual loan
+        (bool active, uint256 debt) = rateController.getPerpetualLoanStatus();
+        assertTrue(active);
+        assertGt(debt, 0);
+    }
+    
+    function testExecuteRevertsIfNotAuthorized() public {
+        // Random user should not be able to execute
+        vm.warp(block.timestamp + 8 hours);
+        vm.prank(user);
+        vm.expectRevert("Unauthorized executor");
+        rateController.execute(1e8);
+    }
+    
+    function testExecuteRevertsIfExecutorRemoved() public {
+        address executor = address(0x123);
+        
+        // Add executor to whitelist
+        vm.prank(owner);
+        rateController.updateExecutor(executor, true);
+        
+        // Remove executor from whitelist
+        vm.prank(owner);
+        rateController.updateExecutor(executor, false);
+        
+        // Executor should no longer be able to execute
+        vm.warp(block.timestamp + 8 hours);
+        vm.prank(executor);
+        vm.expectRevert("Unauthorized executor");
+        rateController.execute(1e8);
+    }
+    
+    function testExecutorUpdatedEvent() public {
+        address executor = address(0x123);
+        
+        vm.expectEmit(true, true, false, true);
+        emit ExecutorUpdated(executor, true, block.timestamp);
+        
+        vm.prank(owner);
+        rateController.updateExecutor(executor, true);
     }
 } 

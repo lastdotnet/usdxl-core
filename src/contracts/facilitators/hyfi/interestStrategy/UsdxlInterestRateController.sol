@@ -25,7 +25,7 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
     using SafeERC20 for IERC20;
 
     // Configurable parameters (can be updated by owner)
-    uint256 public minRate = 0.06e27; // 6% minimum rate (in ray)
+    uint256 public minRate = 0.085e27; // 8.5% minimum rate (in ray)
     uint256 public maxRate = 0.50e27; // 50% maximum rate (in ray)
     uint256 public rateAdjustment = 0.0015e27; // 0.15% adjustment (in ray)
     uint256 public priceThreshold = 0.995e8; // 0.995 threshold for rate adjustments
@@ -44,6 +44,9 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
     bool public perpetualLoanActive;
     uint256 public perpetualLoanDebt;
 
+    // Executor whitelist
+    mapping(address => bool) public executors;
+
     // Events
     event RateUpdated(uint256 oldRate, uint256 newRate, uint256 usdxlPrice, uint256 timestamp);
     event PerpetualLoanCreated(uint256 amount, uint256 timestamp);
@@ -54,6 +57,7 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
     event ExecutionIntervalUpdated(uint256 oldInterval, uint256 newInterval, uint256 timestamp);
     event UsdxlOracleUpdated(address oldOracle, address newOracle, uint256 timestamp);
     event MaxRateUpdated(uint256 oldMaxRate, uint256 newMaxRate, uint256 timestamp);
+    event ExecutorUpdated(address executor, bool enabled, uint256 timestamp);
     event ParametersUpdated(
         uint256 oldMinRate, 
         uint256 newMinRate,
@@ -79,6 +83,13 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
     error PerpetualLoanFailed();
     error RateUpdateFailed();
     error InvalidParameter();
+    error UnauthorizedExecutor();
+
+    // Modifiers
+    modifier onlyOwnerOrExecutor() {
+        require(msg.sender == owner() || executors[msg.sender], "Unauthorized executor");
+        _;
+    }
 
     /**
      * @dev Constructor
@@ -334,7 +345,7 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
      * @dev Can be called by anyone, but only executes if enough time has passed
      * @param offchainPrice Optional offchain-calculated USDXL price (8 decimals)
      */
-    function execute(int256 offchainPrice) external nonReentrant {
+    function execute(int256 offchainPrice) external nonReentrant onlyOwnerOrExecutor {
         // Check if enough time has passed since last execution
         if (block.timestamp < lastExecutionTime + executionInterval) {
             emit ExecutionSkipped(1, block.timestamp); // Reason 1: Too early
@@ -757,5 +768,43 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
      */
     receive() external payable {
         emit HYPEReceived(msg.sender, msg.value);
+    }
+
+    /**
+     * @notice Add or remove an executor from the whitelist
+     * @param executor The address to add/remove
+     * @param enabled True to add, false to remove
+     * @dev Only callable by owner
+     */
+    function updateExecutor(address executor, bool enabled) external onlyOwner {
+        require(executor != address(0), "Invalid executor address");
+        executors[executor] = enabled;
+        emit ExecutorUpdated(executor, enabled, block.timestamp);
+    }
+
+    /**
+     * @notice Batch update multiple executors
+     * @param executors_ Array of executor addresses
+     * @param enabled Array of boolean values (true to add, false to remove)
+     * @dev Only callable by owner
+     */
+    function batchUpdateExecutors(address[] calldata executors_, bool[] calldata enabled) external onlyOwner {
+        require(executors_.length == enabled.length, "Arrays length mismatch");
+        require(executors_.length > 0, "Empty arrays");
+        
+        for (uint256 i = 0; i < executors_.length; i++) {
+            require(executors_[i] != address(0), "Invalid executor address");
+            executors[executors_[i]] = enabled[i];
+            emit ExecutorUpdated(executors_[i], enabled[i], block.timestamp);
+        }
+    }
+
+    /**
+     * @notice Check if an address is an authorized executor
+     * @param executor The address to check
+     * @return True if the address is owner or whitelisted executor
+     */
+    function isAuthorizedExecutor(address executor) external view returns (bool) {
+        return executor == owner() || executors[executor];
     }
 } 

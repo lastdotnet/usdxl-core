@@ -13,6 +13,7 @@ contract DeployUsdxlInterestRateController is Script {
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         address deployer = vm.addr(deployerPrivateKey);
+        address multisig = 0xC2b3075fB1AC9f5eCc1e2C07dA8bcCC43e7083fb;
         
         // Configuration
         address addressesProvider = 0xA73ff12D177D8F1Ec938c3ba0e87D33524dD5594;
@@ -20,7 +21,7 @@ contract DeployUsdxlInterestRateController is Script {
         address usdxlOracle = 0xe52085B9BBc0beF8294ecD0546f8cb5158BB2eAA;
         address usdxlReserve = 0xca79db4B49f608eF54a5CB813FbEd3a6387bC645;
         address wrappedHypeGateway = 0xd1EF87FeFA83154F83541b68BD09185e15463972; // WrappedHypeGateway address
-        uint256 initialRate = 0.1618e27; // 16.18% in ray
+        uint256 initialRate = 0.1485e27; // 14.85% in ray
         uint256 initialPerpetualLoanAmount = 0.01e18; // 0.01 USDXL
         uint256 initialETHAmount = 0.1 ether; // 0.1 ETH for perpetual loan
 
@@ -47,6 +48,11 @@ contract DeployUsdxlInterestRateController is Script {
             initialPerpetualLoanAmount,
             wrappedHypeGateway
         );
+
+        UsdxlInterestRateController rateController = UsdxlInterestRateController(payable(0xb02b1A83791F057823a7ea20969abAd79987EBBf));
+
+        rateController.updateExecutor(deployer, true);
+        rateController.transferOwnership(multisig);
         
         vm.stopBroadcast();
         
