@@ -54,7 +54,7 @@ contract DeployUsdxlInterestRateController is Script {
         string memory json = string(
             abi.encodePacked(
                 "{\n",
-                '  "rateController": "', vm.toString(address(rateController)), '",\n',
+                '  "rateController": "', vm.toString(address(rateController)), '"\n',
                 "}\n"
             )
         );
