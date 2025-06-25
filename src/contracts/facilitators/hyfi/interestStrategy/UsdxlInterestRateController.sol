@@ -11,7 +11,7 @@ import {IPoolAddressesProvider} from '@aave/core-v3/contracts/interfaces/IPoolAd
 import {DataTypes} from '@aave/core-v3/contracts/protocol/libraries/types/DataTypes.sol';
 import {IUsdxlToken} from '../../../usdxl/interfaces/IUsdxlToken.sol';
 import {UsdxlMutableInterestRateStrategy} from './UsdxlMutableInterestRateStrategy.sol';
-import {console2 as console} from 'forge-std/console2.sol';
+
 /**
  * @title UsdxlInterestRateController
  * @author Last Labs
@@ -506,7 +506,6 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
      * @return debt The current debt amount
      */
     function getPerpetualLoanStatus() external view returns (bool active, uint256 debt) {
-        console.log("getPerpetualLoanStatus called. Current debt:", _getCurrentDebt());
         return (perpetualLoanActive, _getCurrentDebt());
     }
 
@@ -515,16 +514,9 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
      * @dev Only callable by owner
      */
     function emergencyRepayAll() external onlyOwner {
-        // For debugging: log current debt
-        // slither-disable-next-line unused-import
-        // solhint-disable-next-line no-console
-        console.log("emergencyRepayAll called. Current debt:", _getCurrentDebt());
-
         uint256 currentDebt = _getCurrentDebt();
         if (currentDebt > 0) {
             IPool pool = IPool(ADDRESSES_PROVIDER.getPool());
-            // For debugging: log approve
-            console.log("Approving USDXL_TOKEN for pool:", address(pool), "amount:", currentDebt);
             USDXL_TOKEN.approve(address(pool), currentDebt);
             
             try pool.repay(
@@ -533,18 +525,12 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
                 2, // Variable rate mode
                 address(this)
             ) {
-                // For debugging: log successful repay
-                console.log("Repay successful. Debt repaid:", currentDebt);
                 perpetualLoanActive = false;
                 perpetualLoanDebt = 0;
             } catch {
-                // For debugging: log failed repay
-                console.log("Repay failed for debt:", currentDebt);
                 revert("Repay failed");
             }
         } else {
-            // For debugging: log no debt to repay
-            console.log("No debt to repay in emergencyRepayAll");
         }
     }
 

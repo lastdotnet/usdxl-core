@@ -9,7 +9,6 @@ import {IPool} from "@aave/core-v3/contracts/interfaces/IPool.sol";
 import {IPoolConfigurator} from "@aave/core-v3/contracts/interfaces/IPoolConfigurator.sol";
 import {IPoolAddressesProvider} from "@aave/core-v3/contracts/interfaces/IPoolAddressesProvider.sol";
 import {DataTypes} from "@aave/core-v3/contracts/protocol/libraries/types/DataTypes.sol";
-import {console2 as console} from 'forge-std/console2.sol';
 
 contract MockUsdxlOracle {
     int256 public price;
@@ -51,6 +50,8 @@ contract MockPool {
         uint16 referralCode,
         address onBehalfOf
     ) external returns (uint256) {
+        interestRateMode;
+        referralCode;
         userDebt[asset][onBehalfOf] += amount;
         // Also update the mock debt token balance
         MockVariableDebtToken(variableDebtTokens[asset]).mint(onBehalfOf, amount);
@@ -63,6 +64,8 @@ contract MockPool {
         uint256 interestRateMode,
         address onBehalfOf
     ) external returns (uint256) {
+        interestRateMode;
+        onBehalfOf;
         require(userDebt[asset][onBehalfOf] >= amount, "Insufficient debt");
         userDebt[asset][onBehalfOf] -= amount;
         // Also update the mock debt token balance
@@ -116,7 +119,9 @@ contract MockUsdxlToken {
         return true;
     }
     
-    function approve(address spender, uint256 amount) external returns (bool) {
+    function approve(address spender, uint256 amount) external pure returns (bool) {
+        spender;
+        amount;
         return true;
     }
 }
@@ -135,7 +140,7 @@ contract MockVariableDebtToken {
     }
     
     // IERC20 interface
-    function totalSupply() external view returns (uint256) {
+    function totalSupply() external pure returns (uint256) {
         return 0; // Not needed for tests
     }
     
