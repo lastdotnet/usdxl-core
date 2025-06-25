@@ -12,6 +12,7 @@ erc4626-tests/=lib/openzeppelin-contracts/lib/erc4626-tests/
 solidity-utils/=lib/hypurrfi-deployments/lib/aave-helpers/lib/solidity-utils/src/
 openzeppelin-contracts/=lib/openzeppelin-contracts/contracts/
 @openzeppelin/=lib/openzeppelin-contracts/
+@openzeppelin/contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/
 @hypurrfi/deployments/=lib/hypurrfi-deployments/src/deployments/
 @hypurrfi/contracts/=lib/hypurrfi-deployments/src/contracts/
 @hypurrfi/core/=lib/hypurrfi-deployments/src/core/
