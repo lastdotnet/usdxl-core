@@ -47,6 +47,7 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
     event PerpetualLoanCreated(uint256 amount, uint256 timestamp);
     event PerpetualLoanRefreshed(uint256 amount, uint256 timestamp);
     event ExecutionSkipped(uint256 reason, uint256 timestamp);
+    event PriceDataEmitted(uint256 offchainPrice, uint256 onchainPrice, uint256 timestamp);
     event ParametersUpdated(
         uint256 oldMinRate, 
         uint256 newMinRate,
@@ -228,20 +229,33 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
     /**
      * @notice Execute rate control logic
      * @dev Can be called by anyone, but only executes if enough time has passed
+     * @param offchainPrice Optional offchain-calculated USDXL price (8 decimals)
      */
-    function execute() external nonReentrant {
+    function execute(int256 offchainPrice) external nonReentrant {
         // Check if enough time has passed since last execution
         if (block.timestamp < lastExecutionTime + EXECUTION_INTERVAL) {
             emit ExecutionSkipped(1, block.timestamp); // Reason 1: Too early
             return;
         }
 
-        // Get current USDXL price
-        uint256 usdxlPrice = _getUsdxlPrice();
+        // If offchainPrice is provided but zero, revert
+        if (offchainPrice <= 0) {
+            revert("Offchain price is zero");
+        }
+
+        // Get current USDXL price (onchain)
+        uint256 onchainPrice = _getUsdxlPrice();
+        
+        // Use offchain price if provided and valid, otherwise use onchain price
+        uint256 usdxlPrice = uint256(offchainPrice);
+        
         if (usdxlPrice == 0) {
             emit ExecutionSkipped(2, block.timestamp); // Reason 2: Invalid price
             return;
         }
+
+        // Emit price data for transparency
+        emit PriceDataEmitted(uint256(offchainPrice), onchainPrice, block.timestamp);
 
         // Maintain perpetual loan to ensure rate updates
         _maintainPerpetualLoan();

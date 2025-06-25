@@ -180,6 +180,7 @@ contract TestUsdxlInterestRateController is Test {
     event PerpetualLoanCreated(uint256 amount, uint256 timestamp);
     event PerpetualLoanRefreshed(uint256 amount, uint256 timestamp);
     event ExecutionSkipped(uint256 reason, uint256 timestamp);
+    event PriceDataEmitted(uint256 offchainPrice, uint256 onchainPrice, uint256 timestamp);
     event InterestRateUpdated(uint256 oldRate, uint256 newRate, uint256 timestamp);
     event ParametersUpdated(
         uint256 oldMinRate, 
@@ -374,21 +375,70 @@ contract TestUsdxlInterestRateController is Test {
         vm.expectEmit(true, true, true, true);
         emit ExecutionSkipped(1, block.timestamp);
         
-        // Try to execute immediately after deployment
-        rateController.execute();
+        // Try to execute immediately after deployment with valid offchain price
+        rateController.execute(1e8);
     }
     
     function testExecuteWithValidPrice() public {
         // Fast forward 8 hours
         vm.warp(block.timestamp + 8 hours);
         
-        // Execute rate control
-        rateController.execute();
+        // Execute rate control with valid offchain price
+        rateController.execute(1e8);
         
         // Should create perpetual loan
         (bool active, uint256 debt) = rateController.getPerpetualLoanStatus();
         assertTrue(active);
         assertGt(debt, 0);
+    }
+    
+    function testExecuteWithOffchainPrice() public {
+        // Fast forward 8 hours
+        vm.warp(block.timestamp + 8 hours);
+        
+        int256 offchainPrice = 0.98e8; // $0.98 (below threshold)
+        
+        // Execute rate control with offchain price
+        rateController.execute(offchainPrice);
+        
+        // Should create perpetual loan
+        (bool active, uint256 debt) = rateController.getPerpetualLoanStatus();
+        assertTrue(active);
+        assertGt(debt, 0);
+        
+        // Rate should have increased due to price below threshold
+        assertGt(rateController.currentRate(), initialRate);
+    }
+    
+    function testExecuteWithOffchainPriceAboveThreshold() public {
+        // Fast forward 8 hours
+        vm.warp(block.timestamp + 8 hours);
+        
+        int256 offchainPrice = 1.02e8; // $1.02 (above threshold)
+        
+        // Execute rate control with offchain price
+        rateController.execute(offchainPrice);
+        
+        // Rate should have decreased due to price above threshold
+        assertLt(rateController.currentRate(), initialRate);
+    }
+    
+    function testExecuteWithInvalidOffchainPrice() public {
+        // Fast forward 8 hours
+        vm.warp(block.timestamp + 8 hours);
+        
+        // Execute rate control with invalid offchain price (0) - should revert
+        vm.expectRevert("Offchain price is zero");
+        rateController.execute(0);
+    }
+    
+    function testExecuteWithNegativeOffchainPrice() public {
+        // Fast forward 8 hours
+        vm.warp(block.timestamp + 8 hours);
+        
+        // Execute rate control with negative offchain price - should revert
+        vm.expectRevert("Offchain price is zero");
+        rateController.execute(-1e8);
     }
     
     function testRateIncreaseBelowThreshold() public {
@@ -400,8 +450,8 @@ contract TestUsdxlInterestRateController is Test {
         
         uint256 oldRate = rateController.currentRate();
         
-        // Execute rate control
-        rateController.execute();
+        // Execute rate control with offchain price below threshold
+        rateController.execute(0.99e8);
         
         uint256 newRate = rateController.currentRate();
         assertGt(newRate, oldRate);
@@ -420,8 +470,8 @@ contract TestUsdxlInterestRateController is Test {
         
         uint256 oldRate = rateController.currentRate();
         
-        // Execute rate control
-        rateController.execute();
+        // Execute rate control with offchain price at threshold
+        rateController.execute(0.995e8);
         
         uint256 newRate = rateController.currentRate();
         assertLt(newRate, oldRate);
@@ -440,8 +490,8 @@ contract TestUsdxlInterestRateController is Test {
         
         uint256 oldRate = rateController.currentRate();
         
-        // Execute rate control
-        rateController.execute();
+        // Execute rate control with offchain price above peg
+        rateController.execute(1e8);
         
         uint256 newRate = rateController.currentRate();
         assertLt(newRate, oldRate);
@@ -458,7 +508,7 @@ contract TestUsdxlInterestRateController is Test {
         // Fast forward multiple times to decrease rate
         for (uint i = 0; i < 10; i++) {
             vm.warp(block.timestamp + 8 hours);
-            rateController.execute();
+            rateController.execute(1e8);
         }
         
         // Rate should not go below minimum
@@ -481,7 +531,7 @@ contract TestUsdxlInterestRateController is Test {
         // Execute enough times to reach minimum
         for (uint i = 0; i < iterationsNeeded + 1; i++) {
             vm.warp(block.timestamp + 8 hours);
-            rateController.execute();
+            rateController.execute(1e8);
         }
         
         // Ensure we're at minimum rate
@@ -492,7 +542,7 @@ contract TestUsdxlInterestRateController is Test {
         vm.warp(block.timestamp + 8 hours);
         
         uint256 rateBefore = rateController.currentRate();
-        rateController.execute();
+        rateController.execute(1e8);
         uint256 rateAfter = rateController.currentRate();
         
         // Rate should not change when at minimum and price above threshold
@@ -512,7 +562,7 @@ contract TestUsdxlInterestRateController is Test {
         vm.warp(block.timestamp + 8 hours);
         
         uint256 oldRate = rateController.currentRate();
-        rateController.execute();
+        rateController.execute(0.98e8);
         uint256 newRate = rateController.currentRate();
         
         // Should use new rate adjustment
@@ -588,13 +638,13 @@ contract TestUsdxlInterestRateController is Test {
     function testPerpetualLoanRefresh() public {
         // Create initial perpetual loan
         vm.warp(block.timestamp + 8 hours);
-        rateController.execute();
+        rateController.execute(1e8);
         
         // Fast forward another 8 hours
         vm.warp(block.timestamp + 8 hours);
         
         // Should refresh the loan
-        rateController.execute();
+        rateController.execute(1e8);
         
         (bool active, uint256 debt) = rateController.getPerpetualLoanStatus();
         assertTrue(active);
@@ -604,7 +654,7 @@ contract TestUsdxlInterestRateController is Test {
     function testEmergencyRepayAll() public {
         // First, create a perpetual loan by executing the rate controller
         vm.warp(block.timestamp + 8 hours);
-        rateController.execute();
+        rateController.execute(1e8);
         
         // Check that perpetual loan was created
         (bool activeBefore, uint256 debtBefore) = rateController.getPerpetualLoanStatus();
