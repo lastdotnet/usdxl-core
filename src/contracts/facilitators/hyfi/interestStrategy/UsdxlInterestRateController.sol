@@ -11,6 +11,8 @@ import {IPoolAddressesProvider} from '@aave/core-v3/contracts/interfaces/IPoolAd
 import {DataTypes} from '@aave/core-v3/contracts/protocol/libraries/types/DataTypes.sol';
 import {IUsdxlToken} from '../../../usdxl/interfaces/IUsdxlToken.sol';
 import {UsdxlMutableInterestRateStrategy} from './UsdxlMutableInterestRateStrategy.sol';
+import {IWrappedHypeGateway} from '@hypurrfi/periphery/contracts/misc/interfaces/IWrappedHypeGateway.sol';
+import {IAToken} from '@aave/core-v3/contracts/interfaces/IAToken.sol';
 
 /**
  * @title UsdxlInterestRateController
@@ -35,6 +37,7 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
     // State variables
     IUsdxlToken public immutable USDXL_TOKEN;
     address public immutable USDXL_RESERVE;
+    IWrappedHypeGateway public immutable WRAPPED_HYPE_GATEWAY;
     
     uint256 public lastExecutionTime;
     uint256 public currentRate;
@@ -66,6 +69,9 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
     );
     event HYPEReceived(address sender, uint256 amount);
     event HYPEWithdrawn(address recipient, uint256 amount);
+    event HYPESupplied(uint256 amount, uint256 timestamp);
+    event HYPEWithdrawnFromPool(uint256 amount, address recipient, uint256 timestamp);
+    event LoanClosed(uint256 timestamp);
 
     // Errors
     error ExecutionTooEarly();
@@ -83,6 +89,7 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
      * @param initialRate The initial interest rate (in ray)
      * @param owner The owner address
      * @param initialPerpetualLoanAmount The initial perpetual loan amount (in USDXL)
+     * @param wrappedHypeGateway The WrappedHypeGateway address
      */
     constructor(
         address addressesProvider,
@@ -91,35 +98,34 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
         address usdxlReserve,
         uint256 initialRate,
         address owner,
-        uint256 initialPerpetualLoanAmount
+        uint256 initialPerpetualLoanAmount,
+        address wrappedHypeGateway
     ) UsdxlMutableInterestRateStrategy(addressesProvider, initialRate, owner) payable {
         require(usdxlToken != address(0), "Invalid USDXL token");
         require(usdxlOracleAddress != address(0), "Invalid USDXL oracle");
         require(usdxlReserve != address(0), "Invalid USDXL reserve");
+        require(wrappedHypeGateway != address(0), "Invalid WrappedHypeGateway");
         require(initialRate >= minRate, "Rate below minimum");
         require(initialRate <= maxRate, "Rate above maximum");
         require(initialPerpetualLoanAmount > 0, "Invalid perpetual loan amount");
 
         USDXL_TOKEN = IUsdxlToken(usdxlToken);
         USDXL_RESERVE = usdxlReserve;
+        WRAPPED_HYPE_GATEWAY = IWrappedHypeGateway(wrappedHypeGateway);
         currentRate = initialRate;
         lastExecutionTime = block.timestamp;
         perpetualLoanAmount = initialPerpetualLoanAmount;
         executionInterval = 8 hours; // Default execution interval
         usdxlOracle = usdxlOracleAddress;
 
-        // If HYPE is sent on deployment, supply it to the WrappedHypeGateway if available
+        // If HYPE is sent on deployment, supply it to the WrappedHypeGateway
         if (msg.value > 0) {
-            address wrappedHypeGateway = 0xd1EF87FeFA83154F83541b68BD09185e15463972; // Replace with actual gateway address
-            (bool success, ) = wrappedHypeGateway.call{value: msg.value}(
-                abi.encodeWithSignature(
-                    "depositHYPE(address,address,uint16)",
-                    address(this),
-                    address(this),
-                    0
-                )
+            WRAPPED_HYPE_GATEWAY.depositHYPE{value: msg.value}(
+                address(0),
+                address(this),
+                0
             );
-            require(success, "HYPE deposit to WrappedHypeGateway failed");
+            emit HYPESupplied(msg.value, block.timestamp);
         }
     }
 
@@ -644,6 +650,89 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
      */
     function getCurrentInterestRate() external view returns (uint256) {
         return _baseVariableBorrowRate;
+    }
+
+    /**
+     * @notice Withdraw supplied HYPE from the lending pool
+     * @param amount The amount of aWHYPE to withdraw (use type(uint256).max for all)
+     * @param to The recipient address for the HYPE
+     * @dev Only callable by owner
+     */
+    function withdrawSuppliedHYPE(uint256 amount, address payable to) external onlyOwner nonReentrant {
+        _withdrawSuppliedHYPE(amount, to);
+    }
+
+    function _withdrawSuppliedHYPE(uint256 amount, address payable to) internal {
+        require(to != address(0), "Invalid recipient");
+        require(amount > 0, "Invalid amount");
+        // Get the aWHYPE token address
+        IPool pool = IPool(ADDRESSES_PROVIDER.getPool());
+        address whypeAddress = WRAPPED_HYPE_GATEWAY.getWHYPEAddress();
+        DataTypes.ReserveData memory reserveData = pool.getReserveData(whypeAddress);
+        address aWhypeAddress = reserveData.aTokenAddress;
+        require(aWhypeAddress != address(0), "aWHYPE token not found");
+        IAToken aWhype = IAToken(aWhypeAddress);
+        uint256 balance = aWhype.balanceOf(address(this));
+        require(balance > 0, "No supplied HYPE to withdraw");
+        uint256 amountToWithdraw = amount;
+        if (amount == type(uint256).max) {
+            amountToWithdraw = balance;
+        } else {
+            require(amount <= balance, "Insufficient aWHYPE balance");
+        }
+        aWhype.approve(address(WRAPPED_HYPE_GATEWAY), amountToWithdraw);
+        WRAPPED_HYPE_GATEWAY.withdrawHYPE(address(0), amountToWithdraw, to);
+        emit HYPEWithdrawnFromPool(amountToWithdraw, to, block.timestamp);
+    }
+
+    /**
+     * @notice Close the perpetual loan and withdraw all supplied HYPE
+     * @param to The recipient address for the withdrawn HYPE
+     * @dev Only callable by owner
+     */
+    function closeLoanAndWithdrawAll(address payable to) external onlyOwner nonReentrant {
+        require(to != address(0), "Invalid recipient");
+        // First, repay all debt if there is any
+        uint256 currentDebt = _getCurrentDebt();
+        if (currentDebt > 0) {
+            IPool pool = IPool(ADDRESSES_PROVIDER.getPool());
+            USDXL_TOKEN.approve(address(pool), currentDebt);
+            try pool.repay(
+                USDXL_RESERVE,
+                currentDebt,
+                2, // Variable rate mode
+                address(this)
+            ) {
+                perpetualLoanActive = false;
+                perpetualLoanDebt = 0;
+            } catch {
+                revert("Failed to repay debt");
+            }
+        } else {
+            perpetualLoanActive = false;
+            perpetualLoanDebt = 0;
+        }
+        // Withdraw all supplied HYPE
+        _withdrawSuppliedHYPE(type(uint256).max, to);
+        emit LoanClosed(block.timestamp);
+    }
+
+    /**
+     * @notice Get the current supplied HYPE balance
+     * @return The current aWHYPE balance
+     */
+    function getSuppliedHYPEBalance() external view returns (uint256) {
+        IPool pool = IPool(ADDRESSES_PROVIDER.getPool());
+        address whypeAddress = WRAPPED_HYPE_GATEWAY.getWHYPEAddress();
+        DataTypes.ReserveData memory reserveData = pool.getReserveData(whypeAddress);
+        address aWhypeAddress = reserveData.aTokenAddress;
+        
+        if (aWhypeAddress == address(0)) {
+            return 0;
+        }
+        
+        IAToken aWhype = IAToken(aWhypeAddress);
+        return aWhype.balanceOf(address(this));
     }
 
     /**

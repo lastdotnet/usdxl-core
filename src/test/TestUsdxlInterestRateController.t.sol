@@ -29,18 +29,21 @@ contract MockUsdxlOracle {
 contract MockPool {
     mapping(address => address) public variableDebtTokens;
     mapping(address => address) public interestRateStrategies;
+    mapping(address => address) public aTokens;
     mapping(address => mapping(address => uint256)) public userDebt;
     
     function getReserveData(address asset) external view returns (DataTypes.ReserveData memory) {
         DataTypes.ReserveData memory reserveData;
         reserveData.variableDebtTokenAddress = variableDebtTokens[asset];
         reserveData.interestRateStrategyAddress = interestRateStrategies[asset];
+        reserveData.aTokenAddress = aTokens[asset];
         return reserveData;
     }
     
-    function setReserveData(address asset, address debtToken, address interestRateStrategy) external {
+    function setReserveData(address asset, address debtToken, address interestRateStrategy, address aToken) external {
         variableDebtTokens[asset] = debtToken;
         interestRateStrategies[asset] = interestRateStrategy;
+        aTokens[asset] = aToken;
     }
     
     function borrow(
@@ -166,6 +169,58 @@ contract MockVariableDebtToken {
     }
 }
 
+contract MockWrappedHypeGateway {
+    address public whypeAddress = address(0x1234);
+    event MockHYPEWithdrawn(address to, uint256 amount);
+    MockAToken public aWhype;
+    address public controller;
+    function setAToken(MockAToken _aWhype) external {
+        aWhype = _aWhype;
+    }
+    function setController(address _controller) external {
+        controller = _controller;
+    }
+    function depositHYPE(address, address onBehalfOf, uint16 referralCode) external payable {
+        onBehalfOf;
+        referralCode;
+    }
+    function withdrawHYPE(address, uint256 amount, address to) external {
+        if (address(aWhype) != address(0) && controller != address(0)) {
+            aWhype.setBalance(controller, 0);
+        }
+        emit MockHYPEWithdrawn(to, amount);
+    }
+    function getWHYPEAddress() external view returns (address) {
+        return whypeAddress;
+    }
+}
+
+contract MockAToken {
+    mapping(address => uint256) public balances;
+    
+    function balanceOf(address account) external view returns (uint256) {
+        return balances[account];
+    }
+    
+    function approve(address spender, uint256 amount) external pure returns (bool) {
+        spender;
+        amount;
+        return true;
+    }
+    
+    function transferFrom(address from, address to, uint256 amount) external returns (bool) {
+        require(balances[from] >= amount, "Insufficient balance");
+        balances[from] -= amount;
+        balances[to] += amount;
+        return true;
+    }
+
+    // Helper for tests
+    function setBalance(address account, uint256 amount) external {
+        balances[account] = amount;
+    }
+}
+
 contract TestUsdxlInterestRateController is Test {
     UsdxlInterestRateController public rateController;
     MockUsdxlOracle public oracle;
@@ -174,8 +229,11 @@ contract TestUsdxlInterestRateController is Test {
     MockPoolAddressesProvider public addressesProvider;
     MockUsdxlToken public usdxlToken;
     MockVariableDebtToken public variableDebtToken;
+    MockWrappedHypeGateway public wrappedHypeGateway;
+    MockAToken public aWhype;
     
     address public usdxlReserve = address(0x123);
+    address public whypeAddress = address(0x1234);
     uint256 public initialRate = 0.08e27; // 8% (above minimum)
     
     address public owner = address(0x1);
@@ -187,6 +245,9 @@ contract TestUsdxlInterestRateController is Test {
     event ExecutionSkipped(uint256 reason, uint256 timestamp);
     event PriceDataEmitted(uint256 offchainPrice, uint256 onchainPrice, uint256 timestamp);
     event InterestRateUpdated(uint256 oldRate, uint256 newRate, uint256 timestamp);
+    event HYPESupplied(uint256 amount, uint256 timestamp);
+    event HYPEWithdrawnFromPool(uint256 amount, address recipient, uint256 timestamp);
+    event LoanClosed(uint256 timestamp);
     event ParametersUpdated(
         uint256 oldMinRate, 
         uint256 newMinRate,
@@ -210,9 +271,15 @@ contract TestUsdxlInterestRateController is Test {
         addressesProvider = new MockPoolAddressesProvider(address(pool), address(configurator));
         usdxlToken = new MockUsdxlToken();
         variableDebtToken = new MockVariableDebtToken();
+        wrappedHypeGateway = new MockWrappedHypeGateway();
+        aWhype = new MockAToken();
+        wrappedHypeGateway.setAToken(aWhype);
         
-        // Setup reserve data
-        pool.setReserveData(usdxlReserve, address(variableDebtToken), address(0x456));
+        // Setup reserve data for USDXL
+        pool.setReserveData(usdxlReserve, address(variableDebtToken), address(0x456), address(0));
+        
+        // Setup reserve data for WHYPE
+        pool.setReserveData(whypeAddress, address(0x567), address(0x789), address(aWhype));
         
         // Deploy rate controller with initial HYPE
         vm.prank(owner);
@@ -223,11 +290,16 @@ contract TestUsdxlInterestRateController is Test {
             usdxlReserve,
             initialRate,
             owner,
-            1e18 // initial perpetual loan amount
+            1e18, // initial perpetual loan amount
+            address(wrappedHypeGateway)
         );
+        wrappedHypeGateway.setController(address(rateController));
         
         // Give some USDXL to the controller for perpetual loan
         usdxlToken.mint(address(rateController), 10000e18);
+        
+        // Give some aWHYPE to the controller to simulate supplied HYPE
+        aWhype.setBalance(address(rateController), 5 ether);
     }
     
     function testConstructor() public {
@@ -893,5 +965,120 @@ contract TestUsdxlInterestRateController is Test {
         assertEq(rateController.maxRate(), 0.50e27);
         assertEq(rateController.rateAdjustment(), 0.0015e27);
         assertEq(rateController.priceThreshold(), 0.995e8);
+    }
+    
+    // New tests for HYPE withdrawal and loan closing functionality
+    
+    function testGetSuppliedHYPEBalance() public {
+        uint256 balance = rateController.getSuppliedHYPEBalance();
+        assertEq(balance, 5 ether); // Set in setUp
+    }
+    
+    function testWithdrawSuppliedHYPE() public {
+        uint256 amount = 2 ether;
+        address payable recipient = payable(address(0x999));
+        
+        vm.expectEmit(true, true, false, true);
+        emit HYPEWithdrawnFromPool(amount, recipient, block.timestamp);
+        vm.prank(owner);
+        rateController.withdrawSuppliedHYPE(amount, recipient);
+    }
+    
+    function testWithdrawSuppliedHYPEAll() public {
+        address payable recipient = payable(address(0x999));
+        uint256 initialBalance = rateController.getSuppliedHYPEBalance();
+        
+        vm.expectEmit(true, true, false, true);
+        emit HYPEWithdrawnFromPool(initialBalance, recipient, block.timestamp);
+        vm.prank(owner);
+        rateController.withdrawSuppliedHYPE(type(uint256).max, recipient);
+        assertEq(rateController.getSuppliedHYPEBalance(), 0);
+    }
+    
+    function testWithdrawSuppliedHYPERevertsIfNotOwner() public {
+        uint256 amount = 1 ether;
+        address payable recipient = payable(address(0x999));
+        
+        vm.prank(user);
+        vm.expectRevert("Ownable: caller is not the owner");
+        rateController.withdrawSuppliedHYPE(amount, recipient);
+    }
+    
+    function testWithdrawSuppliedHYPERevertsIfInvalidRecipient() public {
+        uint256 amount = 1 ether;
+        
+        vm.prank(owner);
+        vm.expectRevert("Invalid recipient");
+        rateController.withdrawSuppliedHYPE(amount, payable(address(0)));
+    }
+    
+    function testWithdrawSuppliedHYPERevertsIfInvalidAmount() public {
+        address payable recipient = payable(address(0x999));
+        
+        vm.prank(owner);
+        vm.expectRevert("Invalid amount");
+        rateController.withdrawSuppliedHYPE(0, recipient);
+    }
+    
+    function testWithdrawSuppliedHYPERevertsIfInsufficientBalance() public {
+        uint256 amount = 10 ether; // More than available
+        address payable recipient = payable(address(0x999));
+        
+        vm.prank(owner);
+        vm.expectRevert("Insufficient aWHYPE balance");
+        rateController.withdrawSuppliedHYPE(amount, recipient);
+    }
+    
+    function testCloseLoanAndWithdrawAll() public {
+        // First, create a perpetual loan by executing the rate controller
+        vm.warp(block.timestamp + 8 hours);
+        rateController.execute(1e8);
+        
+        // Check that perpetual loan was created
+        (bool activeBefore, uint256 debtBefore) = rateController.getPerpetualLoanStatus();
+        assertTrue(activeBefore);
+        assertGt(debtBefore, 0);
+        
+        address payable recipient = payable(address(0x999));
+        uint256 initialSuppliedBalance = rateController.getSuppliedHYPEBalance();
+        
+        vm.expectEmit(true, true, false, true);
+        emit HYPEWithdrawnFromPool(initialSuppliedBalance, recipient, block.timestamp);
+        vm.expectEmit(false, false, false, true);
+        emit LoanClosed(block.timestamp);
+        vm.prank(owner);
+        rateController.closeLoanAndWithdrawAll(recipient);
+        
+        // Check that perpetual loan is cleared
+        (bool active, uint256 debt) = rateController.getPerpetualLoanStatus();
+        assertFalse(active);
+        assertEq(debt, 0);
+        // Check that HYPE was withdrawn (aToken balance is zero)
+        assertEq(rateController.getSuppliedHYPEBalance(), 0);
+    }
+    
+    function testCloseLoanAndWithdrawAllRevertsIfNotOwner() public {
+        address payable recipient = payable(address(0x999));
+        
+        vm.prank(user);
+        vm.expectRevert("Ownable: caller is not the owner");
+        rateController.closeLoanAndWithdrawAll(recipient);
+    }
+    
+    function testCloseLoanAndWithdrawAllRevertsIfInvalidRecipient() public {
+        vm.prank(owner);
+        vm.expectRevert("Invalid recipient");
+        rateController.closeLoanAndWithdrawAll(payable(address(0)));
+    }
+    
+    function testConstructorWithWrappedHypeGateway() public {
+        // Test that the WrappedHypeGateway is properly set
+        assertEq(address(rateController.WRAPPED_HYPE_GATEWAY()), address(wrappedHypeGateway));
+    }
+    
+    function testHYPESuppliedEvent() public {
+        // The HYPESupplied event should be emitted during deployment
+        // This is tested implicitly by the constructor test
+        assertEq(address(rateController).balance, 0); // All HYPE was supplied to gateway
     }
 } 

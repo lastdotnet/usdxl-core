@@ -19,6 +19,7 @@ contract DeployUsdxlInterestRateController is Script {
         address usdxlToken = 0xca79db4B49f608eF54a5CB813FbEd3a6387bC645;
         address usdxlOracle = 0xe52085B9BBc0beF8294ecD0546f8cb5158BB2eAA;
         address usdxlReserve = 0xca79db4B49f608eF54a5CB813FbEd3a6387bC645;
+        address wrappedHypeGateway = 0xd1EF87FeFA83154F83541b68BD09185e15463972; // WrappedHypeGateway address
         uint256 initialRate = 0.1618e27; // 16.18% in ray
         uint256 initialPerpetualLoanAmount = 0.01e18; // 0.01 USDXL
         uint256 initialETHAmount = 0.1 ether; // 0.1 ETH for perpetual loan
@@ -29,6 +30,7 @@ contract DeployUsdxlInterestRateController is Script {
         console2.log("USDXL Token:", usdxlToken);
         console2.log("USDXL Oracle:", usdxlOracle);
         console2.log("USDXL Reserve:", usdxlReserve);
+        console2.log("WrappedHypeGateway:", wrappedHypeGateway);
         console2.log("Initial Rate:", initialRate);
         console2.log("Initial Perpetual Loan Amount:", initialPerpetualLoanAmount);
         console2.log("Initial ETH Amount:", initialETHAmount);
@@ -42,7 +44,8 @@ contract DeployUsdxlInterestRateController is Script {
             usdxlReserve,
             initialRate,
             deployer,
-            initialPerpetualLoanAmount
+            initialPerpetualLoanAmount,
+            wrappedHypeGateway
         );
         
         vm.stopBroadcast();
