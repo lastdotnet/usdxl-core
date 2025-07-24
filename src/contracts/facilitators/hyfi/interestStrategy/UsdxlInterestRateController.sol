@@ -27,7 +27,8 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
     // Configurable parameters (can be updated by owner)
     uint256 public minRate = 0.085e27; // 8.5% minimum rate (in ray)
     uint256 public maxRate = 0.50e27; // 50% maximum rate (in ray)
-    uint256 public rateAdjustment = 0.0015e27; // 0.15% adjustment (in ray)
+    uint256 public rateIncreaseAdjustment = 0.002e27; // 0.2% increase tick (in ray)
+    uint256 public rateDecreaseAdjustment = 0.001e27; // 0.1% decrease tick (in ray)
     uint256 public priceThreshold = 0.995e8; // 0.995 threshold for rate adjustments
     uint256 public targetPrice = 1e8; // $1 target price (8 decimals)
     uint256 public perpetualLoanAmount; // Perpetual loan amount (in USDXL)
@@ -59,16 +60,12 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
     event MaxRateUpdated(uint256 oldMaxRate, uint256 newMaxRate, uint256 timestamp);
     event ExecutorUpdated(address executor, bool enabled, uint256 timestamp);
     event ParametersUpdated(
-        uint256 oldMinRate, 
-        uint256 newMinRate,
-        uint256 oldMaxRate,
-        uint256 newMaxRate,
-        uint256 oldRateAdjustment, 
-        uint256 newRateAdjustment,
-        uint256 oldPriceThreshold, 
-        uint256 newPriceThreshold,
-        uint256 oldTargetPrice, 
-        uint256 newTargetPrice,
+        uint256 minRate,
+        uint256 maxRate,
+        uint256 rateIncreaseAdjustment,
+        uint256 rateDecreaseAdjustment,
+        uint256 priceThreshold,
+        uint256 targetPrice,
         uint256 timestamp
     );
     event HYPEReceived(address sender, uint256 amount);
@@ -126,7 +123,7 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
         currentRate = initialRate;
         lastExecutionTime = block.timestamp;
         perpetualLoanAmount = initialPerpetualLoanAmount;
-        executionInterval = 8 hours; // Default execution interval
+        executionInterval = 4 hours; // Default execution interval
         usdxlOracle = usdxlOracleAddress;
 
         // If HYPE is sent on deployment, supply it to the WrappedHypeGateway
@@ -162,7 +159,8 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
      * @notice Update configurable parameters
      * @param newMinRate The new minimum rate (in ray)
      * @param newMaxRate The new maximum rate (in ray)
-     * @param newRateAdjustment The new rate adjustment amount (in ray)
+     * @param newRateIncreaseAdjustment The new rate increase tick (in ray)
+     * @param newRateDecreaseAdjustment The new rate decrease tick (in ray)
      * @param newPriceThreshold The new price threshold (8 decimals)
      * @param newTargetPrice The new target price (8 decimals)
      * @dev Only callable by owner
@@ -170,7 +168,8 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
     function updateParameters(
         uint256 newMinRate,
         uint256 newMaxRate,
-        uint256 newRateAdjustment,
+        uint256 newRateIncreaseAdjustment,
+        uint256 newRateDecreaseAdjustment,
         uint256 newPriceThreshold,
         uint256 newTargetPrice
     ) external onlyOwner {
@@ -178,11 +177,11 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
         require(newMinRate > 0, "Min rate must be positive");
         require(newMaxRate > 0, "Max rate must be positive");
         require(newMaxRate > newMinRate, "Max rate must exceed min rate");
-        require(newRateAdjustment > 0, "Rate adjustment must be positive");
+        require(newRateIncreaseAdjustment > 0, "Increase adjustment must be positive");
+        require(newRateDecreaseAdjustment > 0, "Decrease adjustment must be positive");
         require(newPriceThreshold > 0, "Price threshold must be positive");
         require(newTargetPrice > 0, "Target price must be positive");
         require(newPriceThreshold <= newTargetPrice, "Threshold cannot exceed target");
-        
         // Ensure current rate doesn't go outside new bounds
         if (currentRate < newMinRate) {
             revert("Current rate below new minimum");
@@ -190,27 +189,20 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
         if (currentRate > newMaxRate) {
             currentRate = newMaxRate;
         }
-
-        // Store old values for event
-        uint256 oldMinRate = minRate;
-        uint256 oldMaxRate = maxRate;
-        uint256 oldRateAdjustment = rateAdjustment;
-        uint256 oldPriceThreshold = priceThreshold;
-        uint256 oldTargetPrice = targetPrice;
-
         // Update parameters
         minRate = newMinRate;
         maxRate = newMaxRate;
-        rateAdjustment = newRateAdjustment;
+        rateIncreaseAdjustment = newRateIncreaseAdjustment;
+        rateDecreaseAdjustment = newRateDecreaseAdjustment;
         priceThreshold = newPriceThreshold;
         targetPrice = newTargetPrice;
-
         emit ParametersUpdated(
-            oldMinRate, newMinRate,
-            oldMaxRate, newMaxRate,
-            oldRateAdjustment, newRateAdjustment,
-            oldPriceThreshold, newPriceThreshold,
-            oldTargetPrice, newTargetPrice,
+            newMinRate,
+            newMaxRate,
+            newRateIncreaseAdjustment,
+            newRateDecreaseAdjustment,
+            newPriceThreshold,
+            newTargetPrice,
             block.timestamp
         );
     }
@@ -225,37 +217,52 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
         if (currentRate < newMinRate) {
             revert("Current rate below new minimum");
         }
-
-        uint256 oldMinRate = minRate;
         minRate = newMinRate;
-
         emit ParametersUpdated(
-            oldMinRate, newMinRate,
-            maxRate, maxRate,
-            rateAdjustment, rateAdjustment,
-            priceThreshold, priceThreshold,
-            targetPrice, targetPrice,
+            newMinRate,
+            maxRate,
+            rateIncreaseAdjustment,
+            rateDecreaseAdjustment,
+            priceThreshold,
+            targetPrice,
             block.timestamp
         );
     }
 
     /**
-     * @notice Update rate adjustment only
-     * @param newRateAdjustment The new rate adjustment amount (in ray)
+     * @notice Update rate increase adjustment only
+     * @param newRateIncreaseAdjustment The new rate increase tick (in ray)
      * @dev Only callable by owner
      */
-    function updateRateAdjustment(uint256 newRateAdjustment) external onlyOwner {
-        require(newRateAdjustment > 0, "Rate adjustment must be positive");
-
-        uint256 oldRateAdjustment = rateAdjustment;
-        rateAdjustment = newRateAdjustment;
-
+    function updateRateIncreaseAdjustment(uint256 newRateIncreaseAdjustment) external onlyOwner {
+        require(newRateIncreaseAdjustment > 0, "Increase adjustment must be positive");
+        rateIncreaseAdjustment = newRateIncreaseAdjustment;
         emit ParametersUpdated(
-            minRate, minRate,
-            maxRate, maxRate,
-            oldRateAdjustment, newRateAdjustment,
-            priceThreshold, priceThreshold,
-            targetPrice, targetPrice,
+            minRate,
+            maxRate,
+            newRateIncreaseAdjustment,
+            rateDecreaseAdjustment,
+            priceThreshold,
+            targetPrice,
+            block.timestamp
+        );
+    }
+
+    /**
+     * @notice Update rate decrease adjustment only
+     * @param newRateDecreaseAdjustment The new rate decrease tick (in ray)
+     * @dev Only callable by owner
+     */
+    function updateRateDecreaseAdjustment(uint256 newRateDecreaseAdjustment) external onlyOwner {
+        require(newRateDecreaseAdjustment > 0, "Decrease adjustment must be positive");
+        rateDecreaseAdjustment = newRateDecreaseAdjustment;
+        emit ParametersUpdated(
+            minRate,
+            maxRate,
+            rateIncreaseAdjustment,
+            newRateDecreaseAdjustment,
+            priceThreshold,
+            targetPrice,
             block.timestamp
         );
     }
@@ -268,16 +275,14 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
     function updatePriceThreshold(uint256 newPriceThreshold) external onlyOwner {
         require(newPriceThreshold > 0, "Price threshold must be positive");
         require(newPriceThreshold <= targetPrice, "Threshold cannot exceed target");
-
-        uint256 oldPriceThreshold = priceThreshold;
         priceThreshold = newPriceThreshold;
-
         emit ParametersUpdated(
-            minRate, minRate,
-            maxRate, maxRate,
-            rateAdjustment, rateAdjustment,
-            oldPriceThreshold, newPriceThreshold,
-            targetPrice, targetPrice,
+            minRate,
+            maxRate,
+            rateIncreaseAdjustment,
+            rateDecreaseAdjustment,
+            newPriceThreshold,
+            targetPrice,
             block.timestamp
         );
     }
@@ -290,16 +295,14 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
     function updateTargetPrice(uint256 newTargetPrice) external onlyOwner {
         require(newTargetPrice > 0, "Target price must be positive");
         require(priceThreshold <= newTargetPrice, "Threshold cannot exceed target");
-
-        uint256 oldTargetPrice = targetPrice;
         targetPrice = newTargetPrice;
-
         emit ParametersUpdated(
-            minRate, minRate,
-            maxRate, maxRate,
-            rateAdjustment, rateAdjustment,
-            priceThreshold, priceThreshold,
-            oldTargetPrice, newTargetPrice,
+            minRate,
+            maxRate,
+            rateIncreaseAdjustment,
+            rateDecreaseAdjustment,
+            priceThreshold,
+            newTargetPrice,
             block.timestamp
         );
     }
@@ -442,18 +445,20 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
      * @notice Get all current parameters
      * @return minRate_ The current minimum rate
      * @return maxRate_ The current maximum rate
-     * @return rateAdjustment_ The current rate adjustment
+     * @return rateIncreaseAdjustment_ The current rate increase tick
+     * @return rateDecreaseAdjustment_ The current rate decrease tick
      * @return priceThreshold_ The current price threshold
      * @return targetPrice_ The current target price
      */
     function getParameters() external view returns (
         uint256 minRate_,
         uint256 maxRate_,
-        uint256 rateAdjustment_,
+        uint256 rateIncreaseAdjustment_,
+        uint256 rateDecreaseAdjustment_,
         uint256 priceThreshold_,
         uint256 targetPrice_
     ) {
-        return (minRate, maxRate, rateAdjustment, priceThreshold, targetPrice);
+        return (minRate, maxRate, rateIncreaseAdjustment, rateDecreaseAdjustment, priceThreshold, targetPrice);
     }
 
     /**
@@ -493,25 +498,19 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
      */
     function _calculateNewRate(uint256 usdxlPrice) internal view returns (uint256) {
         uint256 newRate = currentRate;
-
         if (usdxlPrice < priceThreshold) {
             // USDXL price below threshold, increase rate
-            newRate = currentRate + rateAdjustment;
-            // Ensure rate doesn't exceed maximum
+            newRate = currentRate + rateIncreaseAdjustment;
             if (newRate > maxRate) {
                 newRate = maxRate;
             }
         } else if (usdxlPrice >= priceThreshold && currentRate > minRate) {
             // USDXL price at or above threshold and current rate above minimum, decrease rate
-            newRate = currentRate - rateAdjustment;
-            
-            // Ensure rate doesn't go below minimum
+            newRate = currentRate > rateDecreaseAdjustment ? currentRate - rateDecreaseAdjustment : minRate;
             if (newRate < minRate) {
                 newRate = minRate;
             }
         }
-        // If price >= threshold and rate is already at minimum, no change (newRate remains currentRate)
-
         return newRate;
     }
 

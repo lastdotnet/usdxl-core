@@ -250,14 +250,12 @@ contract TestUsdxlInterestRateController is Test {
     event LoanClosed(uint256 timestamp);
     event ExecutorUpdated(address executor, bool enabled, uint256 timestamp);
     event ParametersUpdated(
-        uint256 oldMinRate, 
-        uint256 newMinRate,
-        uint256 oldRateAdjustment, 
-        uint256 newRateAdjustment,
-        uint256 oldPriceThreshold, 
-        uint256 newPriceThreshold,
-        uint256 oldTargetPrice, 
-        uint256 newTargetPrice,
+        uint256 minRate,
+        uint256 maxRate,
+        uint256 rateIncreaseAdjustment,
+        uint256 rateDecreaseAdjustment,
+        uint256 priceThreshold,
+        uint256 targetPrice,
         uint256 timestamp
     );
     
@@ -313,11 +311,11 @@ contract TestUsdxlInterestRateController is Test {
         assertEq(rateController.lastExecutionTime(), block.timestamp);
         assertEq(rateController.getBaseVariableBorrowRate(), initialRate);
         assertEq(rateController.executionInterval(), 8 hours);
-        
         // Check initial parameters
         assertEq(rateController.minRate(), 0.06e27); // 6%
         assertEq(rateController.maxRate(), 0.50e27); // 50%
-        assertEq(rateController.rateAdjustment(), 0.0015e27); // 0.15%
+        assertEq(rateController.rateIncreaseAdjustment(), 0.0015e27); // 0.15%
+        assertEq(rateController.rateDecreaseAdjustment(), 0.0015e27); // 0.15%
         assertEq(rateController.priceThreshold(), 0.995e8); // 0.995
         assertEq(rateController.targetPrice(), 1e8); // 1.00
     }
@@ -325,183 +323,172 @@ contract TestUsdxlInterestRateController is Test {
     function testUpdateParameters() public {
         uint256 newMinRate = 0.08e27; // 8%
         uint256 newMaxRate = 0.40e27; // 40%
-        uint256 newRateAdjustment = 0.002e27; // 0.2%
+        uint256 newRateIncreaseAdjustment = 0.002e27; // 0.2%
+        uint256 newRateDecreaseAdjustment = 0.001e27; // 0.1%
         uint256 newPriceThreshold = 0.99e8; // 0.99
         uint256 newTargetPrice = 1.01e8; // 1.01
-        
         vm.prank(owner);
         rateController.updateParameters(
             newMinRate,
             newMaxRate,
-            newRateAdjustment,
+            newRateIncreaseAdjustment,
+            newRateDecreaseAdjustment,
             newPriceThreshold,
             newTargetPrice
         );
-        
         assertEq(rateController.minRate(), newMinRate);
         assertEq(rateController.maxRate(), newMaxRate);
-        assertEq(rateController.rateAdjustment(), newRateAdjustment);
+        assertEq(rateController.rateIncreaseAdjustment(), newRateIncreaseAdjustment);
+        assertEq(rateController.rateDecreaseAdjustment(), newRateDecreaseAdjustment);
         assertEq(rateController.priceThreshold(), newPriceThreshold);
         assertEq(rateController.targetPrice(), newTargetPrice);
     }
-    
     function testUpdateParametersRevertsIfNotOwner() public {
         vm.prank(user);
         vm.expectRevert("Ownable: caller is not the owner");
-        rateController.updateParameters(0.08e27, 0.40e27, 0.002e27, 0.99e8, 1.01e8);
+        rateController.updateParameters(0.08e27, 0.40e27, 0.002e27, 0.001e27, 0.99e8, 1.01e8);
     }
-    
     function testUpdateParametersRevertsIfInvalidMinRate() public {
         vm.prank(owner);
         vm.expectRevert("Min rate must be positive");
-        rateController.updateParameters(0, 0.40e27, 0.002e27, 0.99e8, 1.01e8);
+        rateController.updateParameters(0, 0.40e27, 0.002e27, 0.001e27, 0.99e8, 1.01e8);
     }
-    
     function testUpdateParametersRevertsIfInvalidMaxRate() public {
         vm.prank(owner);
         vm.expectRevert("Max rate must be positive");
-        rateController.updateParameters(0.08e27, 0, 0.002e27, 0.99e8, 1.01e8);
+        rateController.updateParameters(0.08e27, 0, 0.002e27, 0.001e27, 0.99e8, 1.01e8);
     }
-    
     function testUpdateParametersRevertsIfMaxRateBelowMinRate() public {
         vm.prank(owner);
         vm.expectRevert("Max rate must exceed min rate");
-        rateController.updateParameters(0.40e27, 0.08e27, 0.002e27, 0.99e8, 1.01e8);
+        rateController.updateParameters(0.40e27, 0.08e27, 0.002e27, 0.001e27, 0.99e8, 1.01e8);
     }
-    
-    function testUpdateParametersRevertsIfInvalidRateAdjustment() public {
+    function testUpdateParametersRevertsIfInvalidRateIncreaseAdjustment() public {
         vm.prank(owner);
-        vm.expectRevert("Rate adjustment must be positive");
-        rateController.updateParameters(0.08e27, 0.40e27, 0, 0.99e8, 1.01e8);
+        vm.expectRevert("Increase adjustment must be positive");
+        rateController.updateParameters(0.08e27, 0.40e27, 0, 0.001e27, 0.99e8, 1.01e8);
     }
-    
+    function testUpdateParametersRevertsIfInvalidRateDecreaseAdjustment() public {
+        vm.prank(owner);
+        vm.expectRevert("Decrease adjustment must be positive");
+        rateController.updateParameters(0.08e27, 0.40e27, 0.002e27, 0, 0.99e8, 1.01e8);
+    }
     function testUpdateParametersRevertsIfInvalidPriceThreshold() public {
         vm.prank(owner);
         vm.expectRevert("Price threshold must be positive");
-        rateController.updateParameters(0.08e27, 0.40e27, 0.002e27, 0, 1.01e8);
+        rateController.updateParameters(0.08e27, 0.40e27, 0.002e27, 0.001e27, 0, 1.01e8);
     }
-    
     function testUpdateParametersRevertsIfInvalidTargetPrice() public {
         vm.prank(owner);
         vm.expectRevert("Target price must be positive");
-        rateController.updateParameters(0.08e27, 0.40e27, 0.002e27, 0.99e8, 0);
+        rateController.updateParameters(0.08e27, 0.40e27, 0.002e27, 0.001e27, 0.99e8, 0);
     }
-    
     function testUpdateParametersRevertsIfThresholdExceedsTarget() public {
         vm.prank(owner);
         vm.expectRevert("Threshold cannot exceed target");
-        rateController.updateParameters(0.08e27, 0.40e27, 0.002e27, 1.02e8, 1.01e8);
+        rateController.updateParameters(0.08e27, 0.40e27, 0.002e27, 0.001e27, 1.02e8, 1.01e8);
     }
-    
     function testUpdateParametersRevertsIfCurrentRateBelowNewMin() public {
         // Set current rate to 6%
         vm.prank(owner);
         rateController.emergencyUpdateRate(0.06e27);
-        
         // Try to set minimum to 8%
         vm.prank(owner);
         vm.expectRevert("Current rate below new minimum");
-        rateController.updateParameters(0.08e27, 0.40e27, 0.002e27, 0.99e8, 1.01e8);
+        rateController.updateParameters(0.08e27, 0.40e27, 0.002e27, 0.001e27, 0.99e8, 1.01e8);
     }
-    
     function testUpdateParametersRevertsIfCurrentRateAboveNewMax() public {
         // Set current rate to 45%
         vm.prank(owner);
         rateController.emergencyUpdateRate(0.45e27);
-        
         // Set maximum to 40% - should automatically adjust current rate to 40%
         vm.prank(owner);
-        rateController.updateParameters(0.06e27, 0.40e27, 0.002e27, 0.99e8, 1.01e8);
-        
+        rateController.updateParameters(0.06e27, 0.40e27, 0.002e27, 0.001e27, 0.99e8, 1.01e8);
         // Current rate should be automatically adjusted to the new maximum
         assertEq(rateController.currentRate(), 0.40e27);
         assertEq(rateController.maxRate(), 0.40e27);
     }
-    
-    function testUpdateMaxRate() public {
-        uint256 newMaxRate = 0.40e27; // 40%
-        
-        vm.prank(owner);
-        rateController.updateMaxRate(newMaxRate);
-        
-        assertEq(rateController.maxRate(), newMaxRate);
-        // Other parameters should remain unchanged
-        assertEq(rateController.minRate(), 0.06e27);
-        assertEq(rateController.rateAdjustment(), 0.0015e27);
-        assertEq(rateController.priceThreshold(), 0.995e8);
-        assertEq(rateController.targetPrice(), 1e8);
-    }
-    
-    function testUpdateMaxRateRevertsIfNotOwner() public {
-        uint256 newMaxRate = 0.40e27; // 40%
-        
-        vm.prank(user);
-        vm.expectRevert("Ownable: caller is not the owner");
-        rateController.updateMaxRate(newMaxRate);
-    }
-    
-    function testUpdateMaxRateRevertsIfInvalid() public {
-        vm.prank(owner);
-        vm.expectRevert("Max rate must be positive");
-        rateController.updateMaxRate(0);
-    }
-    
-    function testUpdateMaxRateRevertsIfBelowMinRate() public {
-        vm.prank(owner);
-        vm.expectRevert("Max rate must exceed min rate");
-        rateController.updateMaxRate(0.05e27); // 5% (below 6% min)
-    }
-    
-    function testUpdateMaxRateRevertsIfCurrentRateAboveNewMax() public {
-        // Set current rate to 45%
-        vm.prank(owner);
-        rateController.emergencyUpdateRate(0.45e27);
-        
-        // Set maximum to 40% - should automatically adjust current rate to 40%
-        vm.prank(owner);
-        rateController.updateMaxRate(0.40e27);
-        
-        // Current rate should be automatically adjusted to the new maximum
-        assertEq(rateController.currentRate(), 0.40e27);
-        assertEq(rateController.maxRate(), 0.40e27);
-    }
-    
-    function testEmergencyUpdateRateRevertsIfAboveMaximum() public {
-        uint256 newRate = 0.60e27; // 60% (above 50% maximum)
-        
-        vm.prank(owner);
-        vm.expectRevert("Rate above maximum");
-        rateController.emergencyUpdateRate(newRate);
-    }
-    
-    function testRateDoesNotExceedMaximum() public {
-        // Set price below threshold to increase rate
+    function testRateIncreaseBelowThreshold() public {
+        // Set price below threshold (0.995)
         oracle.setPrice(0.99e8); // $0.99
-        
-        // Fast forward multiple times to increase rate
-        for (uint i = 0; i < 100; i++) {
-            vm.warp(block.timestamp + 8 hours);
-            vm.prank(owner);
-            rateController.execute(0.99e8);
-        }
-        
-        // Rate should not exceed maximum
-        assertLe(rateController.currentRate(), rateController.maxRate());
-        assertLe(rateController.getBaseVariableBorrowRate(), rateController.maxRate());
+        // Fast forward 8 hours
+        vm.warp(block.timestamp + 8 hours);
+        uint256 oldRate = rateController.currentRate();
+        // Execute rate control with offchain price below threshold
+        vm.prank(owner);
+        rateController.execute(0.99e8);
+        uint256 newRate = rateController.currentRate();
+        assertGt(newRate, oldRate);
+        assertEq(newRate, oldRate + rateController.rateIncreaseAdjustment());
+        // Check that the inherited strategy rate was also updated
+        assertEq(rateController.getBaseVariableBorrowRate(), newRate);
     }
-    
+    function testRateDecreaseAboveThreshold() public {
+        // Set price at threshold (0.995)
+        oracle.setPrice(0.995e8);
+        // Fast forward 8 hours
+        vm.warp(block.timestamp + 8 hours);
+        uint256 oldRate = rateController.currentRate();
+        // Execute rate control with offchain price at threshold
+        vm.prank(owner);
+        rateController.execute(0.995e8);
+        uint256 newRate = rateController.currentRate();
+        assertLt(newRate, oldRate);
+        assertEq(newRate, oldRate - rateController.rateDecreaseAdjustment());
+        // Check that the inherited strategy rate was also updated
+        assertEq(rateController.getBaseVariableBorrowRate(), newRate);
+    }
+    function testRateDecreaseAbovePeg() public {
+        // Set price above peg ($1.00)
+        oracle.setPrice(1e8);
+        // Fast forward 8 hours
+        vm.warp(block.timestamp + 8 hours);
+        uint256 oldRate = rateController.currentRate();
+        // Execute rate control with offchain price above peg
+        vm.prank(owner);
+        rateController.execute(1e8);
+        uint256 newRate = rateController.currentRate();
+        assertLt(newRate, oldRate);
+        assertEq(newRate, oldRate - rateController.rateDecreaseAdjustment());
+        // Check that the inherited strategy rate was also updated
+        assertEq(rateController.getBaseVariableBorrowRate(), newRate);
+    }
+    function testRateAdjustmentWithUpdatedParameters() public {
+        // Update parameters
+        vm.prank(owner);
+        rateController.updateParameters(0.05e27, 0.40e27, 0.002e27, 0.001e27, 0.99e8, 1.01e8);
+        // Set price below new threshold
+        oracle.setPrice(0.98e8); // $0.98
+        // Fast forward 8 hours
+        vm.warp(block.timestamp + 8 hours);
+        uint256 oldRate = rateController.currentRate();
+        vm.prank(owner);
+        rateController.execute(0.98e8);
+        uint256 newRate = rateController.currentRate();
+        // Should use new rate increase adjustment
+        assertEq(newRate, oldRate + 0.002e27);
+        // Now test decrease
+        oracle.setPrice(1.01e8); // $1.01
+        vm.warp(block.timestamp + 8 hours);
+        oldRate = rateController.currentRate();
+        vm.prank(owner);
+        rateController.execute(1.01e8);
+        newRate = rateController.currentRate();
+        assertEq(newRate, oldRate - 0.001e27);
+    }
     function testGetParameters() public {
         (
             uint256 minRate_,
             uint256 maxRate_,
-            uint256 rateAdjustment_,
+            uint256 rateIncreaseAdjustment_,
+            uint256 rateDecreaseAdjustment_,
             uint256 priceThreshold_,
             uint256 targetPrice_
         ) = rateController.getParameters();
-        
         assertEq(minRate_, 0.06e27);
         assertEq(maxRate_, 0.50e27);
-        assertEq(rateAdjustment_, 0.0015e27);
+        assertEq(rateIncreaseAdjustment_, 0.0015e27);
+        assertEq(rateDecreaseAdjustment_, 0.0015e27);
         assertEq(priceThreshold_, 0.995e8);
         assertEq(targetPrice_, 1e8);
     }
@@ -583,69 +570,6 @@ contract TestUsdxlInterestRateController is Test {
         rateController.execute(-1e8);
     }
     
-    function testRateIncreaseBelowThreshold() public {
-        // Set price below threshold (0.995)
-        oracle.setPrice(0.99e8); // $0.99
-        
-        // Fast forward 8 hours
-        vm.warp(block.timestamp + 8 hours);
-        
-        uint256 oldRate = rateController.currentRate();
-        
-        // Execute rate control with offchain price below threshold
-        vm.prank(owner);
-        rateController.execute(0.99e8);
-        
-        uint256 newRate = rateController.currentRate();
-        assertGt(newRate, oldRate);
-        assertEq(newRate, oldRate + rateController.rateAdjustment());
-        
-        // Check that the inherited strategy rate was also updated
-        assertEq(rateController.getBaseVariableBorrowRate(), newRate);
-    }
-    
-    function testRateDecreaseAboveThreshold() public {
-        // Set price at threshold (0.995)
-        oracle.setPrice(0.995e8);
-        
-        // Fast forward 8 hours
-        vm.warp(block.timestamp + 8 hours);
-        
-        uint256 oldRate = rateController.currentRate();
-        
-        // Execute rate control with offchain price at threshold
-        vm.prank(owner);
-        rateController.execute(0.995e8);
-        
-        uint256 newRate = rateController.currentRate();
-        assertLt(newRate, oldRate);
-        assertEq(newRate, oldRate - rateController.rateAdjustment());
-        
-        // Check that the inherited strategy rate was also updated
-        assertEq(rateController.getBaseVariableBorrowRate(), newRate);
-    }
-    
-    function testRateDecreaseAbovePeg() public {
-        // Set price above peg ($1.00)
-        oracle.setPrice(1e8);
-        
-        // Fast forward 8 hours
-        vm.warp(block.timestamp + 8 hours);
-        
-        uint256 oldRate = rateController.currentRate();
-        
-        // Execute rate control with offchain price above peg
-        vm.prank(owner);
-        rateController.execute(1e8);
-        
-        uint256 newRate = rateController.currentRate();
-        assertLt(newRate, oldRate);
-        assertEq(newRate, oldRate - rateController.rateAdjustment());
-        
-        // Check that the inherited strategy rate was also updated
-        assertEq(rateController.getBaseVariableBorrowRate(), newRate);
-    }
-    
     function testRateDoesNotGoBelowMinimum() public {
         // Set price above threshold (0.995)
         oracle.setPrice(1e8);
@@ -669,7 +593,7 @@ contract TestUsdxlInterestRateController is Test {
         // Calculate how many iterations needed to reach minimum
         uint256 currentRate = rateController.currentRate(); // 8%
         uint256 minRate = rateController.minRate(); // 6%
-        uint256 rateAdjustment = rateController.rateAdjustment(); // 0.15%
+        uint256 rateAdjustment = rateController.rateDecreaseAdjustment(); // 0.15%
         
         // Calculate iterations needed: (currentRate - minRate) / rateAdjustment
         uint256 iterationsNeeded = (currentRate - minRate) / rateAdjustment;
@@ -696,26 +620,6 @@ contract TestUsdxlInterestRateController is Test {
         // Rate should not change when at minimum and price above threshold
         assertEq(rateAfter, rateBefore);
         assertEq(rateAfter, rateController.minRate());
-    }
-    
-    function testRateAdjustmentWithUpdatedParameters() public {
-        // Update parameters
-        vm.prank(owner);
-        rateController.updateParameters(0.05e27, 0.40e27, 0.002e27, 0.99e8, 1.01e8);
-        
-        // Set price below new threshold
-        oracle.setPrice(0.98e8); // $0.98
-        
-        // Fast forward 8 hours
-        vm.warp(block.timestamp + 8 hours);
-        
-        uint256 oldRate = rateController.currentRate();
-        vm.prank(owner);
-        rateController.execute(0.98e8);
-        uint256 newRate = rateController.currentRate();
-        
-        // Should use new rate adjustment
-        assertEq(newRate, oldRate + 0.002e27);
     }
     
     function testEmergencyUpdateRate() public {
@@ -938,21 +842,8 @@ contract TestUsdxlInterestRateController is Test {
         assertEq(rateController.minRate(), newMinRate);
         // Other parameters should remain unchanged
         assertEq(rateController.maxRate(), 0.50e27);
-        assertEq(rateController.rateAdjustment(), 0.0015e27);
-        assertEq(rateController.priceThreshold(), 0.995e8);
-        assertEq(rateController.targetPrice(), 1e8);
-    }
-    
-    function testUpdateRateAdjustment() public {
-        uint256 newRateAdjustment = 0.002e27; // 0.2%
-        
-        vm.prank(owner);
-        rateController.updateRateAdjustment(newRateAdjustment);
-        
-        assertEq(rateController.rateAdjustment(), newRateAdjustment);
-        // Other parameters should remain unchanged
-        assertEq(rateController.minRate(), 0.06e27);
-        assertEq(rateController.maxRate(), 0.50e27);
+        assertEq(rateController.rateIncreaseAdjustment(), 0.0015e27);
+        assertEq(rateController.rateDecreaseAdjustment(), 0.0015e27);
         assertEq(rateController.priceThreshold(), 0.995e8);
         assertEq(rateController.targetPrice(), 1e8);
     }
@@ -967,7 +858,8 @@ contract TestUsdxlInterestRateController is Test {
         // Other parameters should remain unchanged
         assertEq(rateController.minRate(), 0.06e27);
         assertEq(rateController.maxRate(), 0.50e27);
-        assertEq(rateController.rateAdjustment(), 0.0015e27);
+        assertEq(rateController.rateIncreaseAdjustment(), 0.0015e27);
+        assertEq(rateController.rateDecreaseAdjustment(), 0.0015e27);
         assertEq(rateController.targetPrice(), 1e8);
     }
     
@@ -981,7 +873,8 @@ contract TestUsdxlInterestRateController is Test {
         // Other parameters should remain unchanged
         assertEq(rateController.minRate(), 0.06e27);
         assertEq(rateController.maxRate(), 0.50e27);
-        assertEq(rateController.rateAdjustment(), 0.0015e27);
+        assertEq(rateController.rateIncreaseAdjustment(), 0.0015e27);
+        assertEq(rateController.rateDecreaseAdjustment(), 0.0015e27);
         assertEq(rateController.priceThreshold(), 0.995e8);
     }
     
