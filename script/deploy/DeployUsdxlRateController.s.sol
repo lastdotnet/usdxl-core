@@ -33,7 +33,7 @@ contract DeployUsdxlInterestRateController is Script {
             usdxlOracle: 0xe52085B9BBc0beF8294ecD0546f8cb5158BB2eAA,
             usdxlReserve: 0xca79db4B49f608eF54a5CB813FbEd3a6387bC645,
             wrappedHypeGateway: 0xd1EF87FeFA83154F83541b68BD09185e15463972,
-            initialRate: 0.1345e27, // 13.45% in ray
+            initialRate: 0.136e27, // 13.6% in ray
             initialPerpetualLoanAmount: 0.01e18, // 0.01 USDXL
             initialETHAmount: 0.1 ether // 0.1 ETH for perpetual loan
         });
