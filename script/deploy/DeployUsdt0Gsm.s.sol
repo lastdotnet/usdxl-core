@@ -38,12 +38,12 @@ contract DeployUsdt0Gsm is Script {
             usdt0Token: 0xB8CE59FC3717ada4C02eaDF9682A9e934F625ebb, // USDT0 token address - UPDATE THIS
             usdxlAdmin: 0xC2b3075fB1AC9f5eCc1e2C07dA8bcCC43e7083fb, // USDXL admin address
             gsmOwner: 0xC2b3075fB1AC9f5eCc1e2C07dA8bcCC43e7083fb, // GSM owner address
-            treasury: 0xC2b3075fB1AC9f5eCc1e2C07dA8bcCC43e7083fb, // Treasury address
+            treasury: 0xdC6E5b7aA6fCbDECC1Fda2b1E337ED8569730288, // Collector address
             priceRatio: 1e18, // 1:1 price ratio (1 USDT0 = 1 USDXL)
             buyFee: 0.02e4, // 2% buy fee
             sellFee: 0, // 0% sell fee
-            exposureCap: 1000000e6, // 1M USDT0 exposure cap (assuming 6 decimals)
-            gsmCapacity: 1000000e18 // 1M USDXL capacity
+            exposureCap: 10000000e6, // 10M USDT0 exposure cap (assuming 6 decimals)
+            gsmCapacity: 10000000e18 // 10M USDXL capacity
         });
 
         console2.log("=== USDT0 GSM Deployment Script ===");
