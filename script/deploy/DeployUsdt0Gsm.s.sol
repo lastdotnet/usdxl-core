@@ -6,7 +6,6 @@ import {console2} from "forge-std/console2.sol";
 import {Gsm} from "../../src/contracts/facilitators/gsm/Gsm.sol";
 import {FixedPriceStrategy} from "../../src/contracts/facilitators/gsm/priceStrategy/FixedPriceStrategy.sol";
 import {FixedFeeStrategy} from "../../src/contracts/facilitators/gsm/feeStrategy/FixedFeeStrategy.sol";
-import {CustomERC1967Proxy} from "./CustomERC1967Proxy.sol";
 import {TransparentUpgradeableProxy} from "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 import {ProxyAdmin} from "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol";
 import {IUsdxlToken} from "../../src/contracts/usdxl/interfaces/IUsdxlToken.sol";
@@ -140,7 +139,7 @@ contract DeployUsdt0Gsm is Script {
         console2.log("\n9. Transferring proxy admin to final owner...");
         proxyAdmin.changeProxyAdmin(gsmProxy, config.gsmOwner);
         proxyAdmin.transferOwnership(config.gsmOwner);
-        console2.log("Proxy admin transferred to:", config.gsmOwner);
+        console2.log("Proxy admin transferred to:", config.gsmOwner);s
 
         vm.stopBroadcast();
 
