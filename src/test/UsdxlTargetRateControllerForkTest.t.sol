@@ -355,6 +355,59 @@ contract UsdxlTargetRateControllerForkTest is Test {
         console.log("Parameter updates test completed");
     }
 
+    function testBaseRateWindowUpdate() public {
+        console.log("Testing base rate window update...");
+        
+        // Test valid base rate window update
+        uint256 newBaseRateWindow = 72 hours; // 3 days
+        vm.prank(owner);
+        rateController.updateBaseRateWindow(newBaseRateWindow);
+        
+        assertEq(rateController.baseRateWindow(), newBaseRateWindow);
+        
+        // Test that max samples is updated correctly
+        uint256 expectedMaxSamples = newBaseRateWindow / rateController.executionInterval();
+        assertEq(rateController.getMaxSamples(), expectedMaxSamples);
+        
+        // Test invalid base rate window (less than execution interval)
+        vm.prank(owner);
+        vm.expectRevert("Base rate window must be >= execution interval");
+        rateController.updateBaseRateWindow(2 hours); // Less than 4 hour execution interval
+        
+        // Test invalid base rate window (not exact multiple)
+        vm.prank(owner);
+        vm.expectRevert("Base rate window must be exact multiple of execution interval");
+        rateController.updateBaseRateWindow(50 hours); // Not exact multiple of 4 hours
+        
+        // Test valid exact multiple
+        uint256 validBaseRateWindow = 80 hours; // 20 * 4 hours
+        vm.prank(owner);
+        rateController.updateBaseRateWindow(validBaseRateWindow);
+        
+        assertEq(rateController.baseRateWindow(), validBaseRateWindow);
+        
+        console.log("Base rate window update test completed");
+    }
+
+    function testBaseRateWindowConstraints() public {
+        console.log("Testing base rate window constraints...");
+        
+        // Test that base rate window can be equal to execution interval
+        vm.prank(owner);
+        rateController.updateBaseRateWindow(4 hours); // Equal to execution interval
+        assertEq(rateController.baseRateWindow(), 4 hours);
+        
+        // Test that base rate window can be multiple of execution interval
+        vm.prank(owner);
+        rateController.updateBaseRateWindow(24 hours); // 6 * 4 hours
+        assertEq(rateController.baseRateWindow(), 24 hours);
+        
+        // Test that max samples is calculated correctly
+        assertEq(rateController.getMaxSamples(), 6); // 24 hours / 4 hours = 6
+        
+        console.log("Base rate window constraints test completed");
+    }
+
     function testEmergencyUpdateRate() public {
         console.log("Testing emergency update rate...");
         

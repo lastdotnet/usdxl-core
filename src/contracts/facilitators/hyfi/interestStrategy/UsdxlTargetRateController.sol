@@ -34,7 +34,6 @@ contract UsdxlTargetRateController is UsdxlMutableInterestRateStrategy, Reentran
     uint256 public halvingFactor; // Fixed input for rate adjustment
     uint256 public minimumChange; // Minimum change threshold
     
-    
     // State variables
     IUsdxlToken public immutable USDXL_TOKEN;
     address public immutable USDT0_TOKEN;
@@ -44,8 +43,8 @@ contract UsdxlTargetRateController is UsdxlMutableInterestRateStrategy, Reentran
     uint256 public currentRate;
     uint256 public executionInterval;
     
-    // Base rate calculation state - 48-hour trailing average
-    uint256 public constant BASE_RATE_WINDOW = 48 hours;
+    // Base rate calculation state - configurable trailing average window
+    uint256 public baseRateWindow = 48 hours;
     
     // Circular buffer for storing USDT0 borrow rate samples
     uint256[] public usdt0RateSamples;
@@ -74,6 +73,8 @@ contract UsdxlTargetRateController is UsdxlMutableInterestRateStrategy, Reentran
     event HYPESupplied(uint256 amount, uint256 timestamp);
     event HYPEWithdrawnFromPool(uint256 amount, address recipient, uint256 timestamp);
     event ExecutorUpdated(address executor, bool enabled, uint256 timestamp);
+    event ExecutionIntervalUpdated(uint256 newInterval, uint256 timestamp);
+    event BaseRateWindowUpdated(uint256 newBaseRateWindow, uint256 timestamp);
 
     // Errors
     error ExecutionTooEarly();
@@ -120,7 +121,7 @@ contract UsdxlTargetRateController is UsdxlMutableInterestRateStrategy, Reentran
         
         // Initialize circular buffer for USDT0 rate samples
         // Calculate max samples based on BASE_RATE_WINDOW / executionInterval
-        uint256 maxSamples = BASE_RATE_WINDOW / executionInterval;
+        uint256 maxSamples = baseRateWindow / executionInterval;
         usdt0RateSamples = new uint256[](maxSamples);
         sampleIndex = 0;
         totalSamples = 0;
@@ -306,7 +307,7 @@ contract UsdxlTargetRateController is UsdxlMutableInterestRateStrategy, Reentran
      */
     function _addUsdt0RateSample(uint256 rate) internal {
         // Calculate max samples based on current execution interval
-        uint256 maxSamples = BASE_RATE_WINDOW / executionInterval;
+        uint256 maxSamples = baseRateWindow / executionInterval;
         
         // Add the new sample to the circular buffer
         usdt0RateSamples[sampleIndex] = rate;
@@ -370,7 +371,7 @@ contract UsdxlTargetRateController is UsdxlMutableInterestRateStrategy, Reentran
      * @return The maximum number of samples that can be stored
      */
     function getMaxSamples() external view returns (uint256) {
-        return BASE_RATE_WINDOW / executionInterval;
+        return baseRateWindow / executionInterval;
     }
 
     /**
@@ -381,7 +382,7 @@ contract UsdxlTargetRateController is UsdxlMutableInterestRateStrategy, Reentran
      * @return maxSamples Maximum number of samples that can be stored
      */
     function getUsdt0RateSamples() external view returns (uint256[] memory samples, uint256 currentIndex, uint256 total, uint256 maxSamples) {
-        maxSamples = BASE_RATE_WINDOW / executionInterval;
+        maxSamples = baseRateWindow / executionInterval;
         samples = new uint256[](totalSamples);
         for (uint256 i = 0; i < totalSamples; i++) {
             samples[i] = usdt0RateSamples[i];
@@ -447,16 +448,40 @@ contract UsdxlTargetRateController is UsdxlMutableInterestRateStrategy, Reentran
      */
     function updateExecutionInterval(uint256 newInterval) external onlyOwner {
         require(newInterval > 0, "Execution interval must be positive");
-        require(newInterval <= BASE_RATE_WINDOW, "Execution interval cannot exceed base rate window");
+        require(newInterval <= baseRateWindow, "Execution interval cannot exceed base rate window");
         
-        uint256 oldMaxSamples = BASE_RATE_WINDOW / executionInterval;
+        uint256 oldMaxSamples = baseRateWindow / executionInterval;
         executionInterval = newInterval;
-        uint256 newMaxSamples = BASE_RATE_WINDOW / executionInterval;
+        uint256 newMaxSamples = baseRateWindow / executionInterval;
         
         // If the new max samples is different, we need to resize the buffer
         if (newMaxSamples != oldMaxSamples) {
             _resizeBuffer(newMaxSamples);
         }
+        
+        emit ExecutionIntervalUpdated(executionInterval, block.timestamp);
+    }
+
+    /**
+     * @notice Update the base rate window
+     * @param newBaseRateWindow The new base rate window in seconds
+     * @dev Only callable by owner
+     * @dev Must be >= executionInterval and an exact multiple of executionInterval
+     */
+    function updateBaseRateWindow(uint256 newBaseRateWindow) external onlyOwner {
+        require(newBaseRateWindow >= executionInterval, "Base rate window must be >= execution interval");
+        require(newBaseRateWindow % executionInterval == 0, "Base rate window must be exact multiple of execution interval");
+        
+        uint256 oldMaxSamples = baseRateWindow / executionInterval;
+        baseRateWindow = newBaseRateWindow;
+        uint256 newMaxSamples = baseRateWindow / executionInterval;
+        
+        // If the new max samples is different, we need to resize the buffer
+        if (newMaxSamples != oldMaxSamples) {
+            _resizeBuffer(newMaxSamples);
+        }
+        
+        emit BaseRateWindowUpdated(baseRateWindow, block.timestamp);
     }
 
     /**
@@ -473,10 +498,14 @@ contract UsdxlTargetRateController is UsdxlMutableInterestRateStrategy, Reentran
         // Copy existing samples, keeping the most recent ones
         uint256 samplesToCopy = oldTotalSamples > newMaxSamples ? newMaxSamples : oldTotalSamples;
         
-        for (uint256 i = 0; i < samplesToCopy; i++) {
-            // Start from the most recent samples
-            uint256 oldIndex = (sampleIndex - samplesToCopy + i + oldSamples.length) % oldSamples.length;
-            usdt0RateSamples[i] = oldSamples[oldIndex];
+        if (samplesToCopy > 0 && oldSamples.length > 0) {
+            for (uint256 i = 0; i < samplesToCopy; i++) {
+                // Start from the most recent samples
+                // Calculate the starting index for the most recent samples
+                uint256 startIndex = sampleIndex >= samplesToCopy ? sampleIndex - samplesToCopy : 0;
+                uint256 oldIndex = (startIndex + i) % oldSamples.length;
+                usdt0RateSamples[i] = oldSamples[oldIndex];
+            }
         }
         
         // Reset indices
@@ -519,15 +548,19 @@ contract UsdxlTargetRateController is UsdxlMutableInterestRateStrategy, Reentran
      * @return rateFactor_ The current rate factor
      * @return halvingFactor_ The current halving factor
      * @return minimumChange_ The current minimum change
+     * @return baseRateWindow_ The current base rate window
+     * @return executionInterval_ The current execution interval
      */
     function getParameters() external view returns (
         uint256 baseRate_,
         uint256 targetPrice_,
         uint256 rateFactor_,
         uint256 halvingFactor_,
-        uint256 minimumChange_
+        uint256 minimumChange_,
+        uint256 baseRateWindow_,
+        uint256 executionInterval_
     ) {
-        return (_calculateTrailingAverage(), targetPrice, rateFactor, halvingFactor, minimumChange);
+        return (_calculateTrailingAverage(), targetPrice, rateFactor, halvingFactor, minimumChange, baseRateWindow, executionInterval);
     }
 
     /**
