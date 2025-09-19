@@ -27,8 +27,8 @@ contract UsdxlTargetRateController is UsdxlMutableInterestRateStrategy, Reentran
     using SafeERC20 for IERC20;
 
     // Target Rate Calculation Parameters
-    uint256 public targetPrice; // USDXL price at which USDXL Rate = USDT0 Rate (0.998)
-    uint256 public rateFactor; // Fixed input for target rate calculation
+    uint256 public targetPrice = 0.998e8; // USDXL price at which USDXL Rate = USDT0 Rate (0.998)
+    uint256 public rateFactor = 3; // Fixed input for target rate calculation
     
     // Rate Update Parameters
     uint256 public halvingFactor; // Fixed input for rate adjustment
@@ -129,7 +129,7 @@ contract UsdxlTargetRateController is UsdxlMutableInterestRateStrategy, Reentran
         
         // Initialize parameters with default values
         targetPrice = 0.998e8; // 0.998 USD (8 decimals)
-        rateFactor = 1e27; // 1.0 (100% in ray)
+        rateFactor = 3; // 3 (whole number)
         halvingFactor = 2e27; // 2.0 (200% in ray)
         minimumChange = 0.001e27; // 0.1% minimum change (in ray)
         
@@ -269,26 +269,29 @@ contract UsdxlTargetRateController is UsdxlMutableInterestRateStrategy, Reentran
     }
 
     /**
-     * @notice Apply rate factor to price ratio using efficient calculation
+     * @notice Apply rate factor to price ratio using loop-based power calculation
      * @param priceRatio The price ratio (Target Price / Current Price)
-     * @return The adjusted ratio after applying rate factor
+     * @return result The adjusted ratio after applying rate factor
+     * @dev Implements (priceRatio)^rateFactor by multiplying priceRatio by itself rateFactor times
      */
-    function _applyRateFactor(uint256 priceRatio) internal view returns (uint256) {
-        if (rateFactor == 1e27) {
-            return priceRatio; // No change if rate factor is 1 (100% in ray)
+    function _applyRateFactor(uint256 priceRatio) internal view returns (uint256 result) {
+        if (rateFactor == 1) {
+            return priceRatio; // No change if rate factor is 1
         }
         
-        // For rate factor > 1, we want to amplify the effect
-        // For rate factor < 1, we want to dampen the effect
-        if (rateFactor > 1e27) {
-            // Amplify: multiply by rateFactor and divide by 1e27
-            return (priceRatio * rateFactor) / 1e27;
-        } else if (rateFactor < 1e27 && rateFactor > 0) {
-            // Dampen: multiply by rateFactor and divide by 1e27
-            return (priceRatio * rateFactor) / 1e27;
+        if (rateFactor == 0) {
+            return 1e27; // Return 1 in ray if rate factor is 0
         }
         
-        return priceRatio;
+        // Apply power operation: multiply priceRatio by itself 'rateFactor' times
+        // Each multiplication is followed by division by 1e27 to maintain precision
+        result = priceRatio;
+        
+        for (uint256 i = 0; i < rateFactor; i++) {
+            result = (result * priceRatio) / 1e27;
+        }
+        
+        return result;
     }
 
     /**
@@ -403,7 +406,7 @@ contract UsdxlTargetRateController is UsdxlMutableInterestRateStrategy, Reentran
      * @param offchainPrice Optional offchain price
      * @return The USDXL price in USD (8 decimals)
      */
-    function _getUsdxlPrice(int256 offchainPrice) internal view returns (uint256) {
+    function _getUsdxlPrice(int256 offchainPrice) internal pure returns (uint256) {
         require(offchainPrice > 0, "Offchain price must be positive");
         return uint256(offchainPrice);
     }
@@ -423,7 +426,7 @@ contract UsdxlTargetRateController is UsdxlMutableInterestRateStrategy, Reentran
         uint256 newMinimumChange
     ) external onlyOwner {
         require(newTargetPrice > 0, "Target price must be positive");
-        require(newRateFactor > 0, "Rate factor must be positive");
+        require(newRateFactor >= 0, "Rate factor must be non-negative");
         require(newHalvingFactor > 0, "Halving factor must be positive");
         require(newMinimumChange > 0, "Minimum change must be positive");
         

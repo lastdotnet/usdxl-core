@@ -192,7 +192,7 @@ contract UsdxlTargetRateControllerForkTest is Test {
         assertEq(rateController.owner(), owner);
         assertEq(rateController.currentRate(), INITIAL_RATE);
         assertEq(rateController.targetPrice(), 0.998e8);
-        assertEq(rateController.rateFactor(), 1e27);
+        assertEq(rateController.rateFactor(), 3);
         assertEq(rateController.halvingFactor(), 2e27);
         assertEq(rateController.minimumChange(), 0.001e27);
         // baseRate is now dynamically calculated from USDT0 borrow rate
@@ -259,8 +259,7 @@ contract UsdxlTargetRateControllerForkTest is Test {
         // Test with USDXL price below target (0.99 vs 0.998)
         // Should result in higher target rate
         uint256 usdxlPrice = 0.99e8;
-        uint256 usdtPrice = 1.0e8;
-        
+
         vm.warp(block.timestamp + 4 hours + 1);
         
         vm.prank(executor);
@@ -285,7 +284,7 @@ contract UsdxlTargetRateControllerForkTest is Test {
         vm.prank(owner);
         rateController.updateParameters(
             0.998e8, // targetPrice
-            1e27,    // rateFactor (100% in ray)
+            2,       // rateFactor (2)
             4e27,    // halvingFactor (400% in ray)
             0.001e27 // minimumChange
         );
@@ -313,7 +312,7 @@ contract UsdxlTargetRateControllerForkTest is Test {
         vm.prank(owner);
         rateController.updateParameters(
             0.998e8, // targetPrice
-            1e27,    // rateFactor (100% in ray)
+            1,       // rateFactor (1)
             2e27,    // halvingFactor (200% in ray)
             0.1e27   // minimumChange (10% - very high)
         );
@@ -333,7 +332,7 @@ contract UsdxlTargetRateControllerForkTest is Test {
         console.log("Testing parameter updates...");
         
         uint256 newTargetPrice = 0.999e8;
-        uint256 newRateFactor = 2e27;
+        uint256 newRateFactor = 2;
         uint256 newHalvingFactor = 3e27;
         uint256 newMinimumChange = 0.002e27;
         
