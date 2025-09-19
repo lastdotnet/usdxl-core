@@ -192,9 +192,9 @@ contract UsdxlTargetRateControllerForkTest is Test {
         assertEq(rateController.owner(), owner);
         assertEq(rateController.currentRate(), INITIAL_RATE);
         assertEq(rateController.targetPrice(), 0.998e8);
-        assertEq(rateController.rateFactor(), 3);
-        assertEq(rateController.halvingFactor(), 2e27);
-        assertEq(rateController.minimumChange(), 0.001e27);
+        assertEq(rateController.rateFactor(), 100);
+        assertEq(rateController.halvingFactor(), 10e27);
+        assertEq(rateController.minimumChange(), 0.0005e27);
         // baseRate is now dynamically calculated from USDT0 borrow rate
         // Should be > 0 since we add an initial sample in constructor
         assertTrue(rateController.baseRate() > 0);

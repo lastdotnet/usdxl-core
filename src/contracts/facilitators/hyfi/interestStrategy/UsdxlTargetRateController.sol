@@ -26,13 +26,13 @@ import {AggregatorV3Interface} from '@hypurrfi/contracts/oracle/interfaces/Aggre
 contract UsdxlTargetRateController is UsdxlMutableInterestRateStrategy, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
-    // Target Rate Calculation Parameters
-    uint256 public targetPrice = 0.998e8; // USDXL price at which USDXL Rate = USDT0 Rate (0.998)
-    uint256 public rateFactor = 3; // Fixed input for target rate calculation
-    
     // Rate Update Parameters
-    uint256 public halvingFactor; // Fixed input for rate adjustment
-    uint256 public minimumChange; // Minimum change threshold
+    uint256 public targetPrice = 0.998e8; // USDXL price at which USDXL Rate = USDT0 Rate (0.998)
+    uint256 public rateFactor = 100; // Fixed input for target rate calculation
+    uint256 public halvingFactor = 10e27; // Fixed input for rate adjustment
+    uint256 public minimumChange = 0.0005e27; // Minimum change threshold (0.05%)
+    uint256 public executionInterval = 4 hours;
+    uint256 public baseRateWindow = 48 hours;
     
     // State variables
     IUsdxlToken public immutable USDXL_TOKEN;
@@ -41,10 +41,6 @@ contract UsdxlTargetRateController is UsdxlMutableInterestRateStrategy, Reentran
     
     uint256 public lastExecutionTime;
     uint256 public currentRate;
-    uint256 public executionInterval;
-    
-    // Base rate calculation state - configurable trailing average window
-    uint256 public baseRateWindow = 48 hours;
     
     // Circular buffer for storing USDT0 borrow rate samples
     uint256[] public usdt0RateSamples;
@@ -127,12 +123,6 @@ contract UsdxlTargetRateController is UsdxlMutableInterestRateStrategy, Reentran
         totalSamples = 0;
         lastSampleTime = block.timestamp;
         
-        // Initialize parameters with default values
-        targetPrice = 0.998e8; // 0.998 USD (8 decimals)
-        rateFactor = 3; // 3 (whole number)
-        halvingFactor = 2e27; // 2.0 (200% in ray)
-        minimumChange = 0.001e27; // 0.1% minimum change (in ray)
-        
         // Add initial USDT0 rate sample to the circular buffer
         uint256 initialUsdt0Rate = _sampleUsdt0Rate();
         _addUsdt0RateSample(initialUsdt0Rate);
@@ -160,7 +150,7 @@ contract UsdxlTargetRateController is UsdxlMutableInterestRateStrategy, Reentran
             return;
         }
         
-        if (offchainUsdxlPrice == 0) {
+        if (offchainUsdxlPrice <= 0) {
             emit ExecutionSkipped(2, block.timestamp); // Reason 2: Invalid price
             return;
         }
