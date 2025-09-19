@@ -97,10 +97,7 @@ contract UsdxlTargetRateControllerForkTest is Test {
         rateController = new UsdxlTargetRateController{value: INITIAL_ETH}(
             address(addressesProvider),
             address(usdxlToken),
-            USDXL, // USDXL reserve
-            USDT,  // USDT0 reserve
-            USDXL_PRICE_FEED,
-            USDT_PRICE_FEED,
+            USDT,  // USDT0 token
             INITIAL_RATE,
             owner,
             address(wrappedHypeGateway)
@@ -243,7 +240,7 @@ contract UsdxlTargetRateControllerForkTest is Test {
         vm.prank(executor);
         
         // Execute with offchain prices
-        rateController.execute(int256(0.99e8), int256(1.0e8));
+        rateController.execute(int256(0.99e8));
         
         // Verify execution time was updated
         assertEq(rateController.lastExecutionTime(), block.timestamp);
@@ -267,7 +264,7 @@ contract UsdxlTargetRateControllerForkTest is Test {
         vm.warp(block.timestamp + 4 hours + 1);
         
         vm.prank(executor);
-        rateController.execute(int256(usdxlPrice), int256(usdtPrice));
+        rateController.execute(int256(usdxlPrice));
         
         // The target rate should be higher than base rate due to price being below target
         // Target Rate = Base Rate * (Target Price / Current Price)^Rate Factor
@@ -296,7 +293,7 @@ contract UsdxlTargetRateControllerForkTest is Test {
         vm.warp(block.timestamp + 4 hours + 1);
         
         vm.prank(executor);
-        rateController.execute(int256(0.99e8), int256(1.0e8));
+        rateController.execute(int256(0.99e8));
         
         // With halving factor of 4, the adjustment should be 1/4 of the difference
         // This should result in a smaller rate change
@@ -324,7 +321,7 @@ contract UsdxlTargetRateControllerForkTest is Test {
         vm.warp(block.timestamp + 4 hours + 1);
         
         vm.prank(executor);
-        rateController.execute(int256(0.999e8), int256(1.0e8));
+        rateController.execute(int256(0.999e8));
         
         // Rate should not change due to minimum change threshold
         assertEq(rateController.currentRate(), INITIAL_RATE);
@@ -398,7 +395,7 @@ contract UsdxlTargetRateControllerForkTest is Test {
         
         vm.prank(unauthorized);
         vm.expectRevert("Unauthorized executor");
-        rateController.execute(int256(0.99e8), int256(1.0e8));
+        rateController.execute(int256(0.99e8));
         
         console.log("Unauthorized execution test completed");
     }
@@ -428,7 +425,7 @@ contract UsdxlTargetRateControllerForkTest is Test {
         
         // Execute once
         vm.prank(executor);
-        rateController.execute(int256(0.99e8), int256(1.0e8));
+        rateController.execute(int256(0.99e8));
         
         // Should not be due immediately after
         assertFalse(rateController.isExecutionDue());
@@ -448,7 +445,7 @@ contract UsdxlTargetRateControllerForkTest is Test {
         
         // Execute once
         vm.prank(executor);
-        rateController.execute(int256(0.99e8), int256(1.0e8));
+        rateController.execute(int256(0.99e8));
         
         // Should be last execution + interval
         assertEq(rateController.getNextExecutionTime(), rateController.lastExecutionTime() + 4 hours);

@@ -34,14 +34,10 @@ contract UsdxlTargetRateController is UsdxlMutableInterestRateStrategy, Reentran
     uint256 public halvingFactor; // Fixed input for rate adjustment
     uint256 public minimumChange; // Minimum change threshold
     
-    // Oracle and Price Data
-    address public usdt0Reserve; // USDT0 reserve address for base rate calculation
-    AggregatorV3Interface public usdxlPriceFeed; // Chainlink oracle for USDXL price
-    AggregatorV3Interface public usdt0PriceFeed; // Chainlink oracle for USDT0 price
     
     // State variables
     IUsdxlToken public immutable USDXL_TOKEN;
-    address public immutable USDXL_RESERVE;
+    address public immutable USDT0_TOKEN;
     IWrappedHypeGateway public immutable WRAPPED_HYPE_GATEWAY;
     
     uint256 public lastExecutionTime;
@@ -65,7 +61,7 @@ contract UsdxlTargetRateController is UsdxlMutableInterestRateStrategy, Reentran
     event TargetRateCalculated(uint256 baseRate, uint256 targetRate, uint256 usdxlPrice, uint256 timestamp);
     event BaseRateUpdated(uint256 newBaseRate, uint256 timestamp);
     event ExecutionSkipped(uint256 reason, uint256 timestamp);
-    event PriceDataEmitted(uint256 usdxlPrice, uint256 usdt0Price, uint256 timestamp);
+    event PriceDataEmitted(uint256 usdxlPrice, uint256 timestamp);
     event ParametersUpdated(
         uint256 targetPrice,
         uint256 rateFactor,
@@ -98,10 +94,7 @@ contract UsdxlTargetRateController is UsdxlMutableInterestRateStrategy, Reentran
      * @dev Constructor
      * @param addressesProvider The Aave V3 Pool Addresses Provider
      * @param usdxlToken The USDXL token address
-     * @param usdxlReserve The USDXL reserve address in the pool
-     * @param usdt0Reserve_ The USDT0 reserve address for base rate calculation
-     * @param usdxlPriceFeed_ The Chainlink price feed for USDXL
-     * @param usdt0PriceFeed_ The Chainlink price feed for USDT0
+     * @param usdt0Token The USDT0 token address
      * @param initialRate The initial interest rate (in ray)
      * @param owner The owner address
      * @param wrappedHypeGateway The WrappedHypeGateway address
@@ -109,27 +102,17 @@ contract UsdxlTargetRateController is UsdxlMutableInterestRateStrategy, Reentran
     constructor(
         address addressesProvider,
         address usdxlToken,
-        address usdxlReserve,
-        address usdt0Reserve_,
-        address usdxlPriceFeed_,
-        address usdt0PriceFeed_,
+        address usdt0Token,
         uint256 initialRate,
         address owner,
         address wrappedHypeGateway
     ) UsdxlMutableInterestRateStrategy(addressesProvider, initialRate, owner) payable {
         require(usdxlToken != address(0), "Invalid USDXL token");
-        require(usdxlReserve != address(0), "Invalid USDXL reserve");
-        require(usdt0Reserve_ != address(0), "Invalid USDT0 reserve");
-        require(usdxlPriceFeed_ != address(0), "Invalid USDXL price feed");
-        require(usdt0PriceFeed_ != address(0), "Invalid USDT0 price feed");
         require(wrappedHypeGateway != address(0), "Invalid WrappedHypeGateway");
 
         USDXL_TOKEN = IUsdxlToken(usdxlToken);
-        USDXL_RESERVE = usdxlReserve;
+        USDT0_TOKEN = usdt0Token;
         WRAPPED_HYPE_GATEWAY = IWrappedHypeGateway(wrappedHypeGateway);
-        usdt0Reserve = usdt0Reserve_;
-        usdxlPriceFeed = AggregatorV3Interface(usdxlPriceFeed_);
-        usdt0PriceFeed = AggregatorV3Interface(usdt0PriceFeed_);
         
         currentRate = initialRate;
         lastExecutionTime = block.timestamp;
@@ -168,29 +151,27 @@ contract UsdxlTargetRateController is UsdxlMutableInterestRateStrategy, Reentran
      * @notice Execute rate control logic
      * @dev Implements two-step process: Calculate Target Rate, then adjust Current Rate
      * @param offchainUsdxlPrice Optional offchain-calculated USDXL price (8 decimals)
-     * @param offchainUsdt0Price Optional offchain-calculated USDT0 price (8 decimals)
      */
-    function execute(int256 offchainUsdxlPrice, int256 offchainUsdt0Price) external nonReentrant onlyOwnerOrExecutor {
+    function execute(int256 offchainUsdxlPrice) external nonReentrant onlyOwnerOrExecutor {
         // Check if enough time has passed since last execution
         if (block.timestamp < lastExecutionTime + executionInterval) {
             emit ExecutionSkipped(1, block.timestamp); // Reason 1: Too early
             return;
         }
-
-        // Get current prices
-        uint256 usdxlPrice = _getUsdxlPrice(offchainUsdxlPrice);
-        uint256 usdt0Price = _getUsdt0Price(offchainUsdt0Price);
         
-        if (usdxlPrice == 0 || usdt0Price == 0) {
+        if (offchainUsdxlPrice == 0) {
             emit ExecutionSkipped(2, block.timestamp); // Reason 2: Invalid price
             return;
         }
 
+        // Convert offchain price to uint256
+        uint256 usdxlPrice = uint256(offchainUsdxlPrice);
+        
         // Emit price data for transparency
-        emit PriceDataEmitted(usdxlPrice, usdt0Price, block.timestamp);
+        emit PriceDataEmitted(usdxlPrice, block.timestamp);
 
         // Step 1: Calculate Target Rate
-        uint256 targetRate = _calculateTargetRate(usdxlPrice, usdt0Price);
+        uint256 targetRate = _calculateTargetRate(usdxlPrice);
         uint256 currentBaseRate = _calculateTrailingAverage(); // Get current base rate for event
         emit TargetRateCalculated(currentBaseRate, targetRate, usdxlPrice, block.timestamp);
 
@@ -209,11 +190,10 @@ contract UsdxlTargetRateController is UsdxlMutableInterestRateStrategy, Reentran
 
     /**
      * @notice Calculate target rate based on the formula
-     * @param usdxlPrice Current USDXL price from Chainlink
-     * @param usdt0Price Current USDT0 price from Chainlink
+     * @param usdxlPrice Current USDXL price from oracle
      * @return targetRate The calculated target rate
      */
-    function _calculateTargetRate(uint256 usdxlPrice, uint256 usdt0Price) internal returns (uint256) {
+    function _calculateTargetRate(uint256 usdxlPrice) internal returns (uint256) {
         // Update base rate if needed
         uint256 currentBaseRate = _getCurrentBaseRate();
         
@@ -225,7 +205,7 @@ contract UsdxlTargetRateController is UsdxlMutableInterestRateStrategy, Reentran
         
         // Apply rate factor using simple multiplication/division
         // For rateFactor = 1e27, no change; for rateFactor > 1e27, amplify; for rateFactor < 1e27, dampen
-        uint256 adjustedRatio = _applyRateFactor(priceRatio, rateFactor);
+        uint256 adjustedRatio = _applyRateFactor(priceRatio);
         
         // Calculate final target rate
         uint256 targetRate = (currentBaseRate * adjustedRatio) / 1e27;
@@ -290,10 +270,9 @@ contract UsdxlTargetRateController is UsdxlMutableInterestRateStrategy, Reentran
     /**
      * @notice Apply rate factor to price ratio using efficient calculation
      * @param priceRatio The price ratio (Target Price / Current Price)
-     * @param rateFactor The rate factor (in 27 decimals/ray)
      * @return The adjusted ratio after applying rate factor
      */
-    function _applyRateFactor(uint256 priceRatio, uint256 rateFactor) internal pure returns (uint256) {
+    function _applyRateFactor(uint256 priceRatio) internal view returns (uint256) {
         if (rateFactor == 1e27) {
             return priceRatio; // No change if rate factor is 1 (100% in ray)
         }
@@ -317,7 +296,7 @@ contract UsdxlTargetRateController is UsdxlMutableInterestRateStrategy, Reentran
      */
     function _sampleUsdt0Rate() internal view returns (uint256) {
         IPool pool = IPool(ADDRESSES_PROVIDER.getPool());
-        DataTypes.ReserveData memory reserveData = pool.getReserveData(usdt0Reserve);
+        DataTypes.ReserveData memory reserveData = pool.getReserveData(address(USDT0_TOKEN));
         return reserveData.currentVariableBorrowRate;
     }
 
@@ -424,62 +403,9 @@ contract UsdxlTargetRateController is UsdxlMutableInterestRateStrategy, Reentran
      * @return The USDXL price in USD (8 decimals)
      */
     function _getUsdxlPrice(int256 offchainPrice) internal view returns (uint256) {
-        if (offchainPrice > 0) {
-            return uint256(offchainPrice);
-        }
-        
-        try usdxlPriceFeed.latestRoundData() returns (
-            uint80,
-            int256 answer,
-            uint256,
-            uint256,
-            uint80
-        ) {
-            if (answer <= 0) return 0;
-            
-            // Convert to 8 decimals (assuming oracle returns 8 decimals)
-            uint8 decimals = usdxlPriceFeed.decimals();
-            if (decimals >= 8) {
-                return uint256(answer) / (10 ** (decimals - 8));
-            } else {
-                return uint256(answer) * (10 ** (8 - decimals));
-            }
-        } catch {
-            return 0;
-        }
+        require(offchainPrice > 0, "Offchain price must be positive");
+        return uint256(offchainPrice);
     }
-
-    /**
-     * @notice Get USDT0 price from Chainlink oracle
-     * @param offchainPrice Optional offchain price
-     * @return The USDT0 price in USD (8 decimals)
-     */
-    function _getUsdt0Price(int256 offchainPrice) internal view returns (uint256) {
-        if (offchainPrice > 0) {
-            return uint256(offchainPrice);
-        }
-        
-        try usdt0PriceFeed.latestRoundData() returns (
-            uint80,
-            int256 answer,
-            uint256,
-            uint256,
-            uint80
-        ) {
-            if (answer <= 0) return 0;
-            
-            // Convert to 8 decimals (assuming oracle returns 8 decimals)
-            uint8 decimals = usdt0PriceFeed.decimals();
-            if (decimals >= 8) {
-                return uint256(answer) / (10 ** (decimals - 8));
-            } else {
-                return uint256(answer) * (10 ** (8 - decimals));
-            }
-        } catch {
-            return 0;
-        }
-    }
-
 
     /**
      * @notice Update all parameters
@@ -568,22 +494,6 @@ contract UsdxlTargetRateController is UsdxlMutableInterestRateStrategy, Reentran
         _updateInterestRate(newRate);
         currentRate = newRate;
         emit RateUpdated(currentRate, newRate, 0, 0, block.timestamp);
-    }
-
-    /**
-     * @notice Get current USDXL price from oracle
-     * @return The USDXL price in USD (8 decimals)
-     */
-    function getUsdxlPrice() external view returns (uint256) {
-        return _getUsdxlPrice(0);
-    }
-
-    /**
-     * @notice Get current USDT0 price from oracle
-     * @return The USDT0 price in USD (8 decimals)
-     */
-    function getUsdt0Price() external view returns (uint256) {
-        return _getUsdt0Price(0);
     }
 
     /**
