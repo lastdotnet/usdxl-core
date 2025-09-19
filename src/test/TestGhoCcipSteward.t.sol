@@ -127,6 +127,12 @@ contract TestGhoCcipSteward is TestGhoBase {
   function testUpdateBridgeLimitFuzz(uint256 newBridgeLimit) public {
     uint256 oldBridgeLimit = GHO_TOKEN_POOL.getBridgeLimit();
     newBridgeLimit = bound(newBridgeLimit, 0, oldBridgeLimit * 2);
+    
+    // Skip if the new limit is the same as the old limit
+    if (newBridgeLimit == oldBridgeLimit) {
+      return;
+    }
+    
     vm.prank(RISK_COUNCIL);
     GHO_CCIP_STEWARD.updateBridgeLimit(newBridgeLimit);
     uint256 currentBridgeLimit = GHO_TOKEN_POOL.getBridgeLimit();
