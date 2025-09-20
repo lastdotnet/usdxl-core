@@ -33,6 +33,11 @@ contract UsdxlTargetRateController is UsdxlMutableInterestRateStrategy, Reentran
     uint256 public minimumChange = 0.0005e27; // Minimum change threshold (0.05%)
     uint256 public executionInterval = 4 hours;
     uint256 public baseRateWindow = 48 hours;
+
+    // Perpetual Loan Storage
+    uint256 public perpetualLoanAmount = 0.000001e18; // Perpetual loan amount (in USDXL)
+    bool public perpetualLoanActive = false;
+    uint256 public perpetualLoanDebt = 0;
     
     // State variables
     IUsdxlToken public immutable USDXL_TOKEN;
@@ -55,7 +60,7 @@ contract UsdxlTargetRateController is UsdxlMutableInterestRateStrategy, Reentran
     event RateUpdated(uint256 oldRate, uint256 newRate, uint256 targetRate, uint256 usdxlPrice, uint256 timestamp);
     event TargetRateCalculated(uint256 baseRate, uint256 targetRate, uint256 usdxlPrice, uint256 timestamp);
     event BaseRateUpdated(uint256 newBaseRate, uint256 timestamp);
-    event ExecutionSkipped(uint256 reason, uint256 timestamp);
+    event ExecutionSkipped(uint256 reason, uint256 timestamp, int256 offchainUsdxlPrice);
     event PriceDataEmitted(uint256 usdxlPrice, uint256 timestamp);
     event ParametersUpdated(
         uint256 targetPrice,
@@ -71,6 +76,9 @@ contract UsdxlTargetRateController is UsdxlMutableInterestRateStrategy, Reentran
     event ExecutorUpdated(address executor, bool enabled, uint256 timestamp);
     event ExecutionIntervalUpdated(uint256 newInterval, uint256 timestamp);
     event BaseRateWindowUpdated(uint256 newBaseRateWindow, uint256 timestamp);
+    event LoanClosed(uint256 timestamp);
+    event PerpetualLoanCreated(uint256 amount, uint256 timestamp);
+    event PerpetualLoanRefreshed(uint256 repayAmount, uint256 borrowAmount, uint256 timestamp);
 
     // Errors
     error ExecutionTooEarly();
@@ -146,12 +154,12 @@ contract UsdxlTargetRateController is UsdxlMutableInterestRateStrategy, Reentran
     function execute(int256 offchainUsdxlPrice) external nonReentrant onlyOwnerOrExecutor {
         // Check if enough time has passed since last execution
         if (block.timestamp < lastExecutionTime + executionInterval) {
-            emit ExecutionSkipped(1, block.timestamp); // Reason 1: Too early
+            emit ExecutionSkipped(1, block.timestamp, offchainUsdxlPrice); // Reason 1: Too early
             return;
         }
         
         if (offchainUsdxlPrice <= 0) {
-            emit ExecutionSkipped(2, block.timestamp); // Reason 2: Invalid price
+            emit ExecutionSkipped(2, block.timestamp, offchainUsdxlPrice); // Reason 2: Invalid price
             return;
         }
 
@@ -175,6 +183,9 @@ contract UsdxlTargetRateController is UsdxlMutableInterestRateStrategy, Reentran
             emit RateUpdated(currentRate, newRate, targetRate, usdxlPrice, block.timestamp);
             currentRate = newRate;
         }
+
+        // Maintain perpetual loan to ensure rate updates
+        _maintainPerpetualLoan();
 
         lastExecutionTime = block.timestamp;
     }
@@ -565,6 +576,215 @@ contract UsdxlTargetRateController is UsdxlMutableInterestRateStrategy, Reentran
     }
 
     /**
+     * @dev Maintain perpetual loan to ensure rate updates
+     * Creates or refreshes a perpetual loan to keep the rate mechanism active
+     */
+    function _maintainPerpetualLoan() internal {
+        IPool pool = IPool(ADDRESSES_PROVIDER.getPool());
+        
+        if (!perpetualLoanActive) {
+            // Create initial perpetual loan
+            pool.borrow(
+                address(USDXL_TOKEN),
+                perpetualLoanAmount,
+                2, // Variable rate mode
+                0, // Referral code
+                address(this)
+            );
+            perpetualLoanActive = true;
+            perpetualLoanDebt = perpetualLoanAmount;
+            emit PerpetualLoanCreated(perpetualLoanAmount, block.timestamp);
+        } else {
+            // Refresh perpetual loan by repaying and reborrowing
+            uint256 repayAmount = _getCurrentDebt() / 1000;
+            uint256 borrowAmount = perpetualLoanAmount / 1000;
+            USDXL_TOKEN.approve(address(pool), repayAmount);
+            if (_getCurrentDebt() > 0) {
+                // Repay current debt
+                USDXL_TOKEN.approve(address(pool), repayAmount);
+                pool.repay(
+                    address(USDXL_TOKEN),
+                    repayAmount,
+                    2, // Variable rate mode
+                    address(this)
+                );
+                pool.borrow(
+                    address(USDXL_TOKEN),
+                    borrowAmount,
+                    2, // Variable rate mode
+                    0, // Referral code
+                    address(this)
+                );
+                emit PerpetualLoanRefreshed(repayAmount, borrowAmount, block.timestamp);
+            }
+        }
+    }
+
+    /**
+     * @dev Get current debt amount for this contract
+     * @return The current debt amount
+     */
+    function _getCurrentDebt() internal view returns (uint256) {
+        IPool pool = IPool(ADDRESSES_PROVIDER.getPool());
+        DataTypes.ReserveData memory reserveData = pool.getReserveData(address(USDXL_TOKEN));
+        
+        // Get variable debt token
+        address variableDebtToken = reserveData.variableDebtTokenAddress;
+        if (variableDebtToken == address(0)) return 0;
+        
+        return IERC20(variableDebtToken).balanceOf(address(this));
+    }
+
+    /**
+     * @notice Get current perpetual loan status
+     * @return active Whether the perpetual loan is active
+     * @return debt The current debt amount
+     */
+    function getPerpetualLoanStatus() external view returns (bool active, uint256 debt) {
+        return (perpetualLoanActive, _getCurrentDebt());
+    }
+
+    /**
+     * @notice Emergency function to repay all debt and deactivate perpetual loan
+     * @dev Only callable by owner
+     */
+    function emergencyRepayAll() external onlyOwner {
+        uint256 currentDebt = _getCurrentDebt();
+        if (currentDebt > 0) {
+            IPool pool = IPool(ADDRESSES_PROVIDER.getPool());
+            USDXL_TOKEN.approve(address(pool), currentDebt);
+            
+            try pool.repay(
+                address(USDXL_TOKEN),
+                currentDebt,
+                2, // Variable rate mode
+                address(this)
+            ) {
+                perpetualLoanActive = false;
+                perpetualLoanDebt = 0;
+            } catch {
+                revert("Repay failed");
+            }
+        } else {
+        }
+    }
+
+    /**
+     * @notice Get the current interest rate from the strategy
+     * @return The current interest rate (in ray)
+     */
+    function getCurrentInterestRate() external view returns (uint256) {
+        return _baseVariableBorrowRate;
+    }
+
+    /**
+     * @notice Withdraw supplied HYPE from the lending pool
+     * @param amount The amount of aWHYPE to withdraw (use type(uint256).max for all)
+     * @param to The recipient address for the HYPE
+     * @dev Only callable by owner
+     */
+    function withdrawSuppliedHYPE(uint256 amount, address payable to) external onlyOwner nonReentrant {
+        _withdrawSuppliedHYPE(amount, to);
+    }
+
+    function _withdrawSuppliedHYPE(uint256 amount, address payable to) internal {
+        require(to != address(0), "Invalid recipient");
+        require(amount > 0, "Invalid amount");
+        // Get the aWHYPE token address
+        IPool pool = IPool(ADDRESSES_PROVIDER.getPool());
+        address whypeAddress = WRAPPED_HYPE_GATEWAY.getWHYPEAddress();
+        DataTypes.ReserveData memory reserveData = pool.getReserveData(whypeAddress);
+        address aWhypeAddress = reserveData.aTokenAddress;
+        require(aWhypeAddress != address(0), "aWHYPE token not found");
+        IAToken aWhype = IAToken(aWhypeAddress);
+        uint256 balance = aWhype.balanceOf(address(this));
+        require(balance > 0, "No supplied HYPE to withdraw");
+        uint256 amountToWithdraw = amount;
+        if (amount == type(uint256).max) {
+            amountToWithdraw = balance;
+        } else {
+            require(amount <= balance, "Insufficient aWHYPE balance");
+        }
+        aWhype.approve(address(WRAPPED_HYPE_GATEWAY), amountToWithdraw);
+        WRAPPED_HYPE_GATEWAY.withdrawHYPE(address(0), amountToWithdraw, to);
+        emit HYPEWithdrawnFromPool(amountToWithdraw, to, block.timestamp);
+    }
+
+    /**
+     * @notice Close the perpetual loan and withdraw all supplied HYPE
+     * @param to The recipient address for the withdrawn HYPE
+     * @dev Only callable by owner
+     */
+    function closeLoanAndWithdrawAll(address payable to) external onlyOwner nonReentrant {
+        require(to != address(0), "Invalid recipient");
+        // First, repay all debt if there is any
+        uint256 currentDebt = _getCurrentDebt();
+        if (currentDebt > 0) {
+            IPool pool = IPool(ADDRESSES_PROVIDER.getPool());
+            USDXL_TOKEN.approve(address(pool), currentDebt);
+            try pool.repay(
+                address(USDXL_TOKEN),
+                currentDebt,
+                2, // Variable rate mode
+                address(this)
+            ) {
+                perpetualLoanActive = false;
+                perpetualLoanDebt = 0;
+            } catch {
+                revert("Failed to repay debt");
+            }
+        } else {
+            perpetualLoanActive = false;
+            perpetualLoanDebt = 0;
+        }
+        // Withdraw all supplied HYPE
+        _withdrawSuppliedHYPE(type(uint256).max, to);
+        emit LoanClosed(block.timestamp);
+    }
+
+    /**
+     * @notice Get the current supplied HYPE balance
+     * @return The current aWHYPE balance
+     */
+    function getSuppliedHYPEBalance() external view returns (uint256) {
+        IPool pool = IPool(ADDRESSES_PROVIDER.getPool());
+        address whypeAddress = WRAPPED_HYPE_GATEWAY.getWHYPEAddress();
+        DataTypes.ReserveData memory reserveData = pool.getReserveData(whypeAddress);
+        address aWhypeAddress = reserveData.aTokenAddress;
+        
+        if (aWhypeAddress == address(0)) {
+            return 0;
+        }
+        
+        IAToken aWhype = IAToken(aWhypeAddress);
+        return aWhype.balanceOf(address(this));
+    }
+
+    /**
+     * @notice Withdraw HYPE from the controller
+     * @param amount The amount to withdraw
+     * @param to The recipient address
+     * @dev Only callable by owner
+     */
+    function withdrawHYPE(uint256 amount, address payable to) external onlyOwner {
+        require(to != address(0), "Invalid recipient");
+        require(amount > 0, "Invalid amount");
+        require(address(this).balance >= amount, "Insufficient HYPE balance");
+        
+        (bool success, ) = to.call{value: amount}("");
+        require(success, "HYPE transfer failed");
+        
+        emit HYPEWithdrawn(to, amount);
+    }
+
+    /**
+     * @dev Fallback function to receive HYPE
+     */
+    receive() external payable {
+        emit HYPEReceived(msg.sender, msg.value);
+    }
+
+    /**
      * @notice Add or remove an executor from the whitelist
      * @param executor The address to add/remove
      * @param enabled True to add, false to remove
@@ -600,29 +820,5 @@ contract UsdxlTargetRateController is UsdxlMutableInterestRateStrategy, Reentran
      */
     function isAuthorizedExecutor(address executor) external view returns (bool) {
         return executor == owner() || executors[executor];
-    }
-
-    /**
-     * @notice Withdraw HYPE from the controller
-     * @param amount The amount to withdraw
-     * @param to The recipient address
-     * @dev Only callable by owner
-     */
-    function withdrawHYPE(uint256 amount, address payable to) external onlyOwner {
-        require(to != address(0), "Invalid recipient");
-        require(amount > 0, "Invalid amount");
-        require(address(this).balance >= amount, "Insufficient HYPE balance");
-        
-        (bool success, ) = to.call{value: amount}("");
-        require(success, "HYPE transfer failed");
-        
-        emit HYPEWithdrawn(to, amount);
-    }
-
-    /**
-     * @dev Fallback function to receive HYPE
-     */
-    receive() external payable {
-        emit HYPEReceived(msg.sender, msg.value);
     }
 }
