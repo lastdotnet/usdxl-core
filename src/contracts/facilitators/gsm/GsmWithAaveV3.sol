@@ -28,7 +28,7 @@ contract GsmWithAaveV3 is Gsm {
   IPoolAddressesProvider public immutable AAVE_ADDRESSES_PROVIDER;
 
   // Track total deposited amount in Aave V3
-  uint256 internal _totalDepositedInAave;
+  uint256 public totalDepositedInAave;
 
   event DepositedToAave(uint256 amount, uint256 aTokenBalance);
   event WithdrawnFromAave(uint256 amount, uint256 aTokenBalance);
@@ -95,20 +95,20 @@ contract GsmWithAaveV3 is Gsm {
     uint256 amount = IERC20(UNDERLYING_ASSET).balanceOf(address(this));
     IERC20(UNDERLYING_ASSET).approve(address(AAVE_POOL), amount);
     AAVE_POOL.deposit(UNDERLYING_ASSET, amount, address(this), 0);
-    _totalDepositedInAave += amount;
+    totalDepositedInAave += amount;
 
     emit DepositedToAave(amount, ATOKEN.balanceOf(address(this)));
   }
 
   function withdrawFromPool() external onlyRole(DEFAULT_ADMIN_ROLE) {
-    AAVE_POOL.withdraw(UNDERLYING_ASSET, _totalDepositedInAave, address(this));
-    _totalDepositedInAave = 0;
+    AAVE_POOL.withdraw(UNDERLYING_ASSET, totalDepositedInAave, address(this));
+    totalDepositedInAave = 0;
 
-    emit WithdrawnFromAave(_totalDepositedInAave, ATOKEN.balanceOf(address(this)));
+    emit WithdrawnFromAave(totalDepositedInAave, ATOKEN.balanceOf(address(this)));
   }
 
   function getHarvestableUnderlyingBalance() public view returns (uint256) {
-    return ATOKEN.balanceOf(address(this)) - _totalDepositedInAave;
+    return ATOKEN.balanceOf(address(this)) - totalDepositedInAave;
   }
 
   function getAvailableUnderlying() public view returns (uint256) {
@@ -125,20 +125,11 @@ contract GsmWithAaveV3 is Gsm {
    */
   function getAavePoolAvailableLiquidity() public view returns (uint256) {
     uint256 underlyingATokenBalance = IERC20(UNDERLYING_ASSET).balanceOf(address(ATOKEN));
-    if (underlyingATokenBalance >= _totalDepositedInAave) {
-      return _totalDepositedInAave;
+    if (underlyingATokenBalance >= totalDepositedInAave) {
+      return totalDepositedInAave;
     } else {
       return underlyingATokenBalance;
     }
-  }
-
-  /**
-   * @notice Get the maximum amount that can be withdrawn from Aave V3
-   * @dev This is based on our aToken balance - the pool liquidity check is separate
-   * @return The maximum withdrawable amount based on our aToken holdings
-   */
-  function getMaxWithdrawableFromAave() public view returns (uint256) {
-    return getHarvestableUnderlyingBalance();
   }
 
   /**
@@ -149,14 +140,6 @@ contract GsmWithAaveV3 is Gsm {
   function underlyingToATokenAmount(uint256 underlyingAmount) public view returns (uint256) {
     uint256 liquidityIndex = AAVE_POOL.getReserveNormalizedIncome(UNDERLYING_ASSET);
     return underlyingAmount.rayDiv(liquidityIndex);
-  }
-
-  /**
-   * @notice Get the amount deposited in Aave V3
-   * @return The amount deposited in Aave V3
-   */
-  function getTotalDepositedInAave() public view returns (uint256) {
-    return _totalDepositedInAave;
   }
 
   /// @inheritdoc Gsm
@@ -255,7 +238,7 @@ contract GsmWithAaveV3 is Gsm {
     // Deposit to Aave V3 for yield generation
     IERC20(UNDERLYING_ASSET).approve(address(AAVE_POOL), amount);
     AAVE_POOL.deposit(UNDERLYING_ASSET, amount, address(this), 0);
-    _totalDepositedInAave += amount;
+    totalDepositedInAave += amount;
   }
 
   /**
@@ -272,7 +255,7 @@ contract GsmWithAaveV3 is Gsm {
     // Deposit into Aave V3
     AAVE_POOL.deposit(UNDERLYING_ASSET, balance, address(this), 0);
 
-    _totalDepositedInAave += balance;
+    totalDepositedInAave += balance;
 
     emit DepositedToAave(balance, ATOKEN.balanceOf(address(this)));
   }
