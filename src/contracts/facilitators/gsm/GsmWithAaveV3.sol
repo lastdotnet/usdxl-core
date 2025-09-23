@@ -210,6 +210,11 @@ contract GsmWithAaveV3 is Gsm {
     return (assetAmount, ghoSold);
   }
 
+  function _beforeBuyHyAsset(address /*originator*/, uint256 amount, address /*receiver*/) internal {
+    require(amount <= getAvailableUnderlyingViaHyAsset(), 'INSUFFICIENT_LIQUIDITY');
+    totalDepositedInAave -= amount;
+  }
+
   /**
    * @dev Hook that is called before `buyAsset`.
    * @dev This implementation handles Aave V3 withdrawal logic
@@ -228,11 +233,6 @@ contract GsmWithAaveV3 is Gsm {
       totalDepositedInAave -= amount;
       AAVE_POOL.withdraw(UNDERLYING_ASSET, amountToWithdraw, address(this));
     }    
-  }
-
-  function _beforeBuyHyAsset(address /*originator*/, uint256 amount, address /*receiver*/) internal {
-    require(amount <= getAvailableUnderlyingViaHyAsset(), 'INSUFFICIENT_LIQUIDITY');
-    totalDepositedInAave -= amount;
   }
 
   /**
