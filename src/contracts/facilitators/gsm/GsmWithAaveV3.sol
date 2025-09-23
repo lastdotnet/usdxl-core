@@ -30,8 +30,8 @@ contract GsmWithAaveV3 is Gsm {
   // Track total deposited amount in Aave V3
   uint256 public totalDepositedInAave;
 
-  event DepositedToAave(uint256 amount, uint256 aTokenBalance);
-  event WithdrawnFromAave(uint256 amount, uint256 aTokenBalance);
+  event PoolDeposit(uint256 amount, uint256 aTokenBalance);
+  event PoolWithdraw(uint256 amount, uint256 aTokenBalance);
   event InterestHarvested(address indexed admin, uint256 amount);
   event BuyHyAsset(address indexed originator, address indexed receiver, uint256 amount, uint256 ghoSold, uint256 fee);
 
@@ -91,20 +91,20 @@ contract GsmWithAaveV3 is Gsm {
     emit InterestHarvested(msg.sender, harvestAmount);
   }
 
-  function depositToPool() external onlyRole(DEFAULT_ADMIN_ROLE) {
+  function emergencyPoolDeposit() external onlyRole(DEFAULT_ADMIN_ROLE) {
     uint256 amount = IERC20(UNDERLYING_ASSET).balanceOf(address(this));
     IERC20(UNDERLYING_ASSET).approve(address(AAVE_POOL), amount);
     AAVE_POOL.deposit(UNDERLYING_ASSET, amount, address(this), 0);
     totalDepositedInAave += amount;
 
-    emit DepositedToAave(amount, ATOKEN.balanceOf(address(this)));
+    emit PoolDeposit(amount, ATOKEN.balanceOf(address(this)));
   }
 
-  function withdrawFromPool() external onlyRole(DEFAULT_ADMIN_ROLE) {
+  function emergencyPoolWithdraw() external onlyRole(DEFAULT_ADMIN_ROLE) {
     AAVE_POOL.withdraw(UNDERLYING_ASSET, totalDepositedInAave, address(this));
     totalDepositedInAave = 0;
 
-    emit WithdrawnFromAave(totalDepositedInAave, ATOKEN.balanceOf(address(this)));
+    emit PoolWithdraw(totalDepositedInAave, ATOKEN.balanceOf(address(this)));
   }
 
   function getHarvestableUnderlyingBalance() public view returns (uint256) {
@@ -116,7 +116,7 @@ contract GsmWithAaveV3 is Gsm {
   }
 
   function getAvailableUnderlyingViaHyAsset() public view returns (uint256) {
-    return IERC20(UNDERLYING_ASSET).balanceOf(address(this)) + IERC20(ATOKEN).balanceOf(address(this));
+    return IERC20(ATOKEN).balanceOf(address(this));
   }
 
   /**
@@ -263,6 +263,6 @@ contract GsmWithAaveV3 is Gsm {
 
     totalDepositedInAave += balance;
 
-    emit DepositedToAave(balance, ATOKEN.balanceOf(address(this)));
+    emit PoolDeposit(balance, ATOKEN.balanceOf(address(this)));
   }
 }
