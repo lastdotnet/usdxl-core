@@ -195,7 +195,7 @@ contract GsmWithAaveV3 is Gsm {
       uint256 fee
     ) = _calculateGhoAmountForBuyAsset(minAmount);
 
-    _beforeBuyAsset(originator, assetAmount, receiver);
+    _beforeBuyHyAsset(originator, assetAmount, receiver);
 
     require(assetAmount > 0, 'INVALID_AMOUNT');
     require(_currentExposure >= assetAmount, 'INSUFFICIENT_AVAILABLE_EXOGENOUS_ASSET_LIQUIDITY');
@@ -225,8 +225,14 @@ contract GsmWithAaveV3 is Gsm {
 
     if (currentBalance < amount) {
       uint256 amountToWithdraw = amount - currentBalance;
+      totalDepositedInAave -= amount;
       AAVE_POOL.withdraw(UNDERLYING_ASSET, amountToWithdraw, address(this));
-    }
+    }    
+  }
+
+  function _beforeBuyHyAsset(address /*originator*/, uint256 amount, address /*receiver*/) internal {
+    require(amount <= getAvailableUnderlyingViaHyAsset(), 'INSUFFICIENT_LIQUIDITY');
+    totalDepositedInAave -= amount;
   }
 
   /**
