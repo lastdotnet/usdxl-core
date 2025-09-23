@@ -116,7 +116,15 @@ contract Gsm is AccessControl, VersionedInitializable, EIP712, IGsm {
     address admin,
     address usdxlTreasury,
     uint128 exposureCap
-  ) external initializer {
+  ) external virtual initializer {
+    _initialize(admin, usdxlTreasury, exposureCap);
+  }
+
+  function _initialize(
+    address admin,
+    address usdxlTreasury,
+    uint128 exposureCap
+  ) internal {
     require(admin != address(0), 'ZERO_ADDRESS_NOT_VALID');
     _grantRole(DEFAULT_ADMIN_ROLE, admin);
     _grantRole(CONFIGURATOR_ROLE, admin);
