@@ -107,8 +107,16 @@ contract GsmWithAaveV3 is Gsm {
     emit PoolWithdraw(totalDepositedInAave, ATOKEN.balanceOf(address(this)));
   }
 
+  function updateCurrentExposure() external onlyRole(DEFAULT_ADMIN_ROLE) {
+    _currentExposure = uint128(getTotalUnderlying());
+  }
+
   function getHarvestableUnderlyingBalance() public view returns (uint256) {
     return ATOKEN.balanceOf(address(this)) - totalDepositedInAave;
+  }
+
+  function getTotalUnderlying() public view returns (uint256) {
+    return IERC20(UNDERLYING_ASSET).balanceOf(address(this)) + totalDepositedInAave;
   }
 
   function getAvailableUnderlying() public view returns (uint256) {
