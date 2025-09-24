@@ -108,26 +108,26 @@ contract Gsm is AccessControl, VersionedInitializable, EIP712, IGsm {
 
   /**
    * @notice GSM initializer
-   * @param admin The address of the default admin role
+   * @param defaultAdmin The address of the default admin role
    * @param usdxlTreasury The address of the GHO treasury
    * @param exposureCap Maximum amount of user-supplied underlying asset in GSM
    */
   function initialize(
-    address admin,
+    address defaultAdmin,
     address usdxlTreasury,
     uint128 exposureCap
   ) external virtual initializer {
-    _initialize(admin, usdxlTreasury, exposureCap);
+    _initialize(defaultAdmin, usdxlTreasury, exposureCap);
   }
 
   function _initialize(
-    address admin,
+    address defaultAdmin,
     address usdxlTreasury,
     uint128 exposureCap
   ) internal {
-    require(admin != address(0), 'ZERO_ADDRESS_NOT_VALID');
-    _grantRole(DEFAULT_ADMIN_ROLE, admin);
-    _grantRole(CONFIGURATOR_ROLE, admin);
+    require(defaultAdmin != address(0), 'ZERO_ADDRESS_NOT_VALID');
+    _grantRole(DEFAULT_ADMIN_ROLE, defaultAdmin);
+    _grantRole(CONFIGURATOR_ROLE, defaultAdmin);
     _updateUsdxlTreasury(usdxlTreasury);
     _updateExposureCap(exposureCap);
   }
@@ -423,6 +423,8 @@ contract Gsm is AccessControl, VersionedInitializable, EIP712, IGsm {
     IUsdxlToken(USDXL_TOKEN).burn(grossAmount);
     IERC20(UNDERLYING_ASSET).safeTransfer(receiver, assetAmount);
 
+    _afterBuyAsset(originator, assetAmount, receiver);
+
     emit BuyAsset(originator, receiver, assetAmount, ghoSold, fee);
     return (assetAmount, ghoSold);
   }
@@ -435,6 +437,15 @@ contract Gsm is AccessControl, VersionedInitializable, EIP712, IGsm {
    * @param receiver Recipient address of the underlying asset being purchased
    */
   function _beforeBuyAsset(address originator, uint256 amount, address receiver) internal virtual {}
+
+  /**
+   * @dev Hook that is called after `buyAsset`.
+   * @dev This can be used to add custom logic
+   * @param originator Originator of the request
+   * @param amount The amount of the underlying asset desired for purchase
+   * @param receiver Recipient address of the underlying asset being purchased
+   */
+  function _afterBuyAsset(address originator, uint256 amount, address receiver) internal virtual {}
 
   /**
    * @dev Sells an underlying asset for GHO
@@ -468,6 +479,8 @@ contract Gsm is AccessControl, VersionedInitializable, EIP712, IGsm {
     IUsdxlToken(USDXL_TOKEN).mint(address(this), grossAmount);
     IUsdxlToken(USDXL_TOKEN).transfer(receiver, ghoBought);
 
+    _afterSellAsset(originator, assetAmount, receiver);
+
     emit SellAsset(originator, receiver, assetAmount, grossAmount, fee);
     return (assetAmount, ghoBought);
   }
@@ -480,6 +493,19 @@ contract Gsm is AccessControl, VersionedInitializable, EIP712, IGsm {
    * @param receiver Recipient address of the GHO being purchased
    */
   function _beforeSellAsset(
+    address originator,
+    uint256 amount,
+    address receiver
+  ) internal virtual {}
+
+  /**
+   * @dev Hook that is called after `sellAsset`.
+   * @dev This can be used to add custom logic
+   * @param originator Originator of the request
+   * @param amount The amount of the underlying asset desired to sell
+   * @param receiver Recipient address of the GHO being purchased
+   */
+  function _afterSellAsset(
     address originator,
     uint256 amount,
     address receiver

@@ -136,8 +136,7 @@ contract DeployUsdt0Gsm is Script {
         console2.log("GSM DEFAULT_ADMIN_ROLE transferred to:", config.gsmOwner);
 
         // 9. Transfer proxy admin to final owner
-        console2.log("\n9. Transferring proxy admin to final owner...");
-        proxyAdmin.changeProxyAdmin(gsmProxy, config.gsmOwner);
+        console2.log("\n9. Transferring ownership to final owner...");
         proxyAdmin.transferOwnership(config.gsmOwner);
         console2.log("Proxy admin transferred to:", config.gsmOwner);s
 

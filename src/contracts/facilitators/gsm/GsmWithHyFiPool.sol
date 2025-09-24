@@ -9,6 +9,8 @@ import {IAToken} from '@aave/core-v3/contracts/interfaces/IAToken.sol';
 import {WadRayMath} from '@aave/core-v3/contracts/protocol/libraries/math/WadRayMath.sol';
 import {IUsdxlToken} from '../../usdxl/interfaces/IUsdxlToken.sol';
 import {SafeCast} from '@openzeppelin/contracts/utils/math/SafeCast.sol';
+import {ProxyAdmin} from '@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol';
+import {TransparentUpgradeableProxy} from '@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol';
 import {Gsm} from './Gsm.sol';
 
 /**
@@ -26,6 +28,7 @@ contract GsmWithHyFiPool is Gsm {
   IPool public immutable HYFI_POOL;
   IAToken public immutable HYTOKEN;
   IPoolAddressesProvider public immutable HYFI_ADDRESSES_PROVIDER;
+  ProxyAdmin public immutable PROXY_ADMIN;
 
   // Track total deposited amount in HyFi Pool
   uint256 public totalDepositedInHyFiPool;
@@ -46,7 +49,8 @@ contract GsmWithHyFiPool is Gsm {
     address usdxlToken,
     address underlyingAsset,
     address priceStrategy,
-    address hyfiAddressesProvider
+    address hyfiAddressesProvider,
+    address proxyAdmin
   ) Gsm(usdxlToken, underlyingAsset, priceStrategy) {
     require(hyfiAddressesProvider != address(0), 'ZERO_ADDRESS_NOT_VALID');
 
@@ -55,23 +59,27 @@ contract GsmWithHyFiPool is Gsm {
     
     // Get the corresponding hyToken for the underlying asset
     HYTOKEN = IAToken(HYFI_POOL.getReserveData(underlyingAsset).aTokenAddress);
+
+    PROXY_ADMIN = ProxyAdmin(proxyAdmin);
   }
 
   /**
    * @notice GSM initializer
-   * @param admin The address of the default admin role
+   * @param defaultAdmin The address of the default admin role
    * @param usdxlTreasury The address of the GHO treasury
    * @param exposureCap Maximum amount of user-supplied underlying asset in GSM
    */
   function initialize(
-    address admin,
+    address defaultAdmin,
     address usdxlTreasury,
     uint128 exposureCap
   ) external override initializer {
-    _initialize(admin, usdxlTreasury, exposureCap);
-    
-    // Migrate existing balance to HyFi Pool
-    _migrateToHyFiPool();
+    if (_usdxlTreasury == address(0)) {
+      _initialize(defaultAdmin, usdxlTreasury, exposureCap);
+    } else {
+      // Migrate existing balance to HyFi Pool
+      _migrateToHyFiPool();
+    }
   }
 
   /**
@@ -107,6 +115,10 @@ contract GsmWithHyFiPool is Gsm {
     emit PoolWithdraw(totalDepositedInHyFiPool, HYTOKEN.balanceOf(address(this)));
   }
 
+  /**
+   * @notice Update the current exposure
+   * @dev Sweeps in underlying tokens transferred directly to the GSM
+   */
   function updateCurrentExposure() external onlyRole(DEFAULT_ADMIN_ROLE) {
     _currentExposure = uint128(getTotalUnderlying());
   }
@@ -138,16 +150,6 @@ contract GsmWithHyFiPool is Gsm {
     } else {
       return underlyingHyTokenBalance;
     }
-  }
-
-  /**
-   * @notice Convert underlying asset amount to equivalent hyToken amount
-   * @param underlyingAmount The amount of underlying asset
-   * @return The equivalent hyToken amount
-   */
-  function underlyingToHyTokenAmount(uint256 underlyingAmount) public view returns (uint256) {
-    uint256 liquidityIndex = HYFI_POOL.getReserveNormalizedIncome(UNDERLYING_ASSET);
-    return underlyingAmount.rayDiv(liquidityIndex);
   }
 
   /// @inheritdoc Gsm
@@ -191,6 +193,14 @@ contract GsmWithHyFiPool is Gsm {
       }
   }
 
+  function admin() external view returns (address) {
+    return PROXY_ADMIN.getProxyAdmin(TransparentUpgradeableProxy(payable(address(this))));
+  }
+
+  function implementation() external view returns (address) {
+    return PROXY_ADMIN.getProxyImplementation(TransparentUpgradeableProxy(payable(address(this))));
+  }
+
   function _buyHyAsset(
     address originator,
     uint256 minAmount,
@@ -212,16 +222,20 @@ contract GsmWithHyFiPool is Gsm {
     _accruedFees += fee.toUint128();
     IUsdxlToken(USDXL_TOKEN).transferFrom(originator, address(this), ghoSold);
     IUsdxlToken(USDXL_TOKEN).burn(grossAmount);
-    IERC20(HYTOKEN).safeTransfer(receiver, underlyingToHyTokenAmount(assetAmount));
+    IERC20(HYTOKEN).safeTransfer(receiver, assetAmount);
 
+    _afterBuyHyAsset(originator, assetAmount, receiver);
+    
     emit BuyHyAsset(originator, receiver, assetAmount, ghoSold, fee);
     return (assetAmount, ghoSold);
   }
 
-  function _beforeBuyHyAsset(address /*originator*/, uint256 amount, address /*receiver*/) internal {
+  function _beforeBuyHyAsset(address /*originator*/, uint256 amount, address /*receiver*/) internal virtual{
     require(amount <= getAvailableUnderlyingViaHyAsset(), 'INSUFFICIENT_LIQUIDITY');
     totalDepositedInHyFiPool -= amount;
   }
+
+  function _afterBuyHyAsset(address /*originator*/, uint256 amount, address /*receiver*/) internal virtual {}
 
   /**
    * @dev Hook that is called before `buyAsset`.
@@ -242,11 +256,11 @@ contract GsmWithHyFiPool is Gsm {
   }
 
   /**
-   * @dev Hook that is called before `sellAsset`.
+   * @dev Hook that is called after `sellAsset`.
    * @dev This implementation handles HyFi Pool deposit logic
    * @param amount The amount of the underlying asset desired to sell
    */
-  function _beforeSellAsset(address /*originator*/, uint256 amount, address /*receiver*/) internal override {
+  function _afterSellAsset(address /*originator*/, uint256 amount, address /*receiver*/) internal override {
     // Deposit to HyFi Pool for yield generation
     IERC20(UNDERLYING_ASSET).approve(address(HYFI_POOL), amount);
     HYFI_POOL.deposit(UNDERLYING_ASSET, amount, address(this), 0);
