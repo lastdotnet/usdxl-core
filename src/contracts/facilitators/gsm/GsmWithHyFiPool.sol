@@ -12,26 +12,26 @@ import {SafeCast} from '@openzeppelin/contracts/utils/math/SafeCast.sol';
 import {Gsm} from './Gsm.sol';
 
 /**
- * @title GsmWithAaveV3
+ * @title GsmWithHyFiPool
  * @author Aave
- * @notice GHO Stability Module with Aave V3 integration. It provides buy/sell facilities to go to/from an underlying asset to/from GHO.
- * @dev To be covered by a proxy contract. This implementation deposits underlying assets into Aave V3 pools for yield generation.
+ * @notice GHO Stability Module with HyFi Pool integration. It provides buy/sell facilities to go to/from an underlying asset to/from GHO.
+ * @dev To be covered by a proxy contract. This implementation deposits underlying assets into HyFi pools for yield generation.
  */
-contract GsmWithAaveV3 is Gsm {
+contract GsmWithHyFiPool is Gsm {
   using GPv2SafeERC20 for IERC20;
   using SafeCast for uint256;
   using WadRayMath for uint256;
   
-  // Aave V3 integration
-  IPool public immutable AAVE_POOL;
-  IAToken public immutable ATOKEN;
-  IPoolAddressesProvider public immutable AAVE_ADDRESSES_PROVIDER;
+  // HyFi Pool integration
+  IPool public immutable HYFI_POOL;
+  IAToken public immutable HYTOKEN;
+  IPoolAddressesProvider public immutable HYFI_ADDRESSES_PROVIDER;
 
-  // Track total deposited amount in Aave V3
-  uint256 public totalDepositedInAave;
+  // Track total deposited amount in HyFi Pool
+  uint256 public totalDepositedInHyFiPool;
 
-  event PoolDeposit(uint256 amount, uint256 aTokenBalance);
-  event PoolWithdraw(uint256 amount, uint256 aTokenBalance);
+  event PoolDeposit(uint256 amount, uint256 hyTokenBalance);
+  event PoolWithdraw(uint256 amount, uint256 hyTokenBalance);
   event InterestHarvested(address indexed admin, uint256 amount);
   event BuyHyAsset(address indexed originator, address indexed receiver, uint256 amount, uint256 ghoSold, uint256 fee);
 
@@ -40,21 +40,21 @@ contract GsmWithAaveV3 is Gsm {
    * @param usdxlToken The address of the GHO token contract
    * @param underlyingAsset The address of the collateral asset
    * @param priceStrategy The address of the price strategy
-   * @param aaveAddressesProvider The address of the Aave V3 addresses provider
+   * @param hyfiAddressesProvider The address of the HyFi addresses provider
    */
   constructor(
     address usdxlToken,
     address underlyingAsset,
     address priceStrategy,
-    address aaveAddressesProvider
+    address hyfiAddressesProvider
   ) Gsm(usdxlToken, underlyingAsset, priceStrategy) {
-    require(aaveAddressesProvider != address(0), 'ZERO_ADDRESS_NOT_VALID');
+    require(hyfiAddressesProvider != address(0), 'ZERO_ADDRESS_NOT_VALID');
 
-    AAVE_ADDRESSES_PROVIDER = IPoolAddressesProvider(aaveAddressesProvider);
-    AAVE_POOL = IPool(AAVE_ADDRESSES_PROVIDER.getPool());
+    HYFI_ADDRESSES_PROVIDER = IPoolAddressesProvider(hyfiAddressesProvider);
+    HYFI_POOL = IPool(HYFI_ADDRESSES_PROVIDER.getPool());
     
-    // Get the corresponding aToken for the underlying asset
-    ATOKEN = IAToken(AAVE_POOL.getReserveData(underlyingAsset).aTokenAddress);
+    // Get the corresponding hyToken for the underlying asset
+    HYTOKEN = IAToken(HYFI_POOL.getReserveData(underlyingAsset).aTokenAddress);
   }
 
   /**
@@ -70,20 +70,20 @@ contract GsmWithAaveV3 is Gsm {
   ) external override initializer {
     _initialize(admin, usdxlTreasury, exposureCap);
     
-    // Migrate existing balance to Aave V3
-    _migrateToAaveV3();
+    // Migrate existing balance to HyFi Pool
+    _migrateToHyFiPool();
   }
 
   /**
-   * @notice Withdraw interest earned from Aave V3
+   * @notice Withdraw interest earned from HyFi Pool
    * @dev Only admin can withdraw interest
    */
   function harvestInterest() external onlyRole(DEFAULT_ADMIN_ROLE) {
     uint256 harvestAmount = getHarvestableUnderlyingBalance();
     require(harvestAmount > 0, 'NO_INTEREST_TO_HARVEST');
 
-    // Withdraw from Aave V3
-    AAVE_POOL.withdraw(UNDERLYING_ASSET, harvestAmount, address(this));
+    // Withdraw from HyFi Pool
+    HYFI_POOL.withdraw(UNDERLYING_ASSET, harvestAmount, address(this));
 
     // Transfer to admin
     IERC20(UNDERLYING_ASSET).safeTransfer(msg.sender, harvestAmount);
@@ -93,18 +93,18 @@ contract GsmWithAaveV3 is Gsm {
 
   function emergencyPoolDeposit() external onlyRole(DEFAULT_ADMIN_ROLE) {
     uint256 amount = IERC20(UNDERLYING_ASSET).balanceOf(address(this));
-    IERC20(UNDERLYING_ASSET).approve(address(AAVE_POOL), amount);
-    AAVE_POOL.deposit(UNDERLYING_ASSET, amount, address(this), 0);
-    totalDepositedInAave += amount;
+    IERC20(UNDERLYING_ASSET).approve(address(HYFI_POOL), amount);
+    HYFI_POOL.deposit(UNDERLYING_ASSET, amount, address(this), 0);
+    totalDepositedInHyFiPool += amount;
 
-    emit PoolDeposit(amount, ATOKEN.balanceOf(address(this)));
+    emit PoolDeposit(amount, HYTOKEN.balanceOf(address(this)));
   }
 
   function emergencyPoolWithdraw() external onlyRole(DEFAULT_ADMIN_ROLE) {
-    AAVE_POOL.withdraw(UNDERLYING_ASSET, totalDepositedInAave, address(this));
-    totalDepositedInAave = 0;
+    HYFI_POOL.withdraw(UNDERLYING_ASSET, totalDepositedInHyFiPool, address(this));
+    totalDepositedInHyFiPool = 0;
 
-    emit PoolWithdraw(totalDepositedInAave, ATOKEN.balanceOf(address(this)));
+    emit PoolWithdraw(totalDepositedInHyFiPool, HYTOKEN.balanceOf(address(this)));
   }
 
   function updateCurrentExposure() external onlyRole(DEFAULT_ADMIN_ROLE) {
@@ -112,47 +112,47 @@ contract GsmWithAaveV3 is Gsm {
   }
 
   function getHarvestableUnderlyingBalance() public view returns (uint256) {
-    return ATOKEN.balanceOf(address(this)) - totalDepositedInAave;
+    return HYTOKEN.balanceOf(address(this)) - totalDepositedInHyFiPool;
   }
 
   function getTotalUnderlying() public view returns (uint256) {
-    return IERC20(UNDERLYING_ASSET).balanceOf(address(this)) + totalDepositedInAave;
+    return IERC20(UNDERLYING_ASSET).balanceOf(address(this)) + totalDepositedInHyFiPool;
   }
 
   function getAvailableUnderlying() public view returns (uint256) {
-    return IERC20(UNDERLYING_ASSET).balanceOf(address(this)) + getAavePoolAvailableLiquidity();
+    return IERC20(UNDERLYING_ASSET).balanceOf(address(this)) + getHyFiPoolAvailableLiquidity();
   }
 
   function getAvailableUnderlyingViaHyAsset() public view returns (uint256) {
-    return IERC20(ATOKEN).balanceOf(address(this));
+    return IERC20(HYTOKEN).balanceOf(address(this));
   }
 
   /**
-   * @notice Get the actual available liquidity in the aToken contract for the underlying asset
-   * @return The available liquidity in the aToken contract
+   * @notice Get the actual available liquidity in the hyToken contract for the underlying asset
+   * @return The available liquidity in the hyToken contract
    */
-  function getAavePoolAvailableLiquidity() public view returns (uint256) {
-    uint256 underlyingATokenBalance = IERC20(UNDERLYING_ASSET).balanceOf(address(ATOKEN));
-    if (underlyingATokenBalance >= totalDepositedInAave) {
-      return totalDepositedInAave;
+  function getHyFiPoolAvailableLiquidity() public view returns (uint256) {
+    uint256 underlyingHyTokenBalance = IERC20(UNDERLYING_ASSET).balanceOf(address(HYTOKEN));
+    if (underlyingHyTokenBalance >= totalDepositedInHyFiPool) {
+      return totalDepositedInHyFiPool;
     } else {
-      return underlyingATokenBalance;
+      return underlyingHyTokenBalance;
     }
   }
 
   /**
-   * @notice Convert underlying asset amount to equivalent aToken amount
+   * @notice Convert underlying asset amount to equivalent hyToken amount
    * @param underlyingAmount The amount of underlying asset
-   * @return The equivalent aToken amount
+   * @return The equivalent hyToken amount
    */
-  function underlyingToATokenAmount(uint256 underlyingAmount) public view returns (uint256) {
-    uint256 liquidityIndex = AAVE_POOL.getReserveNormalizedIncome(UNDERLYING_ASSET);
+  function underlyingToHyTokenAmount(uint256 underlyingAmount) public view returns (uint256) {
+    uint256 liquidityIndex = HYFI_POOL.getReserveNormalizedIncome(UNDERLYING_ASSET);
     return underlyingAmount.rayDiv(liquidityIndex);
   }
 
   /// @inheritdoc Gsm
   function GSM_REVISION() public pure virtual override returns (uint256) {
-    return 2; // Incremented for Aave V3 integration
+    return 2; // Incremented for HyFi Pool integration
   }
 
   function getBuyLiquidity() public view returns (uint256 underlying, uint256 underlyingViaHyAsset) {
@@ -212,7 +212,7 @@ contract GsmWithAaveV3 is Gsm {
     _accruedFees += fee.toUint128();
     IUsdxlToken(USDXL_TOKEN).transferFrom(originator, address(this), ghoSold);
     IUsdxlToken(USDXL_TOKEN).burn(grossAmount);
-    IERC20(ATOKEN).safeTransfer(receiver, underlyingToATokenAmount(assetAmount));
+    IERC20(HYTOKEN).safeTransfer(receiver, underlyingToHyTokenAmount(assetAmount));
 
     emit BuyHyAsset(originator, receiver, assetAmount, ghoSold, fee);
     return (assetAmount, ghoSold);
@@ -220,57 +220,55 @@ contract GsmWithAaveV3 is Gsm {
 
   function _beforeBuyHyAsset(address /*originator*/, uint256 amount, address /*receiver*/) internal {
     require(amount <= getAvailableUnderlyingViaHyAsset(), 'INSUFFICIENT_LIQUIDITY');
-    totalDepositedInAave -= amount;
+    totalDepositedInHyFiPool -= amount;
   }
 
   /**
    * @dev Hook that is called before `buyAsset`.
-   * @dev This implementation handles Aave V3 withdrawal logic
+   * @dev This implementation handles HyFi Pool withdrawal logic
    * @param amount The amount of the underlying asset desired for purchase
    */
   function _beforeBuyAsset(address /*originator*/, uint256 amount, address /*receiver*/) internal override {    
-    // Check available liquidity (including Aave V3 deposits)
+    // Check available liquidity (including HyFi Pool deposits)
     require(amount <= getAvailableUnderlying(), 'INSUFFICIENT_LIQUIDITY');
 
     uint256 currentBalance = IERC20(UNDERLYING_ASSET).balanceOf(address(this));
 
-    uint256 currentWithdrawableBalance = getAavePoolAvailableLiquidity();
-
     if (currentBalance < amount) {
       uint256 amountToWithdraw = amount - currentBalance;
-      totalDepositedInAave -= amount;
-      AAVE_POOL.withdraw(UNDERLYING_ASSET, amountToWithdraw, address(this));
+      totalDepositedInHyFiPool -= amount;
+      HYFI_POOL.withdraw(UNDERLYING_ASSET, amountToWithdraw, address(this));
     }    
   }
 
   /**
    * @dev Hook that is called before `sellAsset`.
-   * @dev This implementation handles Aave V3 deposit logic
+   * @dev This implementation handles HyFi Pool deposit logic
    * @param amount The amount of the underlying asset desired to sell
    */
   function _beforeSellAsset(address /*originator*/, uint256 amount, address /*receiver*/) internal override {
-    // Deposit to Aave V3 for yield generation
-    IERC20(UNDERLYING_ASSET).approve(address(AAVE_POOL), amount);
-    AAVE_POOL.deposit(UNDERLYING_ASSET, amount, address(this), 0);
-    totalDepositedInAave += amount;
+    // Deposit to HyFi Pool for yield generation
+    IERC20(UNDERLYING_ASSET).approve(address(HYFI_POOL), amount);
+    HYFI_POOL.deposit(UNDERLYING_ASSET, amount, address(this), 0);
+    totalDepositedInHyFiPool += amount;
   }
 
   /**
-   * @notice Migrate existing USDT0 balance to Aave V3
+   * @notice Migrate existing USDT0 balance to HyFi Pool
    * @dev This function should be called during the upgrade process
    */
-  function _migrateToAaveV3() internal {
+  function _migrateToHyFiPool() internal {
     uint256 balance = IERC20(UNDERLYING_ASSET).balanceOf(address(this));
     require(balance > 0, 'NO_BALANCE_TO_MIGRATE');
 
-    // Approve Aave pool to spend underlying asset
-    IERC20(UNDERLYING_ASSET).approve(address(AAVE_POOL), balance);
+    // Approve HyFi pool to spend underlying asset
+    IERC20(UNDERLYING_ASSET).approve(address(HYFI_POOL), balance);
 
-    // Deposit into Aave V3
-    AAVE_POOL.deposit(UNDERLYING_ASSET, balance, address(this), 0);
+    // Deposit into HyFi Pool
+    HYFI_POOL.deposit(UNDERLYING_ASSET, balance, address(this), 0);
 
-    totalDepositedInAave += balance;
+    totalDepositedInHyFiPool += balance;
 
-    emit PoolDeposit(balance, ATOKEN.balanceOf(address(this)));
+    emit PoolDeposit(balance, HYTOKEN.balanceOf(address(this)));
   }
 }
