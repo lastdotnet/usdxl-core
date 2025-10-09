@@ -108,26 +108,18 @@ contract Gsm is AccessControl, VersionedInitializable, EIP712, IGsm {
 
   /**
    * @notice GSM initializer
-   * @param defaultAdmin The address of the default admin role
+   * @param admin The address of the default admin role
    * @param usdxlTreasury The address of the GHO treasury
    * @param exposureCap Maximum amount of user-supplied underlying asset in GSM
    */
   function initialize(
-    address defaultAdmin,
+    address admin,
     address usdxlTreasury,
     uint128 exposureCap
-  ) external virtual initializer {
-    _initialize(defaultAdmin, usdxlTreasury, exposureCap);
-  }
-
-  function _initialize(
-    address defaultAdmin,
-    address usdxlTreasury,
-    uint128 exposureCap
-  ) internal {
-    require(defaultAdmin != address(0), 'ZERO_ADDRESS_NOT_VALID');
-    _grantRole(DEFAULT_ADMIN_ROLE, defaultAdmin);
-    _grantRole(CONFIGURATOR_ROLE, defaultAdmin);
+  ) public virtual initializer {
+    require(admin != address(0), 'ZERO_ADDRESS_NOT_VALID');
+    _grantRole(DEFAULT_ADMIN_ROLE, admin);
+    _grantRole(CONFIGURATOR_ROLE, admin);
     _updateUsdxlTreasury(usdxlTreasury);
     _updateExposureCap(exposureCap);
   }

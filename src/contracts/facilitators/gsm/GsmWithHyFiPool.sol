@@ -15,8 +15,8 @@ import {Gsm} from './Gsm.sol';
 
 /**
  * @title GsmWithHyFiPool
- * @author Aave
- * @notice GHO Stability Module with HyFi Pool integration. It provides buy/sell facilities to go to/from an underlying asset to/from GHO.
+ * @author Last Labs
+ * @notice USDXL Stability Module with HyFi Pool integration. It provides buy/sell facilities to go to/from an underlying asset to/from USDXL.
  * @dev To be covered by a proxy contract. This implementation deposits underlying assets into HyFi pools for yield generation.
  */
 contract GsmWithHyFiPool is Gsm {
@@ -28,7 +28,6 @@ contract GsmWithHyFiPool is Gsm {
   IPool public immutable HYFI_POOL;
   IAToken public immutable HYTOKEN;
   IPoolAddressesProvider public immutable HYFI_ADDRESSES_PROVIDER;
-  ProxyAdmin public immutable PROXY_ADMIN;
 
   // Track total deposited amount in HyFi Pool
   uint256 public totalDepositedInHyFiPool;
@@ -49,8 +48,7 @@ contract GsmWithHyFiPool is Gsm {
     address usdxlToken,
     address underlyingAsset,
     address priceStrategy,
-    address hyfiAddressesProvider,
-    address proxyAdmin
+    address hyfiAddressesProvider
   ) Gsm(usdxlToken, underlyingAsset, priceStrategy) {
     require(hyfiAddressesProvider != address(0), 'ZERO_ADDRESS_NOT_VALID');
 
@@ -59,23 +57,21 @@ contract GsmWithHyFiPool is Gsm {
     
     // Get the corresponding hyToken for the underlying asset
     HYTOKEN = IAToken(HYFI_POOL.getReserveData(underlyingAsset).aTokenAddress);
-
-    PROXY_ADMIN = ProxyAdmin(proxyAdmin);
   }
 
   /**
    * @notice GSM initializer
-   * @param defaultAdmin The address of the default admin role
+   * @param admin The address of the default admin role
    * @param usdxlTreasury The address of the GHO treasury
    * @param exposureCap Maximum amount of user-supplied underlying asset in GSM
    */
   function initialize(
-    address defaultAdmin,
+    address admin,
     address usdxlTreasury,
     uint128 exposureCap
-  ) external override initializer {
+  ) public override initializer {
     if (_usdxlTreasury == address(0)) {
-      _initialize(defaultAdmin, usdxlTreasury, exposureCap);
+      super.initialize(admin, usdxlTreasury, exposureCap);
     } else {
       // Migrate existing balance to HyFi Pool
       _migrateToHyFiPool();
@@ -94,7 +90,7 @@ contract GsmWithHyFiPool is Gsm {
     HYFI_POOL.withdraw(UNDERLYING_ASSET, harvestAmount, address(this));
 
     // Transfer to admin
-    IERC20(UNDERLYING_ASSET).safeTransfer(msg.sender, harvestAmount);
+    IERC20(UNDERLYING_ASSET).safeTransfer(_usdxlTreasury, harvestAmount);
 
     emit InterestHarvested(msg.sender, harvestAmount);
   }
@@ -191,14 +187,6 @@ contract GsmWithHyFiPool is Gsm {
           }
         }
       }
-  }
-
-  function admin() external view returns (address) {
-    return PROXY_ADMIN.getProxyAdmin(TransparentUpgradeableProxy(payable(address(this))));
-  }
-
-  function implementation() external view returns (address) {
-    return PROXY_ADMIN.getProxyImplementation(TransparentUpgradeableProxy(payable(address(this))));
   }
 
   function _buyHyAsset(

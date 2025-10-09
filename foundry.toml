@@ -20,6 +20,7 @@ solc_version = "0.8.10"
 extra_output_files = ["metadata"]
 optimizer = true
 optimizer_runs = 200
+ignore_warnings_from = ["src/test/mocks"]
 
 [rpc_endpoints]
 mainnet = "${RPC_MAINNET}" 

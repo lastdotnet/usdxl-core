@@ -55,14 +55,13 @@ contract TestGsmWithHyFiPoolUpgrade is WhalesTestBase {
             USDXL,
             USDT0,
             oldGsmProxy.PRICE_STRATEGY(),
-            AAVE_V3_POOL_ADDRESSES_PROVIDER,
-            address(oldProxyAdmin)
+            AAVE_V3_POOL_ADDRESSES_PROVIDER
         );
         
         vm.stopPrank();
 
         vm.prank(admin);
-        TransparentUpgradeableProxy(payable(address(oldGsmProxy))).changeAdmin(address(oldProxyAdmin));
+        TransparentUpgradeableProxy(payable(address(oldGsmProxy))).changeAdmin(address(oldProxyAdmin)); ///////
 
        oldProxyAdmin.getProxyAdmin(TransparentUpgradeableProxy(payable(address(oldGsmProxy))));
 
@@ -120,9 +119,6 @@ contract TestGsmWithHyFiPoolUpgrade is WhalesTestBase {
         assertTrue(address(upgradedGsm.HYFI_POOL()) == AAVE_V3_POOL, "HyFi pool should be initialized");
         assertTrue(address(upgradedGsm.HYTOKEN()) == IPool(AAVE_V3_POOL).getReserveData(USDT0).aTokenAddress, "HyToken should be initialized");
         assertTrue(address(upgradedGsm.HYFI_ADDRESSES_PROVIDER()) == AAVE_V3_POOL_ADDRESSES_PROVIDER, "Aave addresses provider should match");
-        assertTrue(address(upgradedGsm.PROXY_ADMIN()) == address(oldProxyAdmin), "Proxy admin should be preserved");
-        assertTrue(address(upgradedGsm.implementation()) == address(newGsmImpl), "Implementation should be preserved");
-        assertTrue(address(upgradedGsm.admin()) == address(oldProxyAdmin), "Admin should be preserved");
 
         // verify pool deposit
         assertEq(upgradedGsm.totalDepositedInHyFiPool(), initialUsdt0Balance, "Total deposited in HyFi Pool should be initial USDT0 balance");
