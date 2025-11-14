@@ -27,10 +27,11 @@ contract UsdxlTargetRateController is UsdxlMutableInterestRateStrategy, Reentran
     using SafeERC20 for IERC20;
 
     // Rate Update Parameters
-    uint256 public targetPrice = 0.998e8; // USDXL price at which USDXL Rate = USDT0 Rate (0.998)
+    uint256 public targetPrice = 0.995e8; // USDXL price at which USDXL Rate = USDT0 Rate
     uint256 public rateFactor = 100; // Fixed input for target rate calculation
     uint256 public halvingFactor = 10e27; // Fixed input for rate adjustment
     uint256 public minimumChange = 0.0005e27; // Minimum change threshold (0.05%)
+    uint256 public maxRate = 0.50e27; // 50% maximum rate (in ray) - prevents excessive rates
     uint256 public executionInterval = 4 hours;
     uint256 public baseRateWindow = 48 hours;
 
@@ -67,6 +68,7 @@ contract UsdxlTargetRateController is UsdxlMutableInterestRateStrategy, Reentran
         uint256 rateFactor,
         uint256 halvingFactor,
         uint256 minimumChange,
+        uint256 maxRate,
         uint256 timestamp
     );
     event HYPEReceived(address sender, uint256 amount);
@@ -418,29 +420,35 @@ contract UsdxlTargetRateController is UsdxlMutableInterestRateStrategy, Reentran
      * @param newRateFactor The new rate factor
      * @param newHalvingFactor The new halving factor
      * @param newMinimumChange The new minimum change
+     * @param newMaxRate The new maximum rate (cannot exceed 100%)
      * @dev Only callable by owner
      */
     function updateParameters(
         uint256 newTargetPrice,
         uint256 newRateFactor,
         uint256 newHalvingFactor,
-        uint256 newMinimumChange
+        uint256 newMinimumChange,
+        uint256 newMaxRate
     ) external onlyOwner {
         require(newTargetPrice > 0, "Target price must be positive");
         require(newRateFactor >= 0, "Rate factor must be non-negative");
         require(newHalvingFactor > 0, "Halving factor must be positive");
         require(newMinimumChange > 0, "Minimum change must be positive");
+        require(newMaxRate > 0, "Max rate must be positive");
+        require(newMaxRate <= 1e27, "Max rate cannot exceed 100%");
         
         targetPrice = newTargetPrice;
         rateFactor = newRateFactor;
         halvingFactor = newHalvingFactor;
         minimumChange = newMinimumChange;
+        maxRate = newMaxRate;
         
         emit ParametersUpdated(
             newTargetPrice,
             newRateFactor,
             newHalvingFactor,
             newMinimumChange,
+            newMaxRate,
             block.timestamp
         );
     }
@@ -552,6 +560,7 @@ contract UsdxlTargetRateController is UsdxlMutableInterestRateStrategy, Reentran
      * @return rateFactor_ The current rate factor
      * @return halvingFactor_ The current halving factor
      * @return minimumChange_ The current minimum change
+     * @return maxRate_ The current maximum rate
      * @return baseRateWindow_ The current base rate window
      * @return executionInterval_ The current execution interval
      */
@@ -561,10 +570,11 @@ contract UsdxlTargetRateController is UsdxlMutableInterestRateStrategy, Reentran
         uint256 rateFactor_,
         uint256 halvingFactor_,
         uint256 minimumChange_,
+        uint256 maxRate_,
         uint256 baseRateWindow_,
         uint256 executionInterval_
     ) {
-        return (_calculateTrailingAverage(), targetPrice, rateFactor, halvingFactor, minimumChange, baseRateWindow, executionInterval);
+        return (_calculateTrailingAverage(), targetPrice, rateFactor, halvingFactor, minimumChange, maxRate, baseRateWindow, executionInterval);
     }
 
     /**
@@ -572,6 +582,12 @@ contract UsdxlTargetRateController is UsdxlMutableInterestRateStrategy, Reentran
      * @param newRate The new interest rate (in ray)
      */
     function _updateInterestRate(uint256 newRate) internal {
+        // Cap the rate at maxRate to prevent excessive rates
+        if (newRate > maxRate) {
+            newRate = maxRate;
+        }
+        
+        // Always update the rate (either the calculated rate or the capped rate)
         _baseVariableBorrowRate = newRate;
     }
 

@@ -286,7 +286,8 @@ contract UsdxlTargetRateControllerForkTest is Test {
             0.998e8, // targetPrice
             2,       // rateFactor (2)
             4e27,    // halvingFactor (400% in ray)
-            0.001e27 // minimumChange
+            0.001e27, // minimumChange
+            0.50e27  // maxRate (50% - default)
         );
         
         vm.warp(block.timestamp + 4 hours + 1);
@@ -311,10 +312,11 @@ contract UsdxlTargetRateControllerForkTest is Test {
         // Set minimum change very high
         vm.prank(owner);
         rateController.updateParameters(
-            0.998e8, // targetPrice
+            0.995e8, // targetPrice
             1,       // rateFactor (1)
             2e27,    // halvingFactor (200% in ray)
-            0.1e27   // minimumChange (10% - very high)
+            0.1e27,   // minimumChange (10% - very high)
+            0.50e27  // maxRate (50% - default)
         );
         
         vm.warp(block.timestamp + 4 hours + 1);
@@ -335,13 +337,15 @@ contract UsdxlTargetRateControllerForkTest is Test {
         uint256 newRateFactor = 2;
         uint256 newHalvingFactor = 3e27;
         uint256 newMinimumChange = 0.002e27;
-        
+        uint256 newMaxRate = 0.40e27;
+
         vm.prank(owner);
         rateController.updateParameters(
             newTargetPrice,
             newRateFactor,
             newHalvingFactor,
-            newMinimumChange
+            newMinimumChange,
+            newMaxRate
         );
         
         // baseRate is now calculated dynamically, so just check it's > 0
@@ -350,7 +354,7 @@ contract UsdxlTargetRateControllerForkTest is Test {
         assertEq(rateController.rateFactor(), newRateFactor);
         assertEq(rateController.halvingFactor(), newHalvingFactor);
         assertEq(rateController.minimumChange(), newMinimumChange);
-        
+        assertEq(rateController.maxRate(), newMaxRate);
         console.log("Parameter updates test completed");
     }
 

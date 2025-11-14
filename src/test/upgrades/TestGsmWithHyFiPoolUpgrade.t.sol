@@ -87,6 +87,9 @@ contract TestGsmWithHyFiPoolUpgrade is WhalesTestBase {
             0
         );
 
+        console2.log("initializeData:");
+        console2.logBytes(initializeData);
+
         vm.prank(admin);
         oldProxyAdmin.upgradeAndCall(TransparentUpgradeableProxy(payable(address(oldGsmProxy))), address(newGsmImpl), initializeData);
         

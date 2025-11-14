@@ -55,6 +55,7 @@ contract DeployUsdxlTargetRateController is Script {
             deployer,
             config.wrappedHypeGateway
         );
+        // UsdxlTargetRateController rateController = UsdxlTargetRateController(0xdA4858c038Edd3Aa84B6c20B03509E6D33E76Dc7);
 
         rateController.updateExecutor(deployer, true);
         rateController.updateExecutor(executor, true);
