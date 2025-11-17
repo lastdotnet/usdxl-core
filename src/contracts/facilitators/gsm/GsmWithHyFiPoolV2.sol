@@ -12,7 +12,10 @@ import {ProxyAdmin} from '@openzeppelin/contracts/proxy/transparent/ProxyAdmin.s
 import {TransparentUpgradeableProxy} from '@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol';
 import {Gsm} from './Gsm.sol';
 import {SafeERC20, IERC20} from '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
-import {IWeightedPool} from 'src/contracts/dependencies/balancer/interfaces/pool-weighted/IWeightedPool.sol';
+import {IWeightedPool, WeightedPoolDynamicData} from 'src/contracts/dependencies/balancer/interfaces/pool-weighted/IWeightedPool.sol';
+import {IRouter} from 'src/contracts/dependencies/balancer/interfaces/vault/IRouter.sol';
+import {IPermit2} from 'src/contracts/dependencies/permit2/IPermit2.sol';
+import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 
 /**
  * @title GsmWithHyFiPoolV2
@@ -26,6 +29,7 @@ contract GsmWithHyFiPoolV2 is Gsm {
   using SafeCast for uint256;
   using WadRayMath for uint256;
   using SafeERC20 for IERC20;
+  using Strings for uint256;
 
   bytes32 public constant HARVESTER_ROLE = keccak256('HARVESTER_ROLE');
 
@@ -35,15 +39,24 @@ contract GsmWithHyFiPoolV2 is Gsm {
   IPoolAddressesProvider public immutable HYFI_ADDRESSES_PROVIDER;
 
   // Balancer Pool integration
-  IWeightedPool public immutable BALANCER_POOL;
+  IRouter public immutable BALANCER_ROUTER;
+  IPermit2 public immutable PERMIT2;
 
   // Track total deposited amount in HyFi Pool
   uint256 public totalDepositedInHyFiPool;
+  
+  // Mutable Balancer pool address (appended to end of storage for upgrade safety)
+  IWeightedPool public BALANCER_POOL;
 
   event PoolDeposit(uint256 amount, uint256 hyTokenBalance);
   event PoolWithdraw(uint256 amount, uint256 hyTokenBalance);
   event InterestHarvested(address indexed admin, address indexed receiver, uint256 amount);
   event BuyHyAsset(address indexed originator, address indexed receiver, uint256 amount, uint256 ghoSold, uint256 fee);
+  event NoLiquidityToAddProportional();
+  event NoLiquidityToAddUnbalanced();
+  event LiquidityAddedProportional(uint256 bptMinted, uint256[] amountsIn);
+  event LiquidityAddedUnbalanced(uint256 bptMinted, uint256[] amountsIn);
+  event BalancerPoolUpdated(address indexed oldPool, address indexed newPool);
 
   /**
    * @dev Constructor
@@ -51,16 +64,20 @@ contract GsmWithHyFiPoolV2 is Gsm {
    * @param underlyingAsset The address of the collateral asset
    * @param priceStrategy The address of the price strategy
    * @param hyfiAddressesProvider The address of the HyFi addresses provider
+   * @param balancerRouter The address of the Balancer router
+   * @param permit2 The address of the Permit2 contract
    */
   constructor(
     address usdxlToken,
     address underlyingAsset,
     address priceStrategy,
     address hyfiAddressesProvider,
-    address balancerPool
+    address balancerRouter,
+    address permit2
   ) Gsm(usdxlToken, underlyingAsset, priceStrategy) {
     require(hyfiAddressesProvider != address(0), 'ZERO_ADDRESS_NOT_VALID');
-    require(balancerPool != address(0), 'ZERO_ADDRESS_NOT_VALID');
+    require(balancerRouter != address(0), 'ZERO_ADDRESS_NOT_VALID');
+    require(permit2 != address(0), 'ZERO_ADDRESS_NOT_VALID');
 
     HYFI_ADDRESSES_PROVIDER = IPoolAddressesProvider(hyfiAddressesProvider);
     HYFI_POOL = IPool(HYFI_ADDRESSES_PROVIDER.getPool());
@@ -68,7 +85,8 @@ contract GsmWithHyFiPoolV2 is Gsm {
     // Get the corresponding hyToken for the underlying asset
     HYTOKEN = IAToken(HYFI_POOL.getReserveData(underlyingAsset).aTokenAddress);
 
-    BALANCER_POOL = IWeightedPool(balancerPool);
+    BALANCER_ROUTER = IRouter(balancerRouter);
+    PERMIT2 = IPermit2(permit2);
   }
 
   /**
@@ -116,6 +134,7 @@ contract GsmWithHyFiPoolV2 is Gsm {
   }
 
   struct SwapParams {
+    address swapRouter;
     bytes swapData;
     address sellToken;
     address buyToken;
@@ -123,16 +142,28 @@ contract GsmWithHyFiPoolV2 is Gsm {
     uint256 minAmountOut;
   }
 
-  function harvestAndSwap(address swapRouter, SwapParams[] calldata swapParams) external onlyRole(HARVESTER_ROLE) {
+  struct SwapOutput {
+    address token;
+    uint256 amountSold;
+    uint256 amountBought;
+  }
+
+  function harvestLiquidity(
+    SwapParams[] calldata swapParams
+  ) external onlyRole(HARVESTER_ROLE) {
     _harvestInterest(address(this));
 
+    SwapOutput[] memory swapOutputs = new SwapOutput[](swapParams.length);
+
     for (uint256 i = 0; i < swapParams.length; i++) {
-      (uint256 amountSold, uint256 amountBought) = _swapWithData(swapRouter, swapParams[i]);
-      require(amountSold <= swapParams[i].maxAmountIn, 'INPUT_SLIPPAGE_EXCEEDED');
-      require(amountBought >= swapParams[i].minAmountOut, 'OUTPUT_SLIPPAGE_EXCEEDED');
+      (swapOutputs[i].amountSold, swapOutputs[i].amountBought) = _swapWithData(swapParams[i]);
+      swapOutputs[i].token = swapParams[i].buyToken;
+      require(swapOutputs[i].amountSold <= swapParams[i].maxAmountIn, 'INPUT_SLIPPAGE_EXCEEDED');
+      require(swapOutputs[i].amountBought >= swapParams[i].minAmountOut, 'OUTPUT_SLIPPAGE_EXCEEDED');
     }
 
     // LP into balancer pool
+    _addLiquidityToBalancerPool(swapOutputs);
 
     // redeposit leftover underlying
     _migrateToHyFiPool();
@@ -152,6 +183,21 @@ contract GsmWithHyFiPoolV2 is Gsm {
     totalDepositedInHyFiPool = 0;
 
     emit PoolWithdraw(totalDepositedInHyFiPool, HYTOKEN.balanceOf(address(this)));
+  }
+
+  /**
+   * @notice Update the Balancer pool address
+   * @dev Only admin can update the pool address
+   * @param newBalancerPool The new Balancer pool address
+   */
+  function updateBalancerPool(address newBalancerPool) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    require(newBalancerPool != address(0), 'ZERO_ADDRESS_NOT_VALID');
+    require(newBalancerPool != address(BALANCER_POOL), 'SAME_ADDRESS');
+    
+    address oldPool = address(BALANCER_POOL);
+    BALANCER_POOL = IWeightedPool(newBalancerPool);
+    
+    emit BalancerPoolUpdated(oldPool, newBalancerPool);
   }
 
   /**
@@ -330,22 +376,27 @@ contract GsmWithHyFiPoolV2 is Gsm {
     * @dev Execute swap using swap router
     */
   function _swapWithData(
-      address swapRouter,
       SwapParams calldata swapParams
   ) internal returns (uint256 amountSold, uint256 amountBought) {
       // Reset allowance to zero first, then approve the new amount
-      IERC20(swapParams.sellToken).safeApprove(swapRouter, 0);
-      IERC20(swapParams.sellToken).safeApprove(swapRouter, swapParams.maxAmountIn);
+      IERC20(swapParams.sellToken).safeApprove(swapParams.swapRouter, 0);
+      IERC20(swapParams.sellToken).safeApprove(swapParams.swapRouter, swapParams.maxAmountIn);
 
       SwapWithDataLocals memory locals;
+
+      if (swapParams.swapData.length == 0) {
+        amountSold = swapParams.maxAmountIn;
+        amountBought = swapParams.minAmountOut;
+        return (amountSold, amountBought);
+      }
 
       locals.buyTokenBalanceBefore = IERC20(swapParams.buyToken).balanceOf(address(this));
       locals.sellTokenBalanceBefore = IERC20(swapParams.sellToken).balanceOf(address(this));
 
       uint256 gasUsed = gasleft();
 
-      // Execute swap on Gluex
-      (bool success,) = swapRouter.call(swapParams.swapData);
+      // Execute swap via router
+      (bool success,) = swapParams.swapRouter.call(swapParams.swapData);
       require(success, "SWAP_FAILED");
 
       gasUsed = gasUsed - gasleft();
@@ -356,11 +407,149 @@ contract GsmWithHyFiPoolV2 is Gsm {
       amountSold = locals.sellTokenBalanceBefore - locals.sellTokenBalanceAfter;
       amountBought = locals.buyTokenBalanceAfter - locals.buyTokenBalanceBefore;
 
-      require(amountBought > 0, "NO_OUTPUT_AMOUNT_RECEIVED");
+      require(amountBought > 0, "SWAP_CHECK_OUTPUT_RECEIVER");
 
       // Revoke approval
-      IERC20(swapParams.sellToken).safeApprove(swapRouter, 0);
+      IERC20(swapParams.sellToken).safeApprove(swapParams.swapRouter, 0);
 
       return (amountSold, amountBought);
+  }
+
+  //TODO: make it so harvestLiquidity cannot dip into underlying withdrawn from hyfi pool
+  //TODO: consider if it makes sense to gate minBptOut for addLiquidityUnbalanced
+  //TODO: make sure pool token order matches swapParams
+
+  struct AddLiquidityToBalancerPoolLocals {
+    uint256 usdxlBalance;
+    uint256 underlyingBalance;
+    uint256 usdxlIndex;
+    uint256 underlyingIndex;
+    uint256 totalBptMinted;
+    uint256 totalUsdxlUsed;
+    uint256 totalUnderlyingUsed;
+    WeightedPoolDynamicData poolData;
+    IERC20[] poolTokens;
+    bool canProvideLiquidity;
+    uint256[] amountsUsed;
+  }
+
+  /**
+   * @dev Add liquidity to the Balancer pool, first proportionally then unbalanced
+   * @param swapOutputs The swap outputs to add liquidity for
+   */
+  function _addLiquidityToBalancerPool(SwapOutput[] memory swapOutputs) internal {
+    AddLiquidityToBalancerPoolLocals memory locals;
+
+    // Get pool data to determine token order and ratios
+    locals.poolData = BALANCER_POOL.getWeightedPoolDynamicData();
+    locals.poolTokens = BALANCER_POOL.getWeightedPoolImmutableData().tokens;
+
+    // If we don't have any tokens to LP, return early
+    for (uint256 i = 0; i < locals.poolTokens.length; i++) {
+      if (IERC20(locals.poolTokens[i]).balanceOf(address(this)) > 0) {
+        locals.canProvideLiquidity = true;
+      }
+    }
+
+    if (!locals.canProvideLiquidity) {
+      emit NoLiquidityToAddProportional();
+      return;
+    }
+
+    // Setup approvals via Permit2
+    _setupPermit2Approvals(swapOutputs);
+
+    // Step 1: Add liquidity proportionally if we have both tokens
+    (locals.amountsUsed, locals.totalBptMinted) = 
+      _addLiquidityProportional(
+        locals.poolTokens,
+        locals.poolData,
+        swapOutputs
+      );
+    
+    if (locals.totalBptMinted > 0) {
+      emit LiquidityAddedProportional(locals.totalBptMinted, locals.amountsUsed);
+    } else {
+      emit NoLiquidityToAddProportional();
+    }
+
+    // Step 2: Subtract the amounts used from the swap outputs
+    for (uint256 i = 0; i < swapOutputs.length; i++) {
+      if (locals.amountsUsed[i] <= swapOutputs[i].amountBought) {
+        swapOutputs[i].amountBought -= locals.amountsUsed[i];
+      } else {
+        swapOutputs[i].amountBought = 0;
+      }
+    }
+
+    // Step 3: Add remaining liquidity unbalanced
+    locals.totalBptMinted = _addLiquidityUnbalanced(
+      locals.poolTokens,
+      swapOutputs
+    );
+    
+    if (locals.totalBptMinted > 0) {
+      emit LiquidityAddedUnbalanced(locals.totalBptMinted, locals.amountsUsed);
+    }
+  }
+
+  function _setupPermit2Approvals(SwapOutput[] memory swapOutputs) internal {
+    for (uint256 i = 0; i < swapOutputs.length; i++) {
+      IERC20(swapOutputs[i].token).safeApprove(address(PERMIT2), 0);
+      IERC20(swapOutputs[i].token).safeApprove(address(PERMIT2), swapOutputs[i].amountBought);
+    }
+  }
+
+  /**
+   * @dev Add liquidity proportionally based on pool ratios
+   */
+  function _addLiquidityProportional(
+    IERC20[] memory poolTokens,
+    WeightedPoolDynamicData memory poolData,
+    SwapOutput[] memory swapOutputs
+  ) internal returns (uint256[] memory amountsIn, uint256 exactBptAmountOut) {
+    amountsIn = new uint256[](swapOutputs.length);
+    for (uint256 i = 0; i < swapOutputs.length; i++) {
+      amountsIn[i] = swapOutputs[i].amountBought;
+    }
+
+    // Add liquidity proportionally
+    uint256[] memory actualAmountsIn = BALANCER_ROUTER.addLiquidityProportional(
+      address(BALANCER_POOL),
+      amountsIn,
+      0,
+      false, // wethIsEth
+      "" // userData
+    );
+
+    return (actualAmountsIn, exactBptAmountOut);
+  }
+
+  /**
+   * @dev Add liquidity unbalanced with whatever tokens remain
+   */
+  function _addLiquidityUnbalanced(
+    IERC20[] memory poolTokens,
+    SwapOutput[] memory swapOutputs
+  ) internal returns (uint256 bptOut) {
+    // Skip if no tokens to add
+    if (swapOutputs.length == 0) {
+      return 0;
+    }
+
+    // Prepare amounts array in pool token order
+    uint256[] memory amountsIn = new uint256[](swapOutputs.length);
+    for (uint256 i = 0; i < swapOutputs.length; i++) {
+      amountsIn[i] = swapOutputs[i].amountBought;
+    }
+
+    // Add liquidity unbalanced (minBptOut = 0 since we already checked global minimum)
+    bptOut = BALANCER_ROUTER.addLiquidityUnbalanced(
+      address(BALANCER_POOL),
+      amountsIn,
+      0, // minBptAmountOut (we check total at the end)
+      false, // wethIsEth
+      "" // userData
+    );
   }
 }
