@@ -12,10 +12,12 @@ import {ProxyAdmin} from '@openzeppelin/contracts/proxy/transparent/ProxyAdmin.s
 import {TransparentUpgradeableProxy} from '@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol';
 import {Gsm} from './Gsm.sol';
 import {SafeERC20, IERC20} from '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
-import {IWeightedPool, WeightedPoolDynamicData} from 'src/contracts/dependencies/balancer/interfaces/pool-weighted/IWeightedPool.sol';
+import {IGyroECLPPool, GyroECLPPoolImmutableData, GyroECLPPoolDynamicData} from 'src/contracts/dependencies/balancer/interfaces/pool-gyro/IGyroECLPPool.sol';
 import {IRouter} from 'src/contracts/dependencies/balancer/interfaces/vault/IRouter.sol';
 import {IPermit2} from 'src/contracts/dependencies/permit2/IPermit2.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
+import {IHyFiOracle} from '@hypurrfi/core/contracts/interfaces/IHyFiOracle.sol';
+import {IERC20Metadata} from '@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol';
 
 /**
  * @title GsmWithHyFiPoolV2
@@ -37,6 +39,7 @@ contract GsmWithHyFiPoolV2 is Gsm {
   IPool public immutable HYFI_POOL;
   IAToken public immutable HYTOKEN;
   IPoolAddressesProvider public immutable HYFI_ADDRESSES_PROVIDER;
+  IHyFiOracle public immutable HYFI_ORACLE;
 
   // Balancer Pool integration
   IRouter public immutable BALANCER_ROUTER;
@@ -46,7 +49,7 @@ contract GsmWithHyFiPoolV2 is Gsm {
   uint256 public totalDepositedInHyFiPool;
   
   // Mutable Balancer pool address (appended to end of storage for upgrade safety)
-  IWeightedPool public BALANCER_POOL;
+  IGyroECLPPool public BALANCER_POOL;
 
   event PoolDeposit(uint256 amount, uint256 hyTokenBalance);
   event PoolWithdraw(uint256 amount, uint256 hyTokenBalance);
@@ -81,6 +84,7 @@ contract GsmWithHyFiPoolV2 is Gsm {
 
     HYFI_ADDRESSES_PROVIDER = IPoolAddressesProvider(hyfiAddressesProvider);
     HYFI_POOL = IPool(HYFI_ADDRESSES_PROVIDER.getPool());
+    HYFI_ORACLE = IHyFiOracle(HYFI_ADDRESSES_PROVIDER.getPriceOracle());
     
     // Get the corresponding hyToken for the underlying asset
     HYTOKEN = IAToken(HYFI_POOL.getReserveData(underlyingAsset).aTokenAddress);
@@ -151,22 +155,11 @@ contract GsmWithHyFiPoolV2 is Gsm {
   function harvestLiquidity(
     SwapParams[] calldata swapParams
   ) external onlyRole(HARVESTER_ROLE) {
-    _harvestInterest(address(this));
+    _harvestLiquidity(swapParams);
+  }
 
-    SwapOutput[] memory swapOutputs = new SwapOutput[](swapParams.length);
-
-    for (uint256 i = 0; i < swapParams.length; i++) {
-      (swapOutputs[i].amountSold, swapOutputs[i].amountBought) = _swapWithData(swapParams[i]);
-      swapOutputs[i].token = swapParams[i].buyToken;
-      require(swapOutputs[i].amountSold <= swapParams[i].maxAmountIn, 'INPUT_SLIPPAGE_EXCEEDED');
-      require(swapOutputs[i].amountBought >= swapParams[i].minAmountOut, 'OUTPUT_SLIPPAGE_EXCEEDED');
-    }
-
-    // LP into balancer pool
-    _addLiquidityToBalancerPool(swapOutputs);
-
-    // redeposit leftover underlying
-    _migrateToHyFiPool();
+  function calculateSwapAmounts() external view returns (address tokenIn, address[] memory tokensOut, uint256[] memory amountsIn) {
+    return _calculateSwapAmounts();
   }
 
   function emergencyPoolDeposit() external onlyRole(DEFAULT_ADMIN_ROLE) {
@@ -190,12 +183,12 @@ contract GsmWithHyFiPoolV2 is Gsm {
    * @dev Only admin can update the pool address
    * @param newBalancerPool The new Balancer pool address
    */
-  function updateBalancerPool(address newBalancerPool) external onlyRole(DEFAULT_ADMIN_ROLE) {
+  function updateBalancerPool(address newBalancerPool) external onlyRole(HARVESTER_ROLE) {
     require(newBalancerPool != address(0), 'ZERO_ADDRESS_NOT_VALID');
     require(newBalancerPool != address(BALANCER_POOL), 'SAME_ADDRESS');
     
     address oldPool = address(BALANCER_POOL);
-    BALANCER_POOL = IWeightedPool(newBalancerPool);
+    BALANCER_POOL = IGyroECLPPool(newBalancerPool);
     
     emit BalancerPoolUpdated(oldPool, newBalancerPool);
   }
@@ -427,10 +420,29 @@ contract GsmWithHyFiPoolV2 is Gsm {
     uint256 totalBptMinted;
     uint256 totalUsdxlUsed;
     uint256 totalUnderlyingUsed;
-    WeightedPoolDynamicData poolData;
+    GyroECLPPoolDynamicData poolData;
     IERC20[] poolTokens;
     bool canProvideLiquidity;
     uint256[] amountsUsed;
+  }
+
+  function _harvestLiquidity(SwapParams[] calldata swapParams) internal {
+    _harvestInterest(address(this));
+
+    SwapOutput[] memory swapOutputs = new SwapOutput[](swapParams.length);
+
+    for (uint256 i = 0; i < swapParams.length; i++) {
+      (swapOutputs[i].amountSold, swapOutputs[i].amountBought) = _swapWithData(swapParams[i]);
+      swapOutputs[i].token = swapParams[i].buyToken;
+      require(swapOutputs[i].amountSold <= swapParams[i].maxAmountIn, 'INPUT_SLIPPAGE_EXCEEDED');
+      require(swapOutputs[i].amountBought >= swapParams[i].minAmountOut, 'OUTPUT_SLIPPAGE_EXCEEDED');
+    }
+
+    // LP into balancer pool
+    _addLiquidityToBalancerPool(swapOutputs);
+
+    // redeposit leftover underlying
+    _migrateToHyFiPool();
   }
 
   /**
@@ -441,8 +453,8 @@ contract GsmWithHyFiPoolV2 is Gsm {
     AddLiquidityToBalancerPoolLocals memory locals;
 
     // Get pool data to determine token order and ratios
-    locals.poolData = BALANCER_POOL.getWeightedPoolDynamicData();
-    locals.poolTokens = BALANCER_POOL.getWeightedPoolImmutableData().tokens;
+    locals.poolData = BALANCER_POOL.getGyroECLPPoolDynamicData();
+    locals.poolTokens = BALANCER_POOL.getGyroECLPPoolImmutableData().tokens;
 
     // If we don't have any tokens to LP, return early
     for (uint256 i = 0; i < locals.poolTokens.length; i++) {
@@ -505,7 +517,7 @@ contract GsmWithHyFiPoolV2 is Gsm {
    */
   function _addLiquidityProportional(
     IERC20[] memory poolTokens,
-    WeightedPoolDynamicData memory poolData,
+    GyroECLPPoolDynamicData memory poolData,
     SwapOutput[] memory swapOutputs
   ) internal returns (uint256[] memory amountsIn, uint256 exactBptAmountOut) {
     amountsIn = new uint256[](swapOutputs.length);
@@ -551,5 +563,41 @@ contract GsmWithHyFiPoolV2 is Gsm {
       false, // wethIsEth
       "" // userData
     );
+  }
+
+  struct CalculateAmountsInLocals {
+    GyroECLPPoolImmutableData immutableData;
+    GyroECLPPoolDynamicData dynamicData;
+    uint256 sumOfBalancesLiveScaled18;
+    uint256 harvestAmount;
+    bool underlyingInPool;
+    IERC20[] poolTokens;
+  }
+
+  function _calculateSwapAmounts() internal returns (address tokenIn, address[] memory tokensOut, uint256[] memory amountsIn) {
+    CalculateAmountsInLocals memory locals;
+
+    locals.harvestAmount = getHarvestableUnderlyingBalance();
+    
+    locals.dynamicData = BALANCER_POOL.getGyroECLPPoolDynamicData();
+    locals.immutableData = BALANCER_POOL.getGyroECLPPoolImmutableData();
+
+    tokenIn = UNDERLYING_ASSET;
+    locals.poolTokens = locals.immutableData.tokens;
+    tokensOut = new address[](locals.poolTokens.length);
+    amountsIn = new uint256[](locals.poolTokens.length);
+
+    // Sum up live balances scaled to 18 decimals
+    for (uint256 i = 0; i < tokensOut.length; i++) {
+      tokensOut[i] = address(locals.poolTokens[i]);
+      locals.sumOfBalancesLiveScaled18 += locals.dynamicData.balancesLiveScaled18[i];
+    }
+
+    // Calculate amounts in based on pool ratios
+    for (uint256 i = 0; i < tokensOut.length; i++) {
+      amountsIn[i] = locals.harvestAmount * locals.dynamicData.balancesLiveScaled18[i] / locals.sumOfBalancesLiveScaled18;
+    }
+
+    return (tokenIn, tokensOut, amountsIn);
   }
 }
