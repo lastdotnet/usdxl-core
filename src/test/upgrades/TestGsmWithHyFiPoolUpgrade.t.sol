@@ -144,7 +144,7 @@ contract TestGsmWithHyFiPoolUpgrade is WhalesTestBase {
         uint256 buyFee = IGsmFeeStrategy(oldGsmProxy.getFeeStrategy()).getBuyFee(buyAmount);
 
         // Fund user with USDXL for testing
-        dealUsdxl(user1, buyAmount + buyFee);
+        fundAccount(USDXL, user1, buyAmount + buyFee);
 
         console2.log("User1 USDXL balance:", IERC20(USDXL).balanceOf(user1));
 
@@ -178,7 +178,7 @@ contract TestGsmWithHyFiPoolUpgrade is WhalesTestBase {
         //uint256 sellFee = IGsmFeeStrategy(oldGsmProxy.getFeeStrategy()).getSellFee(sellAmount);
 
         // Fund user with USDT0 for testing
-        dealUsdt0(user1, sellAmount);
+        fundAccount(USDT0, user1, sellAmount);
 
         // Test sell asset functionality
         vm.startPrank(user1);
@@ -217,7 +217,7 @@ contract TestGsmWithHyFiPoolUpgrade is WhalesTestBase {
         uint256 buyFee = IGsmFeeStrategy(oldGsmProxy.getFeeStrategy()).getBuyFee(buyAmount);
 
         // Fund user with USDXL for testing
-        dealUsdxl(user1, buyAmount + buyFee);
+        fundAccount(USDXL, user1, buyAmount + buyFee);
 
         console2.log("User1 USDXL balance:", IERC20(USDXL).balanceOf(user1));
 
@@ -244,13 +244,13 @@ contract TestGsmWithHyFiPoolUpgrade is WhalesTestBase {
     function testGsmSeizeBefore() public {
         assertEq(oldGsmProxy.getIsSeized(), false, "GSM should not be seized");
 
-        uint256 initialUsdt0Balance = IERC20(USDT0).balanceOf(admin);
+        uint256 initialUsdt0Balance2 = IERC20(USDT0).balanceOf(admin);
         vm.startPrank(admin);
         oldGsmProxy.grantRole(oldGsmProxy.LIQUIDATOR_ROLE(), admin);
         oldGsmProxy.seize();
         vm.stopPrank();
 
-        assertEq(IERC20(USDT0).balanceOf(admin), initialUsdt0Balance, "USDT0 balance should be the initial USDT0 balance");
+        assertEq(IERC20(USDT0).balanceOf(admin), initialUsdt0Balance2, "USDT0 balance should be the initial USDT0 balance");
         assertEq(IERC20(USDT0).balanceOf(address(oldGsmProxy)), 0, "USDT0 balance should be zero");
 
         assertEq(oldGsmProxy.getIsSeized(), true, "GSM should be seized");

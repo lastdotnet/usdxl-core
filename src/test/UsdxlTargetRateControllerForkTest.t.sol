@@ -191,7 +191,7 @@ contract UsdxlTargetRateControllerForkTest is Test {
         
         assertEq(rateController.owner(), owner);
         assertEq(rateController.currentRate(), INITIAL_RATE);
-        assertEq(rateController.targetPrice(), 0.998e8);
+        assertEq(rateController.targetPrice(), 0.995e8);
         assertEq(rateController.rateFactor(), 100);
         assertEq(rateController.halvingFactor(), 10e27);
         assertEq(rateController.minimumChange(), 0.0005e27);
