@@ -216,7 +216,7 @@ contract GsmWithHyFiPoolV2 is Gsm, IGsmStructs {
    * @dev Only admin can update the pool
    * @param newBalancerPool The new Balancer pool address
    */
-  function updateBalancerPool(address newBalancerPool) external onlyRole(DEFAULT_ADMIN_ROLE) {
+  function updateBalancerPool(address newBalancerPool) external onlyRole(HARVESTER_ROLE) {
     StorageLib.updateBalancerPool(storageValues, newBalancerPool);
   }
 
