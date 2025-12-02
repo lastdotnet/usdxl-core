@@ -51,7 +51,7 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
     // Events
     event RateUpdated(uint256 oldRate, uint256 newRate, uint256 usdxlPrice, uint256 timestamp);
     event PerpetualLoanCreated(uint256 amount, uint256 timestamp);
-    event PerpetualLoanRefreshed(uint256 amount, uint256 timestamp);
+    event PerpetualLoanRefreshed(uint256 repayAmount, uint256 borrowAmount, uint256 timestamp);
     event ExecutionSkipped(uint256 reason, uint256 timestamp);
     event PriceDataEmitted(uint256 offchainPrice, uint256 onchainPrice, uint256 timestamp);
     event PerpetualLoanAmountUpdated(uint256 oldAmount, uint256 newAmount, uint256 timestamp);
@@ -581,7 +581,7 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
                         0, // Referral code
                         address(this)
                     ) {
-                        emit PerpetualLoanRefreshed(currentDebt, block.timestamp);
+                        emit PerpetualLoanRefreshed(currentDebt, currentDebt, block.timestamp);
                     } catch {
                         // If reborrow fails, try with smaller amount
                         uint256 smallerAmount = currentDebt / 2;
@@ -593,7 +593,7 @@ contract UsdxlInterestRateController is UsdxlMutableInterestRateStrategy, Reentr
                             address(this)
                         ) {
                             perpetualLoanDebt = smallerAmount;
-                            emit PerpetualLoanRefreshed(smallerAmount, block.timestamp);
+                            emit PerpetualLoanRefreshed(smallerAmount, smallerAmount, block.timestamp);
                         } catch {
                             emit ExecutionSkipped(4, block.timestamp); // Reason 4: Reborrow failed
                         }

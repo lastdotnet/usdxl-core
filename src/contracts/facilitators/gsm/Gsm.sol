@@ -116,7 +116,7 @@ contract Gsm is AccessControl, VersionedInitializable, EIP712, IGsm {
     address admin,
     address usdxlTreasury,
     uint128 exposureCap
-  ) external initializer {
+  ) public virtual initializer {
     require(admin != address(0), 'ZERO_ADDRESS_NOT_VALID');
     _grantRole(DEFAULT_ADMIN_ROLE, admin);
     _grantRole(CONFIGURATOR_ROLE, admin);
@@ -415,6 +415,8 @@ contract Gsm is AccessControl, VersionedInitializable, EIP712, IGsm {
     IUsdxlToken(USDXL_TOKEN).burn(grossAmount);
     IERC20(UNDERLYING_ASSET).safeTransfer(receiver, assetAmount);
 
+    _afterBuyAsset(originator, assetAmount, receiver);
+
     emit BuyAsset(originator, receiver, assetAmount, ghoSold, fee);
     return (assetAmount, ghoSold);
   }
@@ -427,6 +429,15 @@ contract Gsm is AccessControl, VersionedInitializable, EIP712, IGsm {
    * @param receiver Recipient address of the underlying asset being purchased
    */
   function _beforeBuyAsset(address originator, uint256 amount, address receiver) internal virtual {}
+
+  /**
+   * @dev Hook that is called after `buyAsset`.
+   * @dev This can be used to add custom logic
+   * @param originator Originator of the request
+   * @param amount The amount of the underlying asset desired for purchase
+   * @param receiver Recipient address of the underlying asset being purchased
+   */
+  function _afterBuyAsset(address originator, uint256 amount, address receiver) internal virtual {}
 
   /**
    * @dev Sells an underlying asset for GHO
@@ -460,6 +471,8 @@ contract Gsm is AccessControl, VersionedInitializable, EIP712, IGsm {
     IUsdxlToken(USDXL_TOKEN).mint(address(this), grossAmount);
     IUsdxlToken(USDXL_TOKEN).transfer(receiver, ghoBought);
 
+    _afterSellAsset(originator, assetAmount, receiver);
+
     emit SellAsset(originator, receiver, assetAmount, grossAmount, fee);
     return (assetAmount, ghoBought);
   }
@@ -472,6 +485,19 @@ contract Gsm is AccessControl, VersionedInitializable, EIP712, IGsm {
    * @param receiver Recipient address of the GHO being purchased
    */
   function _beforeSellAsset(
+    address originator,
+    uint256 amount,
+    address receiver
+  ) internal virtual {}
+
+  /**
+   * @dev Hook that is called after `sellAsset`.
+   * @dev This can be used to add custom logic
+   * @param originator Originator of the request
+   * @param amount The amount of the underlying asset desired to sell
+   * @param receiver Recipient address of the GHO being purchased
+   */
+  function _afterSellAsset(
     address originator,
     uint256 amount,
     address receiver

@@ -234,7 +234,7 @@ contract TestUsdxlInterestRateController is Test {
     
     address public usdxlReserve = address(0x123);
     address public whypeAddress = address(0x1234);
-    uint256 public initialRate = 0.08e27; // 8% (above minimum)
+    uint256 public initialRate = 0.09e27; // 9% (above minimum)
     
     address public owner = address(0x1);
     address public user = address(0x2);
@@ -310,12 +310,12 @@ contract TestUsdxlInterestRateController is Test {
         assertEq(rateController.currentRate(), initialRate);
         assertEq(rateController.lastExecutionTime(), block.timestamp);
         assertEq(rateController.getBaseVariableBorrowRate(), initialRate);
-        assertEq(rateController.executionInterval(), 8 hours);
+        assertEq(rateController.executionInterval(), 4 hours);
         // Check initial parameters
-        assertEq(rateController.minRate(), 0.06e27); // 6%
+        assertEq(rateController.minRate(), 0.085e27); // 8.5%
         assertEq(rateController.maxRate(), 0.50e27); // 50%
-        assertEq(rateController.rateIncreaseAdjustment(), 0.0015e27); // 0.15%
-        assertEq(rateController.rateDecreaseAdjustment(), 0.0015e27); // 0.15%
+        assertEq(rateController.rateIncreaseAdjustment(), 0.002e27); // 0.2%
+        assertEq(rateController.rateDecreaseAdjustment(), 0.001e27); // 0.1%
         assertEq(rateController.priceThreshold(), 0.995e8); // 0.995
         assertEq(rateController.targetPrice(), 1e8); // 1.00
     }
@@ -389,13 +389,13 @@ contract TestUsdxlInterestRateController is Test {
         rateController.updateParameters(0.08e27, 0.40e27, 0.002e27, 0.001e27, 1.02e8, 1.01e8);
     }
     function testUpdateParametersRevertsIfCurrentRateBelowNewMin() public {
-        // Set current rate to 6%
+        // Set current rate to 9% (valid rate)
         vm.prank(owner);
-        rateController.emergencyUpdateRate(0.06e27);
-        // Try to set minimum to 8%
+        rateController.emergencyUpdateRate(0.09e27);
+        // Try to set minimum to 10%
         vm.prank(owner);
         vm.expectRevert("Current rate below new minimum");
-        rateController.updateParameters(0.08e27, 0.40e27, 0.002e27, 0.001e27, 0.99e8, 1.01e8);
+        rateController.updateParameters(0.10e27, 0.40e27, 0.002e27, 0.001e27, 0.99e8, 1.01e8);
     }
     function testUpdateParametersRevertsIfCurrentRateAboveNewMax() public {
         // Set current rate to 45%
@@ -485,10 +485,10 @@ contract TestUsdxlInterestRateController is Test {
             uint256 priceThreshold_,
             uint256 targetPrice_
         ) = rateController.getParameters();
-        assertEq(minRate_, 0.06e27);
+        assertEq(minRate_, 0.085e27);
         assertEq(maxRate_, 0.50e27);
-        assertEq(rateIncreaseAdjustment_, 0.0015e27);
-        assertEq(rateDecreaseAdjustment_, 0.0015e27);
+        assertEq(rateIncreaseAdjustment_, 0.002e27);
+        assertEq(rateDecreaseAdjustment_, 0.001e27);
         assertEq(priceThreshold_, 0.995e8);
         assertEq(targetPrice_, 1e8);
     }
@@ -674,15 +674,15 @@ contract TestUsdxlInterestRateController is Test {
     
     function testGetNextExecutionTime() public {
         uint256 nextTime = rateController.getNextExecutionTime();
-        assertEq(nextTime, block.timestamp + 8 hours);
+        assertEq(nextTime, block.timestamp + 4 hours);
     }
     
     function testIsExecutionDue() public {
         // Should be false initially
         assertFalse(rateController.isExecutionDue());
         
-        // Fast forward 8 hours
-        vm.warp(block.timestamp + 8 hours);
+        // Fast forward 4 hours
+        vm.warp(block.timestamp + 4 hours);
         
         // Should be true
         assertTrue(rateController.isExecutionDue());
@@ -771,7 +771,7 @@ contract TestUsdxlInterestRateController is Test {
     }
     
     function testConstants() public {
-        assertEq(rateController.executionInterval(), 8 hours);
+        assertEq(rateController.executionInterval(), 4 hours);
         assertEq(rateController.perpetualLoanAmount(), 1e18);
     }
     
@@ -842,8 +842,8 @@ contract TestUsdxlInterestRateController is Test {
         assertEq(rateController.minRate(), newMinRate);
         // Other parameters should remain unchanged
         assertEq(rateController.maxRate(), 0.50e27);
-        assertEq(rateController.rateIncreaseAdjustment(), 0.0015e27);
-        assertEq(rateController.rateDecreaseAdjustment(), 0.0015e27);
+        assertEq(rateController.rateIncreaseAdjustment(), 0.002e27);
+        assertEq(rateController.rateDecreaseAdjustment(), 0.001e27);
         assertEq(rateController.priceThreshold(), 0.995e8);
         assertEq(rateController.targetPrice(), 1e8);
     }
@@ -856,10 +856,10 @@ contract TestUsdxlInterestRateController is Test {
         
         assertEq(rateController.priceThreshold(), newPriceThreshold);
         // Other parameters should remain unchanged
-        assertEq(rateController.minRate(), 0.06e27);
+        assertEq(rateController.minRate(), 0.085e27);
         assertEq(rateController.maxRate(), 0.50e27);
-        assertEq(rateController.rateIncreaseAdjustment(), 0.0015e27);
-        assertEq(rateController.rateDecreaseAdjustment(), 0.0015e27);
+        assertEq(rateController.rateIncreaseAdjustment(), 0.002e27);
+        assertEq(rateController.rateDecreaseAdjustment(), 0.001e27);
         assertEq(rateController.targetPrice(), 1e8);
     }
     
@@ -871,10 +871,10 @@ contract TestUsdxlInterestRateController is Test {
         
         assertEq(rateController.targetPrice(), newTargetPrice);
         // Other parameters should remain unchanged
-        assertEq(rateController.minRate(), 0.06e27);
+        assertEq(rateController.minRate(), 0.085e27);
         assertEq(rateController.maxRate(), 0.50e27);
-        assertEq(rateController.rateIncreaseAdjustment(), 0.0015e27);
-        assertEq(rateController.rateDecreaseAdjustment(), 0.0015e27);
+        assertEq(rateController.rateIncreaseAdjustment(), 0.002e27);
+        assertEq(rateController.rateDecreaseAdjustment(), 0.001e27);
         assertEq(rateController.priceThreshold(), 0.995e8);
     }
     
